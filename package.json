@@ -1,0 +1,32 @@
+{
+  "name": "firestorm-db",
+  "version": "1.0.0",
+  "description": "Self hosted Firestore-like database with API endpoints based on micro bulk operations",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://TheRolfFR@github.com/TheRolfFR/firestorm.git"
+  },
+  "keywords": [
+    "firebase",
+    "firestore",
+    "db",
+    "api",
+    "micro-operations"
+  ],
+  "author": "TheRolf",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/TheRolfFR/firestorm/issues"
+  },
+  "homepage": "https://github.com/TheRolfFR/firestorm#readme",
+  "files": [
+    "index.js"
+  ],
+  "dependencies": {
+    "axios": "^0.21.1"
+  }
+}
