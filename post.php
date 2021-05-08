@@ -53,7 +53,7 @@ if(!array_key_exists($collection, $database_list))
 $db = $database_list[$collection];
 
 $command = check_key_json('command', $inputJSON);
-if(!$command)
+if($command === false)
     http_error(400, 'No command provided');
     
 $commands_available = ['write_raw', 'add', 'addBulk', 'remove', 'removeBulk', 'set', 'setBulk'];
@@ -64,7 +64,7 @@ if(!in_array($command, $commands_available))
 $valueKeyName = ($command != 'setBulk') ? 'value' : 'values';
 $value = check_key_json($valueKeyName, $inputJSON, false);
 
-if(!$value)
+if($value === false)
     http_error(400, 'No ' . $valueKeyName . ' provided');
 
 switch($command) {
@@ -73,12 +73,12 @@ switch($command) {
         http_success('Successful ' . $command . ' command');
         break;
     case 'add':
-        $db->add($value);
-        http_success('Successful ' . $command . ' command');
+        $newId = $db->add($value);
+        http_message($newId, 'id', 200);
         break;
     case 'addBulk':
-        $db->addBulk($value);
-        http_success('Successful ' . $command . ' command');
+        $id_array = $db->addBulk($value);
+        http_message($id_array, 'ids', 200);
         break;
     case 'remove':
         $db->remove($value);

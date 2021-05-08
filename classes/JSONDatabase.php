@@ -11,12 +11,16 @@ class JSONDatabase {
     public $default = array();
     
     public $autoKey = true;
+    public $autoIncrement = true;
     
     public function fullPath() {
         return $this->folderPath . $this->fileName . $this->fileExt;
     }
     
     public function write_raw($content) {
+        if($content === '[]')
+            $content = '{}';
+        
         file_put_contents($this->fullPath(), $content, LOCK_EX);
     }
     
@@ -90,6 +94,21 @@ class JSONDatabase {
         $this->write($obj);
     }
     
+    private function newLastKey($arr) {
+        if($this->autoIncrement) {
+            $int_keys = array_filter(array_keys($arr), "is_int");
+            sort($int_keys);
+            $last_key = count($int_keys) > 0 ? $int_keys[count($int_keys) - 1] + 1 : 0;
+        } else {
+            $last_key = uniqid();
+            while(array_key_exists($last_key, $arr)) {
+                $last_key = uniqid();
+            }
+        }
+        
+        return strval($last_key);
+    }
+    
     public function add($value) {
         if($this->autoKey == false)
             throw new Exception('Autokey disabled');
@@ -97,29 +116,39 @@ class JSONDatabase {
         // else set it at the corresponding value
         $obj = $this->read(true);
         
-        $id = count($obj['content']);
-        $obj['content'][$id] = json_decode($value, true);
+        $id = $this->newLastKey($obj['content']);
+        $obj['content'][$id] = $value;
         
         $this->write($obj);
+        
+        return $id;
     }
     
     public function addBulk($values) {
         if($this->autoKey == false)
             throw new Exception('Autokey disabled');
+            
+        // veriify that values is an array with number indices
+        if(array_assoc($values))
+            throw new Exception('Wanted sequential array');
         
         // else set it at the correspongding value
         $obj = $this->read(true);
         
         // decode and add all values
-        $id = count($obj['content']);
-        $values_decoded = json_decode($values, true);
+        $values_decoded = $values;
+        $id_array = array();
         foreach($values_decoded as $value_decoded) {
+            $id = $this->newLastKey($obj['content']);
+            
             $obj['content'][$id] = $value_decoded;
             
-            $id++;
+            array_push($id_array, $id);
         }
         
         $this->write($obj);
+        
+        return $id_array;
     }
     
     public function remove($key) {

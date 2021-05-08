@@ -26,9 +26,13 @@ function http_response($body, $code=200) {
     exit();
 }
 
+function http_json_response($json, $code = 200) {
+    http_response(json_encode($json), $code);
+}
+
 function http_message($message, $key = 'message', $code = 200) {
     $arr = array($key => $message);
-    http_response(json_encode($arr), $code);
+    http_json_response($arr, $code);
 }
 
 function http_error($code, $message) {
@@ -41,6 +45,12 @@ function http_success($message) {
 
 function check_key_json($key, $arr, $parse = false) {
     return array_key_exists($key, $arr) ? ($parse ? sec($arr[$key]) : $arr[$key]) : false;
+}
+
+function array_assoc(array $arr)
+{
+    if (array() === $arr) return false;
+    return array_keys($arr) !== range(0, count($arr) - 1);
 }
 
 ?>
