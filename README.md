@@ -1,4 +1,11 @@
-# firestorm-db
+<div align="center">
+<img src="img/firestorm-128.png">
+
+<h1>firestorm-db</h1>
+
+<a href="https://www.npmjs.com/package/firestorm-db" targtet="_blank" ><img alt="npm" src="https://img.shields.io/npm/v/firestorm-db?color=cb0000&logo=npm&style=flat-square"> <img alt="npm bundle size" src="https://img.shields.io/bundlephobia/min/firestorm-db?label=NPM%20minified%20size&style=flat-square"> </a> <img alt="GitHub file size in bytes" src="https://img.shields.io/github/size/TheRolfFR/firestorm-db/index.js?color=43A047&label=Script%20size&logoColor=green&style=flat-square">
+
+</div>
 
 *Self hosted Firestore-like database with API endpoints based on micro bulk operations*
 
