@@ -25,12 +25,12 @@ class JSONDatabase {
     }
     
     private function write($obj) {
-        $obj['content'] = json_encode($obj['content']);
+        $obj['content'] = json_encode($obj['content'], JSON_FORCE_OBJECT);
         FileAccess::write($obj);
     }
     
     public function read_raw($waitLock = false) {
-        return FileAccess::read($this->fullPath(), $waitLock, json_encode($this->default));
+        return FileAccess::read($this->fullPath(), $waitLock, json_encode($this->default,  JSON_FORCE_OBJECT));
     }
     
     public function read($waitLock = false) {
@@ -45,13 +45,11 @@ class JSONDatabase {
         if(!$obj || array_key_exists('content', $obj) == false || array_key_exists(strval($key), $obj['content']) == false)
             return null;
         
-        return $obj['content'][$key];
+        $res = array($key => $obj['content'][$key]);
+        return $res;
     }
     
     public function set($key, $value) {
-        if($this->autoKey == true)
-            throw new Exception('Autokey enabled');
-        
         $key_var_type = gettype($key);
         if($key_var_type != 'string' and $key_var_type != 'double' and $key_var_type != 'integer')
             throw new Exception('Incorrect key');
@@ -60,15 +58,12 @@ class JSONDatabase {
         
         // else set it at the correspongding value
         $obj = $this->read(true);
-        $obj['content'][$key] = json_decode(json_encode($value), true);
+        $obj['content'][$key] = json_decode(json_encode($value,  JSON_FORCE_OBJECT), true);
         
         $this->write($obj);
     }
     
     public function setBulk($keys, $values) {
-        if($this->autoKey == true)
-            throw new Exception('Autokey enabled');
-        
         // we verify that our keys are in an array
         $key_var_type = gettype($keys);
         if($key_var_type != 'array')
@@ -207,6 +202,7 @@ class JSONDatabase {
                                     $add = $concernedField == $value;
                                     break;
                                 default:
+                                    $add = false;
                                     break;
                             }
                             break;
@@ -235,6 +231,7 @@ class JSONDatabase {
                                     $add = in_array($concernedField, $value);
                                     break;
                                 default:
+                                    $add = false;
                                     break;
                             }
                             break;
@@ -245,7 +242,6 @@ class JSONDatabase {
                                     break;
                                 case '==':
                                     $add = strcmp($concernedField, $value) == 0;
-                                    var_dump($add);
                                     break;
                                 case '>=':
                                     $add = strcmp($concernedField, $value) >= 0;
@@ -273,6 +269,7 @@ class JSONDatabase {
                                     $add = in_array($concernedField, $value);
                                     break;
                                 default:
+                                    $add = false;
                                     break;
                             }
                             break;
@@ -286,17 +283,23 @@ class JSONDatabase {
                                         $tmp = false;
                                         $tmp_i = 0;
                                         while($tmp_i < count($value) and !$tmp) {
-                                            $tmp = in_array($value[$tmp], $concernedField);
+                                            $tmp = in_array($value[$tmp_i], $concernedField);
                                             $tmp_i++;
                                         }
                                         $add = $tmp;
                                     } else {
                                         $add = false;
                                     }
+                                    break;
+                                default:
+                                    $add = false;
+                                    break;
                             }
                         default:
                             break;
                     }
+                } else {
+                    $add = false;
                 }
                 
                 $condition_index++;

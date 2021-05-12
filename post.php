@@ -61,7 +61,7 @@ $commands_available = ['write_raw', 'add', 'addBulk', 'remove', 'removeBulk', 's
 if(!in_array($command, $commands_available))
     http_error(404, 'Command not found: ' . $command . '. Available commands: ' . join(', ', $commands_available));
     
-$valueKeyName = ($command != 'setBulk') ? 'value' : 'values';
+$valueKeyName = ($command != 'setBulk' && $command != 'addBulk') ? 'value' : 'values';
 $value = check_key_json($valueKeyName, $inputJSON, false);
 
 if($value === false)
