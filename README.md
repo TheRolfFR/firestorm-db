@@ -49,6 +49,29 @@ userCollection.read_raw()
 .catch(err => console.error(err))
 ```
 
+### Collection contructor
+
+Collection takes 1 argument and one optional argument : 
+- The name of the collection as a ``String``
+- The method adder which allows to inject methods to the get methods results, which is a ``Function`` taking the element as an argument
+
+```js
+const firestorm = require('firestorm-db')
+
+// returns a Collection instance
+const userCollection = firestorm.collection('users', el => {
+  el.hello = function() {
+    console.log(`${el.name} says hello!`)
+  }
+})
+
+// if you have a 'users' table with a printable field named name
+const johnDoe = await userCollection.get(123456789)
+// gives { name: "John Doe", hello: function}
+
+johnDoe.hello() // prints out "John Doe says hello!"
+```
+
 Available methods for a collection:
 
 ### Read operations
@@ -58,6 +81,7 @@ Available methods for a collection:
 | read_raw() | none | Reads the entire collection |
 | get(id) | id: ``String\|Name`` | Tries to get one element by its key |
 | search(searchOptions) | searchOptions: ``SearchOption[]`` | Searches collections and returns matching results |
+| searchKeys(keys) | keys: ``String[] \| Number[]`` | Searches collections with given keys and returns matching results |
 
 Search method can take one or more options to filter entries in a collection. A search option studies a ``field`` with a ``criteria`` and compares it to a ``value``.
 
@@ -79,6 +103,12 @@ Not all criterias are available depending the field type. There a more options a
 | ``'endsWith'`` | String | Searches if the entry field's value ends with your substring
 | ``'array-contains'`` | Array | Searches if the entry field's array contains your value
 | ``'array-contains-any'`` | Array | Searches if the entry field's array ends contains your one value of more inside your values array
+| ``'array-length-eq'`` | Number | Searches if the entry field's array size is equal to your value
+| ``'array-length-df'`` | Number | Searches if the entry field's array size is different from your value
+| ``'array-length-lt'`` | Number | Searches if the entry field's array size is lower than your value
+| ``'array-length-gt'`` | Number | Searches if the entry field's array size is lower greater than your value
+| ``'array-length-le'`` | Number | Searches if the entry field's array size is lower or equal to your value
+| ``'array-length-ge'`` | Number | Searches if the entry field's array size is greater or equal to your value
 
 ### Write operations
 
