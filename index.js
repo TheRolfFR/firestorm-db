@@ -118,22 +118,57 @@ class Collection {
   }
 
   /**
+   * Search specific keys through collection
+   * @param {String[]|Number[]} keys Wanted keys
+   * @returns {Promise<T[]>} Search results
+   */
+  searchKeys(keys) {
+    if(!Array.isArray(keys))
+      return Promise.reject('Incorrect keys')
+
+    return new Promise((resolve, reject) => {
+      this.__extract_data(axios.get(readAddress(), {
+        data: {
+          "collection": this.collectionName,
+          "command": "searchKeys",
+          "search": keys
+        }
+      })).then(res => {
+        const arr = []
+        Object.keys(res).forEach(contribID => {
+          const tmp = res[contribID]
+          tmp[ID_FIELD_NAME] = contribID
+          arr.push(tmp)
+        })
+
+        resolve(this.__add_methods(Promise.resolve(arr)))
+
+      }).catch(err => reject(err))
+    })
+  }
+
+  /**
    * Returns the whole content of the file
    * @returns {Promise} // the get promise of the collection raw file content
    */
   read_raw() {
-    let data = this.__extract_data(axios.get(readAddress(), {
-      data: {
-        "collection": this.collectionName,
-        "command": "read_raw"
-      }
-    }))
+    return new Promise((resolve, reject) => {
+      this.__extract_data(axios.get(readAddress(), {
+        data: {
+          "collection": this.collectionName,
+          "command": "read_raw"
+        }
+      }))
+      .then(data => {
+        Object.keys(data).forEach(key => {
+          data[key][ID_FIELD_NAME] = key
+          this.addMethods(data[key])
+        })
 
-    Object.keys(data).forEach(key => {
-      this.addMethods(data[key])
+        resolve(data)
+      })
+      .catch(reject)
     })
-
-    return data
   }
 
   /**
@@ -148,6 +183,14 @@ class Collection {
       "collection": this.collectionName,
       "command": command
     }
+    if(multiple) {
+      value.forEach(v => {
+        delete v[ID_FIELD_NAME]
+      })
+    } else {
+      delete value[ID_FIELD_NAME]
+    }
+
     if(value) {
       if(multiple)
         obj["values"] = value
@@ -182,7 +225,13 @@ class Collection {
    * @returns {Promise<any>}
    */
   addBulk(values) {
-    return this.__extract_data(axios.post(writeAddress(), this.__write_data('addBulk', values, true)))
+    return new Promise((resolve, reject) => {
+    this.__extract_data(axios.post(writeAddress(), this.__write_data('addBulk', values, true)))
+      .then(res => {
+        resolve(res.ids)
+      })
+      .catch(reject)
+    })
   }
 
   /**
