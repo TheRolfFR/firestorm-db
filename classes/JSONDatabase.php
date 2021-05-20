@@ -25,12 +25,12 @@ class JSONDatabase {
     }
     
     private function write($obj) {
-        $obj['content'] = json_encode($obj['content'], JSON_FORCE_OBJECT);
+        $obj['content'] = json_encode($obj['content']);
         FileAccess::write($obj);
     }
     
     public function read_raw($waitLock = false) {
-        return FileAccess::read($this->fullPath(), $waitLock, json_encode($this->default,  JSON_FORCE_OBJECT));
+        return FileAccess::read($this->fullPath(), $waitLock, json_encode($this->default));
     }
     
     public function read($waitLock = false) {
@@ -291,6 +291,25 @@ class JSONDatabase {
                                         $add = false;
                                     }
                                     break;
+                                case "array-length":
+                                case "array-length-eq":
+                                    $add = count($concernedField) == $value;
+                                    break;
+                                case "array-length-df":
+                                    $add = count($concernedField) != $value;
+                                    break;
+                                case "array-length-gt":
+                                    $add = count($concernedField) > $value;
+                                    break;
+                                case "array-length-lt":
+                                    $add = count($concernedField) < $value;
+                                    break;
+                                case "array-length-ge":
+                                    $add = count($concernedField) >= $value;
+                                    break;
+                                case "array-length-le":
+                                    $add = count($concernedField) <= $value;
+                                    break;
                                 default:
                                     $add = false;
                                     break;
@@ -307,6 +326,24 @@ class JSONDatabase {
             
             if($add) {
                 $res[$key] = $el;
+            }
+        }
+        
+        return $res;
+    }
+    
+    public function searchKeys($searchedKeys) {
+        $obj = $this->read();
+        
+        $res = array();
+        if(gettype($searchedKeys) != 'array')
+            return $res;
+            
+        foreach($searchedKeys as $key) {
+            $key = strval($key);
+            
+            if(array_key_exists($key, $obj['content'])) {
+                $res[$key] = $el = $obj['content'][$key];
             }
         }
         

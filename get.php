@@ -43,7 +43,7 @@ $command = check_key_json('command', $inputJSON);
 if(!$command)
     http_error(400, 'No command provided');
     
-$commands_available = ['read_raw', 'get', 'search'];
+$commands_available = ['read_raw', 'get', 'search', 'searchKeys'];
 
 // var_dump($command);
 // exit();
@@ -76,6 +76,16 @@ switch($command) {
             http_error(400, 'No search provided');
         
         $result = $db->search($search);
+        
+        http_response(json_encode($result));
+        break;
+    case 'searchKeys':
+        $search = check_key_json('search', $inputJSON, false);
+        
+        if(!$search)
+            http_error(400, 'No search provided');
+            
+        $result = $db->searchKeys($search);
         
         http_response(json_encode($result));
         break;
