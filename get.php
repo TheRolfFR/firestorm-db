@@ -6,6 +6,7 @@ error_reporting(E_ALL);
 
 // import useful functions
 require_once('./utils.php');
+require_once('./log.php');
 
 $method = sec($_SERVER['REQUEST_METHOD']);
 if($method !== 'GET') {
@@ -60,7 +61,8 @@ switch($command) {
     case 'get':
         $id = check_key_json('id', $inputJSON);
         
-        if(!$id)
+        // strict compare to include 0 or "0" ids
+        if($id === false)
             http_error(400, 'No id provided');
             
         $result = $db->get($id);

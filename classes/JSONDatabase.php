@@ -25,7 +25,7 @@ class JSONDatabase {
     }
     
     private function write($obj) {
-        $obj['content'] = json_encode($obj['content']);
+        $obj['content'] = json_encode($obj['content'], JSON_FORCE_OBJECT);
         FileAccess::write($obj);
     }
     
