@@ -121,6 +121,25 @@ Not all criterias are available depending the field type. There a more options a
 | removeBulk(keys) | keys: ``String[]\|Name[]`` |  Remove multiple elements from the collection with the corresponding keys |
 | set(key, value) | key: ``String\|Name``, value: ``Object`` | Sets one element with its key and value into the collection |
 | setBulk(keys, values) | keys: ``String[]\|Name[]``, values: ``Object[]`` | Sets multiple elements with their corresponding keys and values into the collectionn |
+| editField(obj) | obj: ``EditObject`` | Changes one field of a given element in a collection |
+| editFieldBulk(objArray) | objArray: ``EditObject[]`` | Changes one field per element in a collection |
+
+### Edit field operations
+
+Edit objects have and ``id`` to get the wanted element, the ``field`` they want to edit, an ``operation``, with what to do to this field, and a possible ``value``. Here is a list of operations:
+
+| Operation | Value required | Types allowed | Description |
+|--|--|--|--|
+|``set``| Yes | any | Sets a field to a given value |
+|``remove``| No | any | Removes a field from the element |
+|``append``| Yes | String | Appends string at the end of the string field |
+|``invert``| No | any | Inverts tate of boolean field |
+|``increment``| No | Number | Adds a number to the field, default is 1 |
+|``decrement``| No | Number | Retrieves a number to the field, default is -1 |
+|``array-push ``| Yes | any | Push an element to the end of an array field |
+|``array-delete`` | Yes | Integer | Removes and element at a certain index in an array field, check [array_splice documentation](https://www.php.net/manual/function.array-splice) offset for more infos |
+|``array-splice`` | Yes | [Integer, Integer] | Remvoes certains elements, check [array_splice documentation](https://www.php.net/manual/function.array-splice) offset and length for more infos |
+
 
 <br>
 

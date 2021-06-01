@@ -349,6 +349,166 @@ class JSONDatabase {
         
         return $res;
     }
+    
+    public function editField($editObj) {
+        return $this->editFieldBulk(array($editObj))[0];
+    }
+    
+    // MANDATORY REFERENCE to edit directly: PHP 5+
+    private function __edit(&$obj, $editObj) {
+        
+        // id required
+        if(!check($editObj['id']))
+            return false;
+            
+        $id = $editObj['id'];
+            
+        // id string or integer
+        if(gettype($id) != 'string' and gettype($id) != 'integer')
+            return false;
+            
+        // object not found
+        if(!check($obj['content'][$id]))
+            return false;
+        
+        // field required
+        if(!check($editObj['field']))
+            return false;
+            
+        $field = $editObj['field'];
+            
+        // field is a string
+        if(gettype($field) != 'string')
+            return false;
+        
+        // operation required
+        if(!check($editObj['operation']))
+            return false;
+        
+        $operation = $editObj['operation'];
+        
+        $value = null;
+        // return if operation has no value
+        // set, append, array-push, array-delete, array-slice
+        if(in_array($operation, ['set', 'append', 'array-push', 'array-delete', 'array-slice']) and !isset($editObj['value']))
+            return false;
+        else
+            $value = $editObj['value'];
+        
+        // field not found for other than set or push operation
+        // for the remove operation it is still a success because at the end the field doesn't exist
+        if(!isset($obj['content'][$id][$field]) and ($operation != 'set' and $operation != 'remove' and $operation != 'array-push'))
+            return false;
+        
+        switch($operation) {
+            case 'set':
+                $obj['content'][$id][$field] = $value;
+                return true;
+            case 'remove':
+                unset($obj['content'][$id][$field]);
+                return true;
+            case 'append':
+                // check type string
+                if(gettype($obj['content'][$id][$field]) != 'string' or gettype($value) != 'string')
+                    return false;
+                    
+                $obj['content'][$id][$field] .= $value;
+                return true;
+            case 'invert':
+                // check type boolean
+                if(gettype($obj['content'][$id][$field]) != 'boolean')
+                    return false;
+                    
+                $obj['content'][$id][$field] = !$obj['content'][$id][$field];
+                return true;
+            case 'increment':
+            case 'decrement':
+                // check type number
+                if(gettype($obj['content'][$id][$field]) != 'integer' and gettype($obj['content'][$id][$field]) != 'double')
+                    return false;
+                    
+                $change = $operation == 'increment' ? +1 : -1;
+                
+                // check if value
+                if(isset($editObj['value'])) {
+                    if(gettype($editObj['value']) == 'integer' or gettype($editObj['value']) == 'double') { // error here
+                        $change *= $editObj['value'];
+                    } else {
+                        // incorrect value provided, no operation done
+                        return false;
+                    }
+                }
+                    
+                $obj['content'][$id][$field] += $change;
+                return true;
+            case 'array-push':
+                // create it if not here
+                if(!isset($obj['content'][$id][$field]))
+                    $obj['content'][$id][$field] = array();
+                
+                // check if our field array
+                if(gettype($obj['content'][$id][$field]) != 'array')
+                    return false;
+                
+                // our field must be a sequential array
+                if(array_assoc($obj['content'][$id][$field]))
+                    return false;
+                
+                array_push($obj['content'][$id][$field], $value);
+                
+                return true;
+                
+            case 'array-delete':
+                // check if our field array
+                if(gettype($obj['content'][$id][$field]) != 'array')
+                    return false;
+                
+                // our field must be a sequential array
+                if(array_assoc($obj['content'][$id][$field]))
+                    return false;
+                
+                // value must be integer
+                if(gettype($value) != 'integer')
+                    return false;
+                
+                array_splice($obj['content'][$id][$field], $value, 1);
+                
+                return true;
+            case 'array-splice':
+                if(array_assoc($obj['content'][$id][$field]))
+                    return false;
+                
+                // value must be an array or to integers
+                if(array_assoc($value) or count($value) != 2 or gettype($value[0]) != 'integer' or gettype($value[1]) != 'integer')
+                    return false;
+                
+                array_splice($obj['content'][$id][$field], $value[0], $value[1]);
+                
+                return true;
+            default:
+                break;
+        }
+        
+        return false;        
+    }
+    
+    public function editFieldBulk($objArray) {
+        // need sequential array
+        if(array_assoc($objArray))
+            return false;
+            
+        $arrayResult = array();
+        
+        $fileObj = $this->read($this);
+            
+        foreach($objArray as &$editObj) {
+            array_push($arrayResult, $this->__edit($fileObj, $editObj));
+        }
+        
+        $this->write($fileObj);
+        
+        return $arrayResult;
+    }
 }
 
 ?>

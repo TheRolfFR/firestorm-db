@@ -56,7 +56,7 @@ $command = check_key_json('command', $inputJSON);
 if($command === false)
     http_error(400, 'No command provided');
     
-$commands_available = ['write_raw', 'add', 'addBulk', 'remove', 'removeBulk', 'set', 'setBulk'];
+$commands_available = ['write_raw', 'add', 'addBulk', 'remove', 'removeBulk', 'set', 'setBulk', 'editField', 'editFieldBulk'];
 
 if(!in_array($command, $commands_available))
     http_error(404, 'Command not found: ' . $command . '. Available commands: ' . join(', ', $commands_available));
@@ -103,6 +103,20 @@ switch($command) {
         
         $db->setBulk($dbKey, $value);
         http_success('Successful ' . $command . ' command');
+        break;
+    case 'editField':
+        $res = $db->editField($value);
+        if($res === false)
+            http_error(400, 'Incorrect data provided');
+        
+        http_message($res, 'success', 200);
+        break;
+    case 'editFieldBulk':
+        $res = $db->editFieldBulk($value);
+        if($res === false)
+            http_error(400, 'Incorrect data provided');
+        
+        http_message($res, 'success', 200);
         break;
     default:
         break;
