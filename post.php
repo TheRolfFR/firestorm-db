@@ -85,7 +85,7 @@ switch($command) {
         http_success('Successful ' . $command . ' command');
         break;
     case 'removeBulk':
-        $db->add($value);
+        $db->removeBulk($value);
         http_success('Successful ' . $command . ' command');
         break;
     case 'set':
