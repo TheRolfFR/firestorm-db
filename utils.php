@@ -53,4 +53,22 @@ function array_assoc(array $arr)
     return array_keys($arr) !== range(0, count($arr) - 1);
 }
 
+function stringifier($obj, $depth = 1) {	
+	if($depth == 0) {
+		return json_encode($obj);
+	}
+	
+    $res = "{";
+    
+    $formed = array();
+    foreach(array_keys($obj) as $key) {
+        array_push($formed, '"' . strval($key) . '":' . stringifier($obj[$key], $depth - 1));
+    }
+    $res .= implode(",", $formed);
+    
+    $res .= "}";
+    
+    return $res;
+}
+
 ?>

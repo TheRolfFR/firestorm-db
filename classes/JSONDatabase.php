@@ -25,7 +25,7 @@ class JSONDatabase {
     }
     
     private function write($obj) {
-        $obj['content'] = json_encode($obj['content'], JSON_FORCE_OBJECT);
+        $obj['content'] = stringifier($obj['content'], 1);
         FileAccess::write($obj);
     }
     
@@ -58,7 +58,7 @@ class JSONDatabase {
         
         // else set it at the correspongding value
         $obj = $this->read(true);
-        $obj['content'][$key] = json_decode(json_encode($value,  JSON_FORCE_OBJECT), true);
+        $obj['content'][$key] = json_decode(json_encode($value), true);
         
         $this->write($obj);
     }
@@ -156,8 +156,7 @@ class JSONDatabase {
         $obj = $this->read(true);
         
         // remove all keys
-        $keys_decoded = json_decode($keys, true);
-        foreach($keys_decoded as $key_decoded) {
+        foreach($keys as $key_decoded) {
             unset($obj['content'][$key_decoded]);
         }
         

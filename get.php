@@ -69,7 +69,7 @@ switch($command) {
         if(!$result)
             http_error(404, 'get failed on collection ' . $collection . ' with key ' . $id);
             
-        http_response(json_encode($result));
+        http_response(stringifier($result));
         break;
     case 'search':
         $search = check_key_json('search', $inputJSON, false);
@@ -79,7 +79,7 @@ switch($command) {
         
         $result = $db->search($search);
         
-        http_response(json_encode($result));
+        http_response(stringifier($result));
         break;
     case 'searchKeys':
         $search = check_key_json('search', $inputJSON, false);
@@ -89,7 +89,7 @@ switch($command) {
             
         $result = $db->searchKeys($search);
         
-        http_response(json_encode($result));
+        http_response(stringifier($result));
         break;
     default:
         break;
