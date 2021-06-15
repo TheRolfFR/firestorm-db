@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "php_setup": "node tests/php_setup.js",
-    "test": "mocha tests/js-test.spec.js",
+    "test": "mocha tests/**/*.spec.js",
     "php_kill": "sh tests/php_server_kill.sh",
     "full": "npm run php_setup && npm run test ; npm run php_kill",
     "local_tests": "sudo ./act"
@@ -34,6 +34,7 @@
     "axios": "^0.21.1"
   },
   "devDependencies": {
+    "chai": "^4.3.4",
     "fs": "0.0.1-security",
     "fs-extra": "^10.0.0",
     "glob": "^7.1.7",
