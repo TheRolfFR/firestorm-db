@@ -6,7 +6,7 @@
   "scripts": {
     "php_setup": "node tests/php_setup.js",
     "mocha": "mocha tests/js-test.spec.js",
-    "test": "npm run php_setup && npm run mocha",
+    "test": "npm run php_setup && npm run mocha && sh tests/php_server_kill.sh",
     "local_tests": "sudo ./act"
   },
   "repository": {

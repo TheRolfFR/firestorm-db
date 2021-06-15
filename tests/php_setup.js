@@ -79,7 +79,6 @@ async function setup_php() {
       console.log('Starting php server with command "' + php_server_command + '"')
       const args = php_server_command.split(' ')
       const command = args.shift()
-      console.log(command, args)
 
       child_process.spawn(command, args,{ stdio: 'ignore', detached: true }).unref()
     })
