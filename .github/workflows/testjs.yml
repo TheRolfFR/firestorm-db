@@ -17,5 +17,9 @@ jobs:
           php-version: '7.4'
       - name: Install developer dependencies
         run: npm install --save-dev
+      - name: Setup and run PHP server for API
+        run: npm run php_setup
       - name: Test da code
         run: npm test
+      - name: Kill PHP server
+        run: npm run php_kill
