@@ -7,7 +7,7 @@ const path = require('path')
 const fs = require('fs')
 const { randomBytes } = require('crypto')
 
-const ADDRESS = 'http://localhost:8000/'
+const ADDRESS = 'http://127.0.0.1:8000/'
 const TOKEN = 'NeverGonnaGiveYouUp'
 
 const DATABASE_NAME = 'base'
