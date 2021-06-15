@@ -1,0 +1,20 @@
+{
+  "0": {
+    "name": "Joy Harper",
+    "age": 23,
+    "amazing": true,
+    "qualities": ["intelligent", "strong", "efficient"]
+  },
+  "1": {
+    "name": "Joy papa Buttercup",
+    "age": 13,
+    "amazing": false,
+    "qualitites": ["strong", "respectful", "happy"]
+  },
+  "2": {
+    "name": "Emily Harper",
+    "age": 45,
+    "amazing": true,
+    "qualities": ["pretty", "wild", "calm"]
+  }
+}
