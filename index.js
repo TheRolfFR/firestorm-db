@@ -104,6 +104,22 @@ class Collection {
    * @returns {Promise<T[]>}
    */
   search(searchOptions) {
+    if(!Array.isArray(searchOptions))
+      return Promise.reject(new Error('searchOptions shall be an array'))
+
+    searchOptions.forEach(searchOption => {
+      if(!searchOption.field || !searchOption.criteria || !searchOption.value)
+        return Promise.reject(new Error('Missing fields in searchOptions array'))
+
+      if(typeof searchOption.field !== 'string')
+        return Promise.reject(new Error(`${JSON.stringify(searchOption)} search option field is not a string`))
+
+      if(searchOption.criteria == 'in' && !Array.isArray(searchOption.value))
+        return Promise.reject(new Error('in takes an array of values'))
+
+      //TODO: add more strict value field warnings in JS and PHP
+    })
+
     return new Promise((resolve, reject) => {
       this.__extract_data(axios.get(readAddress(), {
         data: {
@@ -113,6 +129,7 @@ class Collection {
         }
       })).then(res => {
         const arr = []
+
         Object.keys(res).forEach(contribID => {
           const tmp = res[contribID]
           tmp[ID_FIELD_NAME] = contribID

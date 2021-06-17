@@ -131,4 +131,70 @@ describe('GET operations', () => {
         })
     });
   })
+
+  describe('search(searchOptions)', () => {
+    // [criteria, field, value, idsfound]
+    const test_array = [
+      ['!=', 'age' , 13, ['0', '2']],
+      ['==', 'age', 13, ['1']],
+      ['==', 'age', 25, []],
+      ['>=', 'age', 0, ['0', '1', '2']],
+      ['>=', 'age', 50, []],
+      ['<=', 'age', 23, ['0', '1']],
+      ['<=', 'age', 12, []],
+      ['>', 'age', 23, ['2']],
+      ['>', 'age', 45, []],
+      ['<', 'age', 45, ['0','1']],
+      ['<', 'age', 13, []],
+      ['in', 'age', [23, 13], ['0', '1']],
+      ['in', 'age', [21, 19], []],
+      ['includes', 'name', 'Joy', ['0', '1', '2']],
+      ['includes', 'name', 'Bobby', []],
+      ['startsWith', 'name', 'Joy', ['0', '1']],
+      ['startsWith', 'name', 'TheRolf', []],
+      ['endsWith', 'name', 'Harper', ['0', '2']],
+      ['endsWith', 'name', 'Wick', []],
+      ['array-contains', 'qualities', 'strong', ['0', '1']],
+      ['array-contains', 'qualities', 'handsome', []],
+      ['array-contains-any', 'qualities', ['intelligent', 'calm'], ['0', '2']],
+      ['array-contains-any', 'qualities', ['fast', 'flying'], []],
+      ['array-length-eq', 'friends', 6, ['0']],
+      ['array-length-eq', 'friends', 2, []],
+      ['array-length-df', 'friends', 6, ['1', '2']],
+      ['array-length-lt', 'friends', 6, ['1', '2']],
+      ['array-length-lt', 'friends', 1, []],
+      ['array-length-gt', 'friends', 1, ['0', '1']],
+      ['array-length-gt', 'friends', 6, []],
+      ['array-length-le', 'friends', 6, ['0', '1', '2']],
+      ['array-length-le', 'friends', 1, ['2']],
+      ['array-length-ge', 'friends', 3, ['0', '1']],
+      ['array-length-ge', 'friends', 7, []],
+    ]
+
+    test_array.forEach(test_item => {
+      const criteria = test_item[0]
+      const field = test_item[1]
+      const value = test_item[2]
+      const ids_found = test_item[3]
+      it(`${criteria} criteria${ids_found.length == 0 ? ' (empty result)' : ''}`, (done) => {
+        base.search([{
+          criteria: criteria,
+          field: field,
+          value: value
+        }]).then((res) => {
+          expect(res).to.be.a('array', 'Search result must be an array')
+          expect(res).to.have.lengthOf(ids_found.length, 'Expected result have not correct length')
+          expect(res.map(el => el[firestorm.ID_FIELD])).to.deep.equal(ids_found, 'Incorrect result search')
+          done()
+        }).catch(err => {
+          console.error(err)
+          done(err)
+        })
+      })
+    })
+  })
+})
+
+describe('PUT operations', () => {
+  
 })
