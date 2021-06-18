@@ -39,8 +39,6 @@ describe('GET operations', () => {
     const raw_content = fs.readFileSync(DATABASE_FILE).toString()
     content = JSON.parse(raw_content)
 
-    console.log(content)
-
     // reset the content of the database
     await base.write_raw(content).catch(err => console.error(err))
   })
@@ -193,7 +191,6 @@ describe('GET operations', () => {
           expect(res.map(el => el[firestorm.ID_FIELD])).to.deep.equal(ids_found, 'Incorrect result search')
           done()
         }).catch(err => {
-          console.error(err)
           done(err)
         })
       })
@@ -202,5 +199,43 @@ describe('GET operations', () => {
 })
 
 describe('PUT operations', () => {
-  
+  describe('write_raw operations', () => {
+    it('Rejects when incorrect token', (done) => {
+      firestorm.token('LetsGoToTheMall')
+      
+      base.write_raw({})
+      .then(res => {
+        done(res)
+      }).catch(err => {
+        if('response' in err && err.response.status == 403) { done(); return }
+        done(new Error('Should return 403'))
+      })
+    })
+
+
+    describe('You must give him a correct value', () => {
+      before(() => {
+        firestorm.token(TOKEN)
+      });
+      const incorrect_bodies = [undefined, null, false, 42, 6.9, 'ACDC', [1, 2, 3], ['I', 'will', 'find', 'you'], { '5': 'is' }]
+      
+      incorrect_bodies.forEach((body, index) => {
+        it(`${JSON.stringify(body)} value rejects`, (done) => {
+          base.write_raw(body)
+            .then(res => {
+              done(new Error(`Should not fullfill returning ${JSON.stringify(res) }`))
+            })
+            .catch(err => {
+              if(index < 2) {
+                expect(err).to.be.an('error')
+                done()
+              } else {
+                if('response' in err && err.response.status == 400) { done(); return }
+                done(new Error(`Should return 400 not ${ JSON.stringify(('response' in err && 'status' in err.response) ? err.response.status : err)}`))
+              }
+            })
+        });
+      })
+    });
+  });
 })

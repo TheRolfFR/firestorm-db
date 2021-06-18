@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "php_setup": "node tests/php_setup.js",
-    "test": "mocha tests/**/*.spec.js -b",
+    "test": "mocha tests/**/*.spec.js",
     "php_kill": "sh tests/php_server_kill.sh",
     "full": "npm run php_setup && npm run test ; npm run php_kill",
     "local_tests": "sudo ./act"

@@ -70,7 +70,7 @@ if($value === false)
 
 switch($command) {
     case 'write_raw':
-        $db->write_raw(stringifier($value));
+        $db->write_raw($value);
         http_success('Successful ' . $command . ' command');
         break;
     case 'add':

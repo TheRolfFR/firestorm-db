@@ -2,6 +2,7 @@
 
 require_once('./utils.php');
 require_once('./classes/FileAccess.php');
+require_once('./classes/HTTPException.php');
 
 class JSONDatabase {
     public $folderPath = './files/';
@@ -18,15 +19,54 @@ class JSONDatabase {
     }
     
     public function write_raw($content) {
+        $content_type = gettype($content);
+        $incorrect_types = array('integer', 'double', 'string', 'boolean');
+        
+        // content must not be primitive
+        if(in_array($content_type, $incorrect_types)) {
+            throw new HTTPException('write_raw value must not be a ' . $content_type, 400);
+            return 400;
+        }
+
+        // value must not be a sequantial array with values inside [1, 2, 3]
+        // we accept sequential arrays but with objects not pprimitives
+        if(is_array($content) and !array_assoc($content)) {
+            foreach($content as $item) {
+                $item_type = gettype($item);
+                if(in_array($item_type, $incorrect_types)) {
+                    throw new HTTPException('write_raw item must not be a ' . $item_type, 400);
+                    return 400;
+                }
+            }
+        }
+
+        // now we know we have an associative array
+        
+        // content must be objects
+        foreach ($content as $key => $item) {
+            // item must not be primitive
+            echo $item;
+
+            // we don't accept primitive keys as value
+            $item_type = gettype($item);
+            if(in_array($item_type, $incorrect_types)) {
+                throw new HTTPException('write_raw item with key' . $key . ' item must not be a ' . $item_type, 400);
+                return 400;
+            }
+            
+            // we accept assosiative array as items beacuse they may have an integer key
+        }
+        
+        $content = stringifier($content);
         if($content === '[]')
             $content = '{}';
         
-        file_put_contents($this->fullPath(), $content, LOCK_EX);
+        return file_put_contents($this->fullPath(), $content, LOCK_EX);
     }
     
     private function write($obj) {
         $obj['content'] = stringifier($obj['content'], 1);
-        FileAccess::write($obj);
+        return FileAccess::write($obj);
     }
     
     public function read_raw($waitLock = false) {
