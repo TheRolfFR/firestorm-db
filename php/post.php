@@ -1,6 +1,7 @@
 <?php
 
 // import useful functions
+require_once('./classes/HTTPException.php');
 require_once('./utils.php');
 
 $method = sec($_SERVER['REQUEST_METHOD']);
@@ -69,7 +70,7 @@ if($value === false)
 
 switch($command) {
     case 'write_raw':
-        $db->write_raw(json_encode($value));
+        $db->write_raw(stringifier($value));
         http_success('Successful ' . $command . ' command');
         break;
     case 'add':
@@ -124,6 +125,8 @@ switch($command) {
 
 http_error(404, 'No request handler found for command ' . $command);
 
+} catch(HTTPException $e) {
+    http_error($e->getCode(), $e->getMessage());
 } catch(Exception $e) {
     http_error(400, $e->getMessage());
 }

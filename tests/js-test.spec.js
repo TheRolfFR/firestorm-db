@@ -5,7 +5,6 @@ const firestorm = require('../index')
 
 const path = require('path')
 const fs = require('fs')
-const { randomBytes } = require('crypto')
 
 const ADDRESS = 'http://127.0.0.1:8000/'
 const TOKEN = 'NeverGonnaGiveYouUp'
@@ -34,11 +33,18 @@ let base // = undefined
 let content
 
 describe('GET operations', () => {
-  before(() => {
+  before(async () => {
     base = firestorm.collection(DATABASE_NAME)
+
+    const raw_content = fs.readFileSync(DATABASE_FILE).toString()
+    content = JSON.parse(raw_content)
+
+    console.log(content)
+
+    // reset the content of the database
+    await base.write_raw(content).catch(err => console.error(err))
   })
 
-  content = JSON.parse(fs.readFileSync(DATABASE_FILE).toString())
 
   describe('read_raw()', () => {
     it('fails if table not found', (done) => {

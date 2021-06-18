@@ -233,6 +233,9 @@ class Collection {
    * @returns {Promise<any>}
    */
   write_raw(value) {
+    if(value === undefined || value === null) {
+      return Promise.reject(new Error('write_raw value must not be undefined or null'))
+    }
     return this.__extract_data(axios.post(writeAddress(), this.__write_data('write_raw', value)))
   }
 

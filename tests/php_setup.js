@@ -38,6 +38,8 @@ console.log('Creating tmp folder...')
 async function setup_php() {
   // create tmp folder for PHP
   let tmpfolder
+  child_process.execSync('rm -rf /tmp/php-*')
+  
   await fs.mkdtemp(path.join(os.tmpdir(), 'php-'))
     .then((folder) => {
       tmpfolder = folder
