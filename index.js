@@ -209,7 +209,7 @@ class Collection {
       "collection": this.collectionName,
       "command": command
     }
-    if(multiple === true && Array.isArray(v)) { // solves errors with undefined and null values
+    if(multiple === true && Array.isArray(value)) { // solves errors with undefined and null values
       value.forEach(v => {
         if(typeof value != 'number' && typeof value != 'string' && !Array.isArray(value)) 
           delete v[ID_FIELD_NAME]
@@ -217,7 +217,6 @@ class Collection {
     } else if(multiple === false && value != null && value != undefined && typeof value != 'number' && typeof value != 'string' && !Array.isArray(value)) { // solves errors with undefined and null values
       delete value[ID_FIELD_NAME]
     }
-
     if(value) {
       if(multiple)
         obj["values"] = value

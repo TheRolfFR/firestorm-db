@@ -3,7 +3,7 @@
 class HTTPException extends Exception
 {
   // Redéfinissez l'exception ainsi le message n'est pas facultatif
-  public function __construct($message, $code = 0, Throwable $previous = null) {
+  public function __construct($message, $code = 400, Throwable $previous = null) {
     $type_message = gettype($message);
 
     if($type_message != 'string')

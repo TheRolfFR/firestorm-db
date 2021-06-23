@@ -147,7 +147,7 @@ class JSONDatabase {
     public function add($value) {
         // restricts types to objects only
         $value_type = gettype($value);
-        if($value_type == null or $value_type == 'boolean' or $value_type == 'integer' or $value_type == 'double' or $value_type == 'string' or (is_array($value) and count($value) and !array_assoc($value)))
+        if($value_type == 'NULL' or $value_type == 'boolean' or $value_type == 'integer' or $value_type == 'double' or $value_type == 'string' or (is_array($value) and count($value) and !array_assoc($value)))
             throw new HTTPException('add value must be an object not a ' . $value_type, 400);
 
         if($this->autoKey == false)
@@ -165,6 +165,22 @@ class JSONDatabase {
     }
     
     public function addBulk($values) {
+        if($values == NULL)
+            throw new HTTPException('null-like value not accepted', 400);
+
+        // restricts types to non base variables
+        $value_type = gettype($values);
+        if($value_type == 'NULL' or $value_type == 'boolean' or $value_type == 'integer' or $value_type == 'double' or $value_type == 'string' or (is_array($values) and count($values) and array_assoc($values)))
+            throw new HTTPException('value must be an array not a ' . $value_type, 400);
+
+        // so here we have a sequential array type
+        // now the values inside this array must not be base values
+        foreach($values as $value) {
+            $value_type = gettype($value);
+            if($value_type == 'NULL' or $value_type == 'boolean' or $value_type == 'integer' or $value_type == 'double' or $value_type == 'string' or (is_array($value) and count($value) and !array_assoc($value)))
+                throw new HTTPException('array value must be an object not a ' . $value_type, 400);
+        }
+
         if($this->autoKey == false)
             throw new Exception('Autokey disabled');
             

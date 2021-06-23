@@ -261,6 +261,7 @@ describe('PUT operations', () => {
       })
     })
   })
+
   describe('add operations', () => {
     it('must fail when not on an auto-key table', (done) => {
       houseCollection.add({
@@ -332,6 +333,102 @@ describe('PUT operations', () => {
               done(err)
             })
         })
+      })
+    })
+  })
+
+  describe('add_bulk operations', () => {
+    it('must fullfill with empty array', () => {
+      base.addBulk([])
+        .then(res => {
+          expect(res).to.deep.equal([])
+          done()
+        })
+        .catch(err => {
+          done(err)
+        })
+    })
+
+    describe('must reject with uncorrect base values', () => {
+      const uncorrect_values = [undefined, null, false, 16, 'Muse', [1, 2, 3]]
+
+
+      uncorrect_values.forEach(unco => {
+        it(`${ JSON.stringify(unco) } value rejects`, done => {
+          base.addBulk(unco)
+            .then(res => {
+              done(new Error(`Should not fullfill with res ${res}`))
+            })
+            .catch(err => {
+              if('response' in err && err.response.status == 400) { done(); return }
+              done(new Error(`Should return 400 not ${ JSON.stringify(err) }`))
+            })
+        })
+      })
+    })
+
+    describe('must reject with uncorrect array', () => {
+      const uncorrect_values = [undefined, null, false, 16, 'Muse', [1, 2, 3]]
+
+      uncorrect_values.forEach(unco => {
+        it(`[${ JSON.stringify(unco) }] value rejects`, done => {
+          base.addBulk([unco])
+            .then(res => {
+              done(new Error(`Should not fullfill with res ${res}`))
+            })
+            .catch(err => {
+              if('response' in err && err.response.status == 400) { done(); return }
+              done(new Error(`Should return 400 not ${ JSON.stringify('response' in err ? err.response : err) }`))
+            })
+        })
+      })
+    })
+
+    describe('Correct value should succeed', () => {
+      it('should accept array with an empty object inside', done => {
+        base.addBulk([{}])
+          .then(res => {
+            expect(res).to.be.a('array')
+            expect(res).to.have.length(1)
+            done()
+          })
+          .catch(err => {
+            console.log(err)
+            done(err)
+          })
+      })
+
+      it('should accept correct array value', done => {
+        const in_value = [{ a: 1 }, { b: 2 }, { c: 3 }]
+        base.addBulk(in_value)
+          .then(res => {
+            expect(res).to.be.a('array')
+            expect(res).to.have.length(3)
+            res.forEach(id => {
+              expect(id).to.be.a('string')
+            })
+            return Promise.all([res, base.searchKeys(res)])
+          })
+          .then(results => {
+            const search_results = results[1]
+            expect(search_results).to.be.a('array')
+            expect(search_results).to.have.length(3)
+
+            const ids_generated = results[0]
+            // modify results and add ID
+            in_value.map((el, index) => {
+              el[firestorm.ID_FIELD] = ids_generated[index]
+
+              return el
+            })
+
+            expect(search_results).to.be.deep.equals(in_value)
+            done()
+          })
+          .catch(err => {
+            console.error(err)
+            done(err)
+          })
       })
     })
   })
