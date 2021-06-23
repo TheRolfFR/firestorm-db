@@ -9,6 +9,9 @@ const fs = require('fs')
 const ADDRESS = 'http://127.0.0.1:8000/'
 const TOKEN = 'NeverGonnaGiveYouUp'
 
+const HOUSE_DATABASE_NAME = 'house'
+const HOUSE_DATABASE_FILE = path.join(__dirname, `${ HOUSE_DATABASE_NAME }.json`)
+
 const DATABASE_NAME = 'base'
 const DATABASE_FILE = path.join(__dirname, 'base.json')
 
@@ -29,6 +32,7 @@ describe('Wrapper informations', () => {
   })
 })
 
+let houseCollection // = undefined
 let base // = undefined
 let content
 
@@ -36,11 +40,16 @@ describe('GET operations', () => {
   before(async () => {
     base = firestorm.collection(DATABASE_NAME)
 
+
     const raw_content = fs.readFileSync(DATABASE_FILE).toString()
     content = JSON.parse(raw_content)
 
     // reset the content of the database
     await base.write_raw(content).catch(err => console.error(err))
+
+    houseCollection = firestorm.collection(HOUSE_DATABASE_NAME)
+    const raw_house = JSON.parse(fs.readFileSync(HOUSE_DATABASE_FILE).toString())
+    await houseCollection.write_raw(raw_house)
   })
 
 
@@ -210,13 +219,13 @@ describe('PUT operations', () => {
         if('response' in err && err.response.status == 403) { done(); return }
         done(new Error('Should return 403'))
       })
+      .finally(() => {
+        firestorm.token(TOKEN)
+      })
     })
 
 
     describe('You must give him a correct value', () => {
-      before(() => {
-        firestorm.token(TOKEN)
-      });
       const incorrect_bodies = [undefined, null, false, 42, 6.9, 'ACDC', [1, 2, 3], ['I', 'will', 'find', 'you'], { '5': 'is' }]
       
       incorrect_bodies.forEach((body, index) => {
@@ -234,8 +243,96 @@ describe('PUT operations', () => {
                 done(new Error(`Should return 400 not ${ JSON.stringify(('response' in err && 'status' in err.response) ? err.response.status : err)}`))
               }
             })
-        });
+        })
       })
-    });
-  });
+
+      it('but it can write an empty content : {}', (done) => {
+        base.write_raw({})
+          .then(() => {
+            done()
+          })
+          .catch(err => {
+            console.trace(err)
+            done(err)
+          })
+          .finally(async () => {
+            await base.write_raw(content)
+          })
+      })
+    })
+  })
+  describe('add operations', () => {
+    it('must fail when not on an auto-key table', (done) => {
+      houseCollection.add({
+        room: 'Patio',
+        size: 22.2,
+        outdoor: true,
+        furniture: ['table', 'chair', 'flowerpot']
+      })
+      .then(() => {
+        done(new Error('This request should not fullfill'))
+      })
+      .catch((err) => {
+        if('response' in err && err.response.status == 400) { done(); return }
+        done(new Error(`Should return 400 not ${ JSON.stringify(('response' in err && 'status' in err.response) ? err.response.status : err)}`))
+      })
+    })
+
+    it('must give incremented key when adding on a auto key auto increment', (done) => {
+      const last_id = Object.keys(content).pop()
+      base.add({
+        "name": "Elliot Alderson",
+        "age": 29,
+        "handsome": true,
+        "friends": ["Darlene", "Angela", "Tyrell"]
+      })
+      .then((id) => {
+        expect(id).to.be.a('string')
+        expect(id).to.equals(String(parseInt(last_id) + 1))
+        done()
+      })
+      .catch((err) => {
+        done(err)
+      })
+    })
+
+    describe('It should not accept uncorrect values', () => {
+      const uncorrect_values = [undefined, null, false, 16, 'Muse', [1, 2, 3]]
+      // I wanted to to test [] but serialized it's the same as an empty object which must be accepted
+
+      uncorrect_values.forEach(unco => {
+        it(`${ JSON.stringify(unco) } value rejects`, (done) => {
+          base.add(unco)
+            .then(res => {
+              done(new Error(`Should not fullfill with res ${res}`))
+            })
+            .catch(err => {
+              if('response' in err && err.response.status == 400) { done(); return }
+              done(new Error(`Should return 400 not ${ JSON.stringify(err) }`))
+            })
+        })
+      })
+    })
+
+    describe('It should accept correct values', () => {
+      const correct_values = [{}, {
+        "name": "Elliot Alderson",
+        "age": 29,
+        "handsome": true,
+        "friends": ["Darlene", "Angela", "Tyrell"]
+      }]
+
+      correct_values.forEach((co, index) => {
+        it(`${ index === 0 ? 'Empty object' : 'Complex object' } should fullfill`, done => {
+          base.add(co)
+            .then(() => {
+              done()
+            })
+            .catch(err => {
+              done(err)
+            })
+        })
+      })
+    })
+  })
 })

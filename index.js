@@ -209,11 +209,12 @@ class Collection {
       "collection": this.collectionName,
       "command": command
     }
-    if(multiple === true) {
+    if(multiple === true && Array.isArray(v)) { // solves errors with undefined and null values
       value.forEach(v => {
-        delete v[ID_FIELD_NAME]
+        if(typeof value != 'number' && typeof value != 'string' && !Array.isArray(value)) 
+          delete v[ID_FIELD_NAME]
       })
-    } else if(multiple === false) {
+    } else if(multiple === false && value != null && value != undefined && typeof value != 'number' && typeof value != 'string' && !Array.isArray(value)) { // solves errors with undefined and null values
       delete value[ID_FIELD_NAME]
     }
 
@@ -246,11 +247,17 @@ class Collection {
    */
   add(value) {
     return new Promise((resolve, reject) => {
-      this.__extract_data(axios.post(writeAddress(), this.__write_data('add', value)))
+      axios.post(writeAddress(), this.__write_data('add', value))
         .then(res => {
+          return this.__extract_data(Promise.resolve(res))
+        })
+        .then(res => {
+          if(typeof res != 'object' || !('id' in res) || typeof res.id != 'string') throw(new Error('Incorrect result'))
           resolve(res.id)
         })
-        .catch(reject)
+        .catch(err => {
+          reject(err)
+        })
     })
   }
 

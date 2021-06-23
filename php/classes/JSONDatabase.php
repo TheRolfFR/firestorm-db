@@ -145,6 +145,11 @@ class JSONDatabase {
     }
     
     public function add($value) {
+        // restricts types to objects only
+        $value_type = gettype($value);
+        if($value_type == null or $value_type == 'boolean' or $value_type == 'integer' or $value_type == 'double' or $value_type == 'string' or (is_array($value) and count($value) and !array_assoc($value)))
+            throw new HTTPException('add value must be an object not a ' . $value_type, 400);
+
         if($this->autoKey == false)
             throw new Exception('Autokey disabled');
         

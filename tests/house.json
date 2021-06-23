@@ -1,0 +1,17 @@
+{
+  "livingroom": {
+    "name": "Living Room",
+    "outdoor": false,
+    "furniture": ["table", "chairs", "sofa", "vase", "curtains"]
+  },
+  "kitchen": {
+    "name": "Kitchen",
+    "outdoor": false,
+    "furniture": ["table", "chairs", "frisge", "hoven", "freezer", "microwaves", "dishwasher"]
+  },
+  "bedroom": {
+    "name": "Bedroom",
+    "outdoor": false,
+    "furniture": ["bed", "desk", "chair", "wardrobe"]
+  }
+}
