@@ -471,7 +471,53 @@ describe('PUT operations', () => {
         .then(results => {
           const expected = results[0]
           const actual = results[1]
-          
+
+          expect(expected).to.be.deep.equal(actual, 'Value must match')
+          done()
+        })
+        .catch(done)
+    })
+  })
+
+  describe('removeBulk', () => {
+    describe('must accept only string array', () => {
+      const uncorrect_values = [undefined, null, false, 16, 22.2, [], [1, 2, 3], {}, { "i'm": "batman"}]
+
+      uncorrect_values.forEach(unco => {
+        it(`[${ JSON.stringify(unco) }] value rejects`, () => {
+          base.removeBulk([unco])
+            .then(res => {
+              done(new Error(`Should not fullfill with value ${  JSON.stringify(res) }`))
+            })
+            .catch(err => {
+              if('response' in err && err.response.status == 400) { done(err.response); return }
+              done(new Error(`Should return 400 not ${ JSON.stringify(err) }`))
+            })
+        })
+      })
+    })
+
+    it('Succeeds with empty array', done => {
+      base.removeBulk([])
+        .then(() => done())
+        .catch(done)
+    })
+
+    it('Succeeds if wanted elements are actually deleted', done => {
+      const ELEMENT_KEY_DELETED = ['0', '2']
+      base.read_raw()
+        .then(raw => {
+          ELEMENT_KEY_DELETED.forEach(k => delete raw[k])
+
+          return Promise.all([raw, base.removeBulk(ELEMENT_KEY_DELETED)])
+        })
+        .then(results => {
+          return Promise.all([results[0], base.read_raw()])
+        })
+        .then(results => {
+          const expected = results[0]
+          const actual = results[1]
+
           expect(expected).to.be.deep.equal(actual, 'Value must match')
           done()
         })
