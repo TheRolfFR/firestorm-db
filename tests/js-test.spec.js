@@ -432,4 +432,50 @@ describe('PUT operations', () => {
       })
     })
   })
+
+  describe('remove operations', () => {
+    describe('must accept only string keys', () => {
+      const uncorrect_values = [undefined, null, false, 16, 22.2, [], [1, 2, 3], {}, { "i'm": "batman"}]
+
+      uncorrect_values.forEach(unco => {
+        it(`${ JSON.stringify(unco) } value rejects`, done => {
+          base.remove(unco)
+            .then(res => {
+              done(new Error(`Should not fullfill with value ${  JSON.stringify(res) }`))
+            })
+            .catch(err => {
+              if('response' in err && err.response.status == 400) { done(); return }
+              done(new Error(`Should return 400 not ${ JSON.stringify(err) }`))
+            })
+        })
+      })
+    })
+
+    it('Succeeds if key entered does not exist', done => {
+      base.remove('666')
+        .then(() => done())
+        .catch(done)
+    })
+
+    it('Succeeds if wanted element is actually deleted', done => {
+      const ELEMENT_KEY_DELETED = '2'
+      base.read_raw()
+        .then(raw => {
+          delete raw[ELEMENT_KEY_DELETED]
+
+          return Promise.all([raw, base.remove(ELEMENT_KEY_DELETED)])
+        })
+        .then(results => {
+          return Promise.all([results[0], base.read_raw()])
+        })
+        .then(results => {
+          const expected = results[0]
+          const actual = results[1]
+          
+          expect(expected).to.be.deep.equal(actual, 'Value must match')
+          done()
+        })
+        .catch(done)
+    })
+  })
 })

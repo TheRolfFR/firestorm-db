@@ -208,6 +208,9 @@ class JSONDatabase {
     }
     
     public function remove($key) {
+        if(gettype($key) != 'string')
+            throw new HTTPException("remove value must be a string", 400);
+
         $obj = $this->read(true);
         unset($obj['content'][$key]);
         $this->write($obj);
