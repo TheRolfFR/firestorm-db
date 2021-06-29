@@ -35,6 +35,7 @@ describe('Wrapper informations', () => {
 let houseCollection // = undefined
 let base // = undefined
 let content
+let tmp
 
 describe('GET operations', () => {
   before(async () => {
@@ -479,7 +480,7 @@ describe('PUT operations', () => {
     })
   })
 
-  describe('removeBulk', () => {
+  describe('removeBulk operations', () => {
     describe('must accept only string array', () => {
       const uncorrect_values = [undefined, null, false, 16, 22.2, [], [1, 2, 3], {}, { "i'm": "batman"}]
 
@@ -522,6 +523,71 @@ describe('PUT operations', () => {
           done()
         })
         .catch(done)
+    })
+  })
+
+  describe('set operations', () => {
+    before(() => {
+      tmp = {
+        "name": "Barry Allen",
+        "age": 27,
+        "handsome": true,
+        "friends": ["Iris", "Cisco", "Caitlin", "Joe"]
+      }
+    })
+
+    it('Should not succeed with no parameters in the methos', done => {
+      base.set()
+        .then(() => done(new Error('Should not fullfill')))
+        .catch(() => done() )
+    })
+
+    describe('Key must be a string or an integer', () => {
+      const uncorrect_values = [undefined, null, false, 22.2, [], [1, 2, 3], {}, { "i'm": "batman"}]
+
+      uncorrect_values.forEach(unco => {
+        it(`${ JSON.stringify(unco) } value rejects`, () => {
+          base.set(unco, tmp)
+            .then(res => {
+              done(new Error(`Should not fullfill with value ${  JSON.stringify(res) }`))
+            })
+            .catch(err => {
+              if('response' in err && err.response.status == 400) { done(err.response); return }
+              done(new Error(`Should return 400 not ${ JSON.stringify(err) }`))
+            })
+        })
+      })
+    })
+
+    describe('Value must be an object', () => {
+      const uncorrect_values = [undefined, null, false, 16, 22.2, [1, 2, 3]]
+
+      uncorrect_values.forEach(unco => {
+        it(`${ JSON.stringify(unco) } value rejects`, done => {
+          base.set('1', unco)
+            .then(res => {
+              done(new Error(`Should not fullfill with value ${  JSON.stringify(res) }`))
+            })
+            .catch(err => {
+              if('response' in err && err.response.status == 400) { done(); return }
+              done(new Error(`Should return 400 not ${ JSON.stringify(err) }`))
+            })
+        })
+      })
+    })
+
+    it('must put the correct value', done => {
+      base.set(42, tmp)
+      .then(res => {
+        expect(res).to.deep.equals({ "200": "Successful set command" }, 'Message returned should match')
+        return base.get(42)
+      })
+      .then(expected => {
+        tmp[firestorm.ID_FIELD] = '42'
+        expect(expected).to.deep.equals(tmp)
+        done()
+      })
+      .catch(done)
     })
   })
 })

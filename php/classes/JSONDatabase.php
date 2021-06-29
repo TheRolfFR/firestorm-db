@@ -90,16 +90,26 @@ class JSONDatabase {
     }
     
     public function set($key, $value) {
+        if($key === null or $value === null) { /// === fixes the empty array == comparaison
+            throw new HTTPException("Key or value are null", 400);
+        }
+
         $key_var_type = gettype($key);
-        if($key_var_type != 'string' and $key_var_type != 'double' and $key_var_type != 'integer')
-            throw new Exception('Incorrect key');
+        if($key_var_type != 'string' and $key_var_type != 'integer')
+            throw new HTTPException('Incorrect key', 400);
+
+        $value_var_type = gettype($value);
+        if($value_var_type == 'double' or $value_var_type == 'integer' or $value_var_type == 'string')  
+            throw new HTTPException('Invalid value type, got ' . $value_var_type . ', expected object', 400);
+            
+        if($value !== array() and !array_assoc($value))
+            throw new HTTPException('Value cannot be a sequential array', 400);
         
         $key = strval($key);
         
-        // else set it at the correspongding value
+        // else set it at the corresponding value
         $obj = $this->read(true);
         $obj['content'][$key] = json_decode(json_encode($value), true);
-        
         $this->write($obj);
     }
     
