@@ -18,8 +18,8 @@ jobs:
       - name: Install developer dependencies
         run: npm install --save-dev
       - name: Setup and run PHP server for API
-        run: npm run php_setup
+        run: npm run php_start
       - name: Test da code
         run: npm test
       - name: Kill PHP server
-        run: npm run php_kill
+        run: npm run php_stop
