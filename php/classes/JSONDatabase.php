@@ -58,6 +58,9 @@ class JSONDatabase {
         }
         
         $content = stringifier($content);
+
+        // fix empty raw content
+        //be cause php parses {} as array(0)
         if($content === '[]')
             $content = '{}';
         
