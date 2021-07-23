@@ -99,7 +99,7 @@ switch($command) {
         break;
     case 'setBulk':
         $dbKey = check_key_json('keys', $inputJSON, false);
-        if(!$dbKey)
+        if($dbKey === false)
             http_error(400, 'No keys provided');
         
         $db->setBulk($dbKey, $value);

@@ -590,4 +590,64 @@ describe('PUT operations', () => {
       .catch(done)
     })
   })
+
+  describe('setBulk operations', () => {
+    it('rejects with no args', done => {
+      base.setBulk()
+        .then(res => {
+          done(res)
+        })
+        .catch(err => {
+          if('response' in err && err.response.status == 400) { done(); return }
+          done(new Error(`Should return 400 not ${ JSON.stringify(err) }`))
+        })
+    })
+    it('Fullfills with two empty arrays', (done) => {
+      base.read_raw()
+        .then(before => {
+
+          return Promise.all([before, base.setBulk([], [])])
+        })
+        .then(results => {
+          const before = results[0]
+          return Promise.all([before, base.read_raw()])
+        })
+        .then(results => {
+          const expected = results[0]
+          const after = results[1]
+
+          expect(expected).to.deep.equal(after, 'Doing no operation doesn\'t change the content')
+          done()
+        })
+        .catch(err => {
+          done(err)
+        })
+    })
+
+    it('Should reject when arrays are not the same size', (done) => {
+      base.setBulk([], [tmp])
+      .then(res => done(res))
+      .catch(err => {
+        if('response' in err && err.response.status == 400) { done(); return }
+        done(new Error(`Should return 400 not ${ JSON.stringify(err) }`))
+      })
+    })
+
+    describe('keys should be an array of string', () => {
+      const uncorrect_values = [undefined, null, false, [], [1, 2, 3], {}, { "i'm": "batman"}]
+
+      uncorrect_values.forEach(unco => {
+        it(`[${ JSON.stringify(unco) }] value rejects`, (done) => {
+          base.setBulk([unco], [tmp])
+            .then(res => {
+              done(new Error(`Should not fullfill with value ${  JSON.stringify(res) }`))
+            })
+            .catch(err => {
+              if('response' in err && err.response.status == 400) { done(); return }
+              done(new Error(`Should return 400 not ${ JSON.stringify(err) }`))
+            })
+        })
+      })
+    })
+  })
 })
