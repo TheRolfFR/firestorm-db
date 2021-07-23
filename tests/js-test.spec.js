@@ -543,6 +543,23 @@ describe('PUT operations', () => {
         .catch(() => done() )
     })
 
+    describe('0 values fullfill', () => {
+      const correct_values = ["0", 0, 0.00]
+
+      correct_values.forEach(unco => {
+        it(`${ JSON.stringify(unco) } value fullfills`, (done) => {
+          base.set(unco, tmp)
+            .then(res => {
+              done()
+            })
+            .catch(err => {
+              if('response' in err) console.log(err.response.data)
+              done(new Error(err))
+            })
+        })
+      })
+    })
+
     describe('Key must be a string or an integer', () => {
       const uncorrect_values = [undefined, null, false, 22.2, [], [1, 2, 3], {}, { "i'm": "batman"}]
 

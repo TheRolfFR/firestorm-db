@@ -91,7 +91,7 @@ switch($command) {
         break;
     case 'set':
         $dbKey = check_key_json('key', $inputJSON);
-        if(!$dbKey)
+        if($dbKey === false)
             http_error(400, 'No key provided');
         
         $db->set($dbKey, $value);
