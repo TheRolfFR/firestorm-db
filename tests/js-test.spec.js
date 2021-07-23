@@ -492,7 +492,6 @@ describe('PUT operations', () => {
               done(new Error(`Should not fullfill with value ${  JSON.stringify(res) }`))
             })
             .catch(err => {
-              if('response' in err && err.response.data) console.log(err.response.data)
               if('response' in err && err.response.status == 400) done()
               else done(new Error(`Should return 400 not ${ JSON.stringify(err) }`))
             })
