@@ -561,17 +561,17 @@ describe('PUT operations', () => {
     })
 
     describe('Key must be a string or an integer', () => {
-      const uncorrect_values = [undefined, null, false, 22.2, [], [1, 2, 3], {}, { "i'm": "batman"}]
+      const uncorrect_values = [undefined, null, false, [], [1, 2, 3], {}, { "i'm": "batman"}]
 
       uncorrect_values.forEach(unco => {
-        it(`${ JSON.stringify(unco) } value rejects`, () => {
+        it(`${ JSON.stringify(unco) } value rejects`, done => {
           base.set(unco, tmp)
             .then(res => {
               done(new Error(`Should not fullfill with value ${  JSON.stringify(res) }`))
             })
             .catch(err => {
-              if('response' in err && err.response.status == 400) { done(err.response); return }
-              done(new Error(`Should return 400 not ${ JSON.stringify(err) }`))
+              if('response' in err && err.response.status == 400) { done(); return }
+              else done(new Error(`Should return 400 not ${ JSON.stringify(err) }`))
             })
         })
       })
