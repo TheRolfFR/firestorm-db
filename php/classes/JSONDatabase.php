@@ -230,6 +230,20 @@ class JSONDatabase {
     }
     
     public function removeBulk($keys) {
+        if($keys !== array() and $keys == NULL)
+            throw new HTTPException('null-like keys not accepted', 400);
+        
+        if(gettype($keys) !== 'array' or array_assoc($keys))
+            throw new HTTPException('keys must be an array', 400);
+
+        for($i = 0; $i < count($keys); $i++) {
+            $key_var_type = gettype($keys[$i]);
+            if($key_var_type != 'string' and $key_var_type != 'double' and $key_var_type != 'integer')
+                throw new HTTPException('Incorrect key type', 400);
+            else
+                $keys[$i] = strval($keys[$i]);
+        }
+
         $obj = $this->read(true);
         
         // remove all keys
