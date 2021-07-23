@@ -667,5 +667,21 @@ describe('PUT operations', () => {
         })
       })
     })
+
+    it('sets things correctly with correct request', done => {
+      base.setBulk(['6'], [tmp])
+        .then(() => {
+          return base.get('6')
+        })
+        .then(found => {
+          tmp[firestorm.ID_FIELD] = '6' // add id field
+
+          expect(tmp).to.deep.equal(found)
+          done()
+        })
+        .catch(err => {
+          done(new Error(err))
+        })
+    })
   })
 })
