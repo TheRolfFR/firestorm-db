@@ -338,15 +338,16 @@ describe('PUT operations', () => {
     })
   })
 
-  describe('add_bulk operations', () => {
-    it('must fullfill with empty array', () => {
+  describe('addBulk operations', () => {
+    it('must fullfill with empty array', done => {
       base.addBulk([])
         .then(res => {
           expect(res).to.deep.equal([])
           done()
         })
         .catch(err => {
-          done(err)
+          if('response' in err && err.response.status == 400) { done(err.response) }
+          done(new Error(`Should return 400 not ${ JSON.stringify(err) }`))
         })
     })
 

@@ -178,7 +178,7 @@ class JSONDatabase {
     }
     
     public function addBulk($values) {
-        if($values == NULL)
+        if($values !== array() and $values == NULL)
             throw new HTTPException('null-like value not accepted', 400);
 
         // restricts types to non base variables
