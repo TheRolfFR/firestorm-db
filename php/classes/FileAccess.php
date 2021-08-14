@@ -50,7 +50,12 @@ class FileAccess {
         // unlock and close
         flock($fileobj['fd'], LOCK_UN);
         fclose($fileobj['fd']);
+
+	if(!is_writable($fileobj['filepath'])) {
+		throw new HTTPException("PHP script can't write to file, check permission, group and owner.", 400);
+	}
         
-        return file_put_contents($fileobj['filepath'], $fileobj['content'], LOCK_EX);
+        $ret = file_put_contents($fileobj['filepath'], $fileobj['content'], LOCK_EX);
+	return $ret;
     }
 }

@@ -113,7 +113,7 @@ class JSONDatabase {
         // else set it at the corresponding value
         $obj = $this->read(true);
         $obj['content'][$key] = json_decode(json_encode($value), true);
-        $this->write($obj);
+        return $this->write($obj);
     }
     
     public function setBulk($keys, $values) {
@@ -347,10 +347,10 @@ class JSONDatabase {
                                     break;
                                 case 'includes':
                                 case 'contains':
-                                    $add = strpos($concernedField, $value) !== false;
+                                    $add = $value != "" ? (strpos($concernedField, $value) !== false) : true;
                                     break;
                                 case 'startsWith':
-                                    $add = strpos($concernedField, $value) === 0;
+                                    $add = $value != "" ? (strpos($concernedField, $value) === 0) : true;
                                     break;
                                 case 'endsWith':
                                     $add = strlen($value) ? substr($concernedField, -strlen($value)) === $value : false;
