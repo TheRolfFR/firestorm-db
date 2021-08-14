@@ -323,8 +323,8 @@ class Collection {
    * @returns {Promise<any>}
    */
   editField(obj) {
-    const data = this.__write_data('editField', obj, undefined)
-    return this.__extract_data(axios.post(writeAddress()), data)
+    const data = this.__write_data('editField', obj, null)
+    return this.__extract_data(axios.post(writeAddress(), data))
   }
 
   /**

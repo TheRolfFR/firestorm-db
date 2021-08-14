@@ -37,20 +37,23 @@ let base // = undefined
 let content
 let tmp
 
+const resetDatabaseContent = async() => {
+  // reset the content of the database
+  await base.write_raw(content).catch(err => console.error(err))
+
+  houseCollection = firestorm.collection(HOUSE_DATABASE_NAME)
+  const raw_house = JSON.parse(fs.readFileSync(HOUSE_DATABASE_FILE).toString())
+  await houseCollection.write_raw(raw_house)
+}
+
 describe('GET operations', () => {
   before(async () => {
     base = firestorm.collection(DATABASE_NAME)
 
-
     const raw_content = fs.readFileSync(DATABASE_FILE).toString()
     content = JSON.parse(raw_content)
 
-    // reset the content of the database
-    await base.write_raw(content).catch(err => console.error(err))
-
-    houseCollection = firestorm.collection(HOUSE_DATABASE_NAME)
-    const raw_house = JSON.parse(fs.readFileSync(HOUSE_DATABASE_FILE).toString())
-    await houseCollection.write_raw(raw_house)
+    await resetDatabaseContent()
   })
 
 
@@ -682,6 +685,85 @@ describe('PUT operations', () => {
         .catch(err => {
           done(new Error(err))
         })
+    })
+  })
+
+  describe('editField operations', () => {
+    before(async () => {
+      await resetDatabaseContent()
+    })
+
+    describe('Reject with incorrect values', () => {
+      const uncorrect_values = [undefined, null, false, 16, 0.5, '', 'gg', [], {}]
+
+      uncorrect_values.forEach(unco => {
+        it(`${ JSON.stringify(unco) } value rejects`, done => {
+          base.editField(unco)
+          .then(res => {
+            done(new Error('Should not fullfill with ' + JSON.stringify(res)))
+          })
+          .catch(err => {
+            if('response' in err && err.response.status == 400) { done(); return }
+            done(new Error(`Should return 400 not ${ JSON.stringify(err) }`))
+          })
+        })
+      })
+    })
+
+    describe('Rejects with missing arguments', () => {
+      const args = [['id', '2'], ['field', 'name'], ['operation', 'set']]
+
+      for(let i = 0; i < args.length; ++i) {
+        let obj = {}
+        args.slice(0, i + 1).forEach(el => {
+          obj[el[0]] = el[1]
+        })
+
+        it(`${i+1} args is not enough`, done => {
+          base.editField(obj)
+          .then(res => {
+            done(new Error('Should not fullfill with ' + JSON.stringify(res)))
+          })
+          .catch(err => {
+            if('response' in err && err.response.status == 400) { done(); return }
+            done(new Error(`Should return 400 not ${ JSON.stringify(err) }`))
+          })
+        })
+      }
+    })
+
+    describe('Rejects operations with value required', () => {
+      ['set', 'append', 'array-push', 'array-delete', 'array-slice'].forEach(op => {
+        it(`${op} operation needs a value`, done => {
+          base.editField({
+            id: '2',
+            operation: op,
+            field: 'name'
+          })
+          .then(res => {
+            done(new Error('Should not fullfill with ' + JSON.stringify(res)))
+          })
+          .catch(err => {
+            if('response' in err && err.response.status == 400) { done(); return }
+            done(new Error(`Should return 400 not ${ JSON.stringify(err) }`))
+          })
+        })
+      })
+    })
+
+    it('Rejects with unknow operation', done => {
+      base.editField({
+        id: '2',
+        operation: 'smile',
+        field: 'name'
+      })
+      .then(res => {
+        done(new Error('Should not fullfill with ' + JSON.stringify(res)))
+      })
+      .catch(err => {
+        if('response' in err && err.response.status == 400) { done(); return }
+        done(new Error(`Should return 400 not ${ JSON.stringify(err) }`))
+      })
     })
   })
 })
