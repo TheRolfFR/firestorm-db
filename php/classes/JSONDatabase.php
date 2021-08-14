@@ -2,6 +2,7 @@
 
 require_once('./utils.php');
 require_once('./classes/FileAccess.php');
+require_once('./classes/HTTPException.php');
 
 class JSONDatabase {
     public $folderPath = './files/';
@@ -18,15 +19,57 @@ class JSONDatabase {
     }
     
     public function write_raw($content) {
+        $content_type = gettype($content);
+        $incorrect_types = array('integer', 'double', 'string', 'boolean');
+        
+        // content must not be primitive
+        if(in_array($content_type, $incorrect_types)) {
+            throw new HTTPException('write_raw value must not be a ' . $content_type, 400);
+            return 400;
+        }
+
+        // value must not be a sequantial array with values inside [1, 2, 3]
+        // we accept sequential arrays but with objects not pprimitives
+        if(is_array($content) and !array_assoc($content)) {
+            foreach($content as $item) {
+                $item_type = gettype($item);
+                if(in_array($item_type, $incorrect_types)) {
+                    throw new HTTPException('write_raw item must not be a ' . $item_type, 400);
+                    return 400;
+                }
+            }
+        }
+
+        // now we know we have an associative array
+        
+        // content must be objects
+        foreach ($content as $key => $item) {
+            // item must not be primitive
+            echo $item;
+
+            // we don't accept primitive keys as value
+            $item_type = gettype($item);
+            if(in_array($item_type, $incorrect_types)) {
+                throw new HTTPException('write_raw item with key' . $key . ' item must not be a ' . $item_type, 400);
+                return 400;
+            }
+            
+            // we accept assosiative array as items beacuse they may have an integer key
+        }
+        
+        $content = stringifier($content);
+
+        // fix empty raw content
+        //be cause php parses {} as array(0)
         if($content === '[]')
             $content = '{}';
         
-        file_put_contents($this->fullPath(), $content, LOCK_EX);
+        return file_put_contents($this->fullPath(), $content, LOCK_EX);
     }
     
     private function write($obj) {
         $obj['content'] = stringifier($obj['content'], 1);
-        FileAccess::write($obj);
+        return FileAccess::write($obj);
     }
     
     public function read_raw($waitLock = false) {
@@ -50,17 +93,27 @@ class JSONDatabase {
     }
     
     public function set($key, $value) {
+        if($key === null or $value === null) { /// === fixes the empty array == comparaison
+            throw new HTTPException("Key or value are null", 400);
+        }
+
         $key_var_type = gettype($key);
-        if($key_var_type != 'string' and $key_var_type != 'double' and $key_var_type != 'integer')
-            throw new Exception('Incorrect key');
+        if($key_var_type != 'string' and $key_var_type != 'integer')
+            throw new HTTPException('Incorrect key', 400);
+
+        $value_var_type = gettype($value);
+        if($value_var_type == 'double' or $value_var_type == 'integer' or $value_var_type == 'string')  
+            throw new HTTPException('Invalid value type, got ' . $value_var_type . ', expected object', 400);
+            
+        if($value !== array() and !array_assoc($value))
+            throw new HTTPException('Value cannot be a sequential array', 400);
         
         $key = strval($key);
         
-        // else set it at the correspongding value
+        // else set it at the corresponding value
         $obj = $this->read(true);
         $obj['content'][$key] = json_decode(json_encode($value), true);
-        
-        $this->write($obj);
+        return $this->write($obj);
     }
     
     public function setBulk($keys, $values) {
@@ -105,6 +158,11 @@ class JSONDatabase {
     }
     
     public function add($value) {
+        // restricts types to objects only
+        $value_type = gettype($value);
+        if($value_type == 'NULL' or $value_type == 'boolean' or $value_type == 'integer' or $value_type == 'double' or $value_type == 'string' or (is_array($value) and count($value) and !array_assoc($value)))
+            throw new HTTPException('add value must be an object not a ' . $value_type, 400);
+
         if($this->autoKey == false)
             throw new Exception('Autokey disabled');
         
@@ -120,6 +178,22 @@ class JSONDatabase {
     }
     
     public function addBulk($values) {
+        if($values !== array() and $values == NULL)
+            throw new HTTPException('null-like value not accepted', 400);
+
+        // restricts types to non base variables
+        $value_type = gettype($values);
+        if($value_type == 'NULL' or $value_type == 'boolean' or $value_type == 'integer' or $value_type == 'double' or $value_type == 'string' or (is_array($values) and count($values) and array_assoc($values)))
+            throw new HTTPException('value must be an array not a ' . $value_type, 400);
+
+        // so here we have a sequential array type
+        // now the values inside this array must not be base values
+        foreach($values as $value) {
+            $value_type = gettype($value);
+            if($value_type == 'NULL' or $value_type == 'boolean' or $value_type == 'integer' or $value_type == 'double' or $value_type == 'string' or (is_array($value) and count($value) and !array_assoc($value)))
+                throw new HTTPException('array value must be an object not a ' . $value_type, 400);
+        }
+
         if($this->autoKey == false)
             throw new Exception('Autokey disabled');
             
@@ -147,12 +221,29 @@ class JSONDatabase {
     }
     
     public function remove($key) {
+        if(gettype($key) != 'string')
+            throw new HTTPException("remove value must be a string", 400);
+
         $obj = $this->read(true);
         unset($obj['content'][$key]);
         $this->write($obj);
     }
     
     public function removeBulk($keys) {
+        if($keys !== array() and $keys == NULL)
+            throw new HTTPException('null-like keys not accepted', 400);
+        
+        if(gettype($keys) !== 'array' or array_assoc($keys))
+            throw new HTTPException('keys must be an array', 400);
+
+        for($i = 0; $i < count($keys); $i++) {
+            $key_var_type = gettype($keys[$i]);
+            if($key_var_type != 'string' and $key_var_type != 'double' and $key_var_type != 'integer')
+                throw new HTTPException('Incorrect key type', 400);
+            else
+                $keys[$i] = strval($keys[$i]);
+        }
+
         $obj = $this->read(true);
         
         // remove all keys
@@ -256,10 +347,10 @@ class JSONDatabase {
                                     break;
                                 case 'includes':
                                 case 'contains':
-                                    $add = strpos($concernedField, $value) !== false;
+                                    $add = $value != "" ? (strpos($concernedField, $value) !== false) : true;
                                     break;
                                 case 'startsWith':
-                                    $add = strpos($concernedField, $value) === 0;
+                                    $add = $value != "" ? (strpos($concernedField, $value) === 0) : true;
                                     break;
                                 case 'endsWith':
                                     $add = strlen($value) ? substr($concernedField, -strlen($value)) === $value : false;

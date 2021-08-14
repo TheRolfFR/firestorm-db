@@ -1,0 +1,23 @@
+{
+  "0": {
+    "name": "Joy Harper",
+    "age": 23,
+    "amazing": true,
+    "qualities": ["intelligent", "strong", "efficient"],
+    "friends": ["Monica", "Chandler", "Phoebe", "Ross", "Joe", "Rachel"]
+  },
+  "1": {
+    "name": "Joy papa Buttercup",
+    "age": 13,
+    "amazing": false,
+    "qualities": ["strong", "respectful", "happy"],
+    "friends": ["Phineas", "Ferb", "Perry"]
+  },
+  "2": {
+    "name": "Emily Joy Harper",
+    "age": 45,
+    "amazing": true,
+    "qualities": ["pretty", "wild", "calm"],
+    "friends": ["Dwight"]
+  }
+}
