@@ -82,6 +82,7 @@ Available methods for a collection:
 | get(id) | id: ``String\|Name`` | Tries to get one element by its key |
 | search(searchOptions) | searchOptions: ``SearchOption[]`` | Searches collections and returns matching results |
 | searchKeys(keys) | keys: ``String[] \| Number[]`` | Searches collections with given keys and returns matching results |
+| select(selectOption) | selectOption: ``{ field: String[] }`` | Improved read_raw with field selection |
 
 Search method can take one or more options to filter entries in a collection. A search option studies a ``field`` with a ``criteria`` and compares it to a ``value``.
 

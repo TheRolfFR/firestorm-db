@@ -38,13 +38,16 @@ try {
 if(!array_key_exists($collection, $database_list))
     http_error(404, 'Collection not found: ' . $collection);
     
+/**
+ * @var JSONDatabase
+ */
 $db = $database_list[$collection];
 
 $command = check_key_json('command', $inputJSON);
 if(!$command)
     http_error(400, 'No command provided');
     
-$commands_available = ['read_raw', 'get', 'search', 'searchKeys'];
+$commands_available = ['read_raw', 'get', 'search', 'searchKeys', 'select'];
 
 // var_dump($command);
 // exit();
@@ -91,6 +94,13 @@ switch($command) {
         
         http_response(stringifier($result));
         break;
+    case 'select':
+        $select = check_key_json('select', $inputJSON, false);
+
+        if($select === false) http_error('400', 'No select provided');
+
+        $result = $db->select($select);
+        http_response(stringifier($result));
     default:
         break;
 }

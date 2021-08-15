@@ -599,6 +599,37 @@ class JSONDatabase {
         
         return $arrayResult;
     }
+
+    public function select($selectObj) {
+        // check fields presence
+        // fields is required, a array of strings
+        $verif_fields = array_key_exists('fields', $selectObj);
+        if($verif_fields === false) throw new HTTPException('Missing require fields field');
+
+        $verif_fields = gettype($selectObj['fields']) === 'array' && array_sequential($selectObj['fields']);
+        if($verif_fields === false) throw new HTTPException('Incorrect fields type, expected an array');
+
+        $fields = $selectObj['fields'];
+        $i = 0; $fields_count = count($fields);
+        while($i < $fields_count && $verif_fields) {
+            $verif_fields = gettype($fields[$i]) === 'string'; 
+            ++$i;
+        }
+        if(!$verif_fields) throw new HTTPException('fields field incorrect, expected an array of string');
+
+        $obj = $this->read();
+
+        $json = $obj['content'];
+        $result = array();
+        foreach ($json as $key => $value) {
+            $result[$key] = array();
+            foreach ($fields as $field) {
+                if(array_key_exists($field, $value)) $result[$key][$field] = $value[$field];
+            }
+        }
+
+        return $result;
+    }
 }
 
 ?>

@@ -209,6 +209,71 @@ describe('GET operations', () => {
       })
     })
   })
+
+  describe('select(selectOptions)', () => {
+    it('requires a fields field', (done) => {
+      base.select(undefined)
+      .then((res) => {
+        done('Did not expect it to success')
+      }).catch(() => done())
+    })
+    describe('requires field to be a string array', () => {
+      // all uncorrect values must catch
+      let uncorrect = [undefined, null, false, 5, 12.5, 'gg', {toto: 'tata'}]
+      uncorrect.forEach((unco) => {
+        it(`${JSON.stringify(unco)} value`, done => {
+          base.select({ fields: unco })
+          .then(res => done(`got ${JSON.stringify(res)} value`))
+          .catch(() => { done() })
+        })
+      })
+    })
+      
+    describe('Empty array passes', () => {
+      [[], {}].forEach(val => {
+        it(`${JSON.stringify(val)} value`, done => {
+          base.select({ fields: val })
+          .then(() => { done() })
+          .catch(err => { done(err) })
+        })
+      })
+    })
+
+    describe(`must accept only string arrays`, () => {
+      // uncorrect arrays
+      uncorrect = [undefined, null, false, 5, 12.5, {}]
+      uncorrect.forEach(async (unco) => {
+        it(`[${JSON.stringify(unco)}] value`, done => {
+          base.select({ fields: [unco] })
+          .then(() => done(`[${JSON.stringify(unco)}] value passed`))
+          .catch(() => { done() })
+        })
+      })
+    })
+
+    it('Gives correct value', done => {
+      const fields_chosen = ['name', 'age']
+      Promise.all([base.read_raw(), base.select({ fields: fields_chosen})])
+      .then(results => {
+        let raw = results[0]
+        Object.keys(raw).forEach(k => {
+          Object.keys(raw[k]).forEach(el_k => {
+            if(!fields_chosen.includes(el_k) || typeof raw[k][el_k] === 'function') {
+              delete raw[k][el_k]
+            }
+          })
+        })
+        let selectResult = results[1]
+        Object.keys(selectResult).forEach(k => {
+          delete selectResult[k][firestorm.ID_FIELD]
+        })
+
+        expect(selectResult).to.be.deep.equal(raw, `contents are different`)
+        done()
+      })
+      .catch(err => done(err))
+    })
+  })
 })
 
 describe('PUT operations', () => {

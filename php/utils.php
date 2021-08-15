@@ -53,6 +53,11 @@ function array_assoc(array $arr)
     return array_keys($arr) !== range(0, count($arr) - 1);
 }
 
+function array_sequential(array $arr)
+{
+    return !array_assoc($arr);
+}
+
 function stringifier($obj, $depth = 1) {	
 	if($depth == 0) {
 		return json_encode($obj);

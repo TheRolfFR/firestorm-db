@@ -15,6 +15,11 @@ const { default: axios } = require("axios")
  * @property {String | Number | Boolean | Array } [value] // the value you want to compare
  */
 
+/**
+ * @typedef {Object} SelectOption
+ * @property {Array<String>} fields Chosen fields to eventually return
+ */
+
 let _address = undefined
 let _token = undefined
 
@@ -182,6 +187,32 @@ class Collection {
         data: {
           "collection": this.collectionName,
           "command": "read_raw"
+        }
+      }))
+      .then(data => {
+        Object.keys(data).forEach(key => {
+          data[key][ID_FIELD_NAME] = key
+          this.addMethods(data[key])
+        })
+
+        resolve(data)
+      })
+      .catch(reject)
+    })
+  }
+
+  /**
+   * Upgraded read raw with field selection
+   * @param {SelectOption} selectOption Select options
+   */
+  select(selectOption) {
+    if(!selectOption) selectOption = {}
+    return new Promise((resolve, reject) => {
+      this.__extract_data(axios.get(readAddress(), {
+        data: {
+          'collection': this.collectionName,
+          'command': 'select',
+          'select': selectOption
         }
       }))
       .then(data => {
