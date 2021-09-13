@@ -28,11 +28,15 @@
   document.addEventListener('DOMContentLoaded', () => {
     base.read_raw().then(res => {
       const result = document.getElementById('result')
-      result.innerText = 'result:' + JSON.stringify(res, null, 2)
+      result.innerText = JSON.stringify(res, null, 2)
     }).catch(err => {
       const result = document.getElementById('result')
       console.error(err)
-      result.innerText = 'error: ' + JSON.stringify(err?.response?.data || err, null, 2)
+      try {
+        result.innerText = 'error: ' + JSON.stringify(err?.response?.data || err, null, 2)
+      } catch (error) {
+        result.innerText = err.response.data
+      }
     })
   })
 </script>

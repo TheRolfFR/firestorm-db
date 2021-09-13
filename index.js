@@ -1,4 +1,8 @@
-const { default: axios } = require("axios")
+try {
+  if(typeof process === 'object') {
+    var axios = require("axios").default
+  }
+} catch(_error) {}
 
 /**
  * @typedef {Object} SearchOption
@@ -91,16 +95,28 @@ class Collection {
   }
 
   /**
+   * Send get request and extract data from ir
+   * @param {Object} data Body data
+   * @returns {Promise<Any>} data out
+   */
+  __get_request(data) {
+    const request = typeof process === 'object' ? axios.get(readAddress(), {
+      data: data
+    }) : axios.post(readAddress(), data)
+    return this.__extract_data(request)
+  }
+
+  /**
    * Get an element from the collection
    * @param {String|Number} id The entry ID
    * @returns {Promise<T>} Result entry you may be looking for
    */
   get(id) {
-    return this.__add_methods(this.__extract_data(axios.get(readAddress(), { data: {
+    return this.__add_methods(this.__get_request({
       "collection": this.collectionName,
       "command": "get",
       "id": id
-    }})))
+    }))
   }
 
   /**
@@ -126,13 +142,11 @@ class Collection {
     })
 
     return new Promise((resolve, reject) => {
-      this.__extract_data(axios.get(readAddress(), {
-        data: {
-          "collection": this.collectionName,
-          "command": "search",
-          "search": searchOptions
-        }
-      })).then(res => {
+      this.__get_request({
+        "collection": this.collectionName,
+        "command": "search",
+        "search": searchOptions
+      }).then(res => {
         const arr = []
 
         Object.keys(res).forEach(contribID => {
@@ -157,13 +171,11 @@ class Collection {
       return Promise.reject('Incorrect keys')
 
     return new Promise((resolve, reject) => {
-      this.__extract_data(axios.get(readAddress(), {
-        data: {
-          "collection": this.collectionName,
-          "command": "searchKeys",
-          "search": keys
-        }
-      })).then(res => {
+      this.__get_request({
+        "collection": this.collectionName,
+        "command": "searchKeys",
+        "search": keys
+      }).then(res => {
         const arr = []
         Object.keys(res).forEach(contribID => {
           const tmp = res[contribID]
@@ -183,12 +195,10 @@ class Collection {
    */
   read_raw() {
     return new Promise((resolve, reject) => {
-      this.__extract_data(axios.get(readAddress(), {
-        data: {
-          "collection": this.collectionName,
-          "command": "read_raw"
-        }
-      }))
+      this.__get_request({
+        "collection": this.collectionName,
+        "command": "read_raw"
+      })
       .then(data => {
         Object.keys(data).forEach(key => {
           data[key][ID_FIELD_NAME] = key
@@ -208,14 +218,11 @@ class Collection {
   select(selectOption) {
     if(!selectOption) selectOption = {}
     return new Promise((resolve, reject) => {
-      this.__extract_data(axios.get(readAddress(), {
-        data: {
-          'collection': this.collectionName,
-          'command': 'select',
-          'select': selectOption
-        }
-      }))
-      .then(data => {
+      this.__get_request({
+        'collection': this.collectionName,
+        'command': 'select',
+        'select': selectOption
+      }).then(data => {
         Object.keys(data).forEach(key => {
           data[key][ID_FIELD_NAME] = key
           this.addMethods(data[key])
@@ -369,7 +376,7 @@ class Collection {
   }
 }
 
-module.exports = {
+const firestorm = {
   /**
    * @param {String} newValue The new address value
    */
@@ -404,4 +411,12 @@ module.exports = {
   },
 
   ID_FIELD: ID_FIELD_NAME
+}
+
+try {
+  if(typeof process === 'object') {
+    module.exports = firestorm
+  }
+} catch (_error) {
+  // normal browser
 }

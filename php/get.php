@@ -1,16 +1,19 @@
 <?php
+require_once('./utils.php');
+
+cors();
+
 // display all errors
 ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
 
 // import useful functions
-require_once('./utils.php');
 require_once('./log.php');
 
 $method = sec($_SERVER['REQUEST_METHOD']);
-if($method !== 'GET') {
-    http_error(400, 'Incorrect request type, expected GET, not ' . $method);
+if($method !== 'GET' && $method !== 'POST') {
+    http_error(400, 'Incorrect request type, expected GET or POST, not ' . $method);
 }
 
 $inputJSON = json_decode(file_get_contents('php://input'), true);

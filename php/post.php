@@ -4,6 +4,8 @@
 require_once('./classes/HTTPException.php');
 require_once('./utils.php');
 
+cors();
+
 $method = sec($_SERVER['REQUEST_METHOD']);
 if($method === 'GET') {
     http_error(400, 'Incorrect request type, expected POST, not ' . $method);
