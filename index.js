@@ -113,7 +113,7 @@ class Collection {
       return Promise.reject(new Error('searchOptions shall be an array'))
 
     searchOptions.forEach(searchOption => {
-      if(!searchOption.field || !searchOption.criteria || !searchOption.value)
+      if(searchOption.field === undefined || searchOption.criteria === undefined || searchOption.value === undefined)
         return Promise.reject(new Error('Missing fields in searchOptions array'))
 
       if(typeof searchOption.field !== 'string')
@@ -365,7 +365,7 @@ class Collection {
    */
   editFieldBulk(objArray) {
     const data = this.__write_data('editFieldBulk', objArray, undefined)
-    return this.__extract_data(axios.post(writeAddress()), data)
+    return this.__extract_data(axios.post(writeAddress(), data))
   }
 }
 
