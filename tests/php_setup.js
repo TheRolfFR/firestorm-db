@@ -94,7 +94,7 @@ async function setup_php() {
         const to = path.join(tmpfolder, filename)
         console.log(`Copying ${filename}...`)
 
-        let prom = 5
+        let prom = Promise.resolve()
         if(existsSync(to)) prom = fs.unlink(to)
         
         return prom.then(() => copyProm(from, to)).then(res => {
