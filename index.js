@@ -235,6 +235,48 @@ class Collection {
   }
 
   /**
+   * Returns random max entries offsetted with a given seed
+   * @param {Integer} max 
+   * @param {Integer} seed 
+   * @param {Integer} offset 
+   * @returns {Promise} entries
+   */
+  random(max, seed, offset) {
+    const params = {}
+    if(max !== undefined) {
+      if(typeof(max) !== 'number' || !Number.isInteger(max) || max < -1) return Promise.reject(new Error('Expected integer >= -1 for the max'))
+      params.max = max
+    }
+
+    const hasSeed = seed !== undefined
+    const hasOffset = offset !== undefined
+    if(hasOffset && !hasSeed) return Promise.reject(new Error('You can\'t put an offset without a seed'))
+
+    if(hasOffset && (typeof(offset) !== 'number' || !Number.isInteger(offset) || offset < 0)) return Promise.reject(new Error('Expected integer >= -1 for the max'))
+    
+    if(hasSeed) {
+      if((typeof(seed) !== 'number' || !Number.isInteger(seed))) return Promise.reject(new Error('Expected integer for the seed'))
+      
+      if(!hasOffset) offset = 0
+      params.seed = seed
+      params.offset = offset
+    }
+
+    return this.__get_request({
+      'collection': this.collectionName,
+      'command': 'random',
+      'random': params
+    }).then(data => {
+      Object.keys(data).forEach(key => {
+        data[key][ID_FIELD_NAME] = key
+        this.addMethods(data[key])
+      })
+
+      return Promise.resolve(data)
+    })
+  }
+
+  /**
    * 
    * @param {String} command The write command you want
    * @param {Object?} value The value for this command 

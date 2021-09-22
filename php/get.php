@@ -50,7 +50,7 @@ $command = check_key_json('command', $inputJSON);
 if(!$command)
     http_error(400, 'No command provided');
     
-$commands_available = ['read_raw', 'get', 'search', 'searchKeys', 'select'];
+$commands_available = ['read_raw', 'get', 'search', 'searchKeys', 'select', 'random'];
 
 // var_dump($command);
 // exit();
@@ -104,6 +104,11 @@ switch($command) {
 
         $result = $db->select($select);
         http_response(stringifier($result));
+    case 'random':
+        $params = check_key_json('random', $inputJSON, false);
+        if($params === false) http_error('400', 'No random object provided');
+
+        http_response(stringifier($db->random($params)));
     default:
         break;
 }
