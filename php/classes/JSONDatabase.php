@@ -3,6 +3,7 @@
 require_once('./utils.php');
 require_once('./classes/FileAccess.php');
 require_once('./classes/HTTPException.php');
+require_once(__DIR__.'/read/random.php');
 
 class JSONDatabase {
     public $folderPath = './files/';
@@ -629,6 +630,10 @@ class JSONDatabase {
         }
 
         return $result;
+    }
+
+    public function random($params) {
+        return random($params, $this);
     }
 }
 

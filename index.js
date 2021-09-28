@@ -1,4 +1,8 @@
-const { default: axios } = require("axios")
+try {
+  if(typeof process === 'object') {
+    var axios = require("axios").default
+  }
+} catch(_error) {}
 
 /**
  * @typedef {Object} SearchOption
@@ -91,16 +95,28 @@ class Collection {
   }
 
   /**
+   * Send get request and extract data from ir
+   * @param {Object} data Body data
+   * @returns {Promise<Any>} data out
+   */
+  __get_request(data) {
+    const request = typeof process === 'object' ? axios.get(readAddress(), {
+      data: data
+    }) : axios.post(readAddress(), data)
+    return this.__extract_data(request)
+  }
+
+  /**
    * Get an element from the collection
    * @param {String|Number} id The entry ID
    * @returns {Promise<T>} Result entry you may be looking for
    */
   get(id) {
-    return this.__add_methods(this.__extract_data(axios.get(readAddress(), { data: {
+    return this.__add_methods(this.__get_request({
       "collection": this.collectionName,
       "command": "get",
       "id": id
-    }})))
+    }))
   }
 
   /**
@@ -113,7 +129,7 @@ class Collection {
       return Promise.reject(new Error('searchOptions shall be an array'))
 
     searchOptions.forEach(searchOption => {
-      if(!searchOption.field || !searchOption.criteria || !searchOption.value)
+      if(searchOption.field === undefined || searchOption.criteria === undefined || searchOption.value === undefined)
         return Promise.reject(new Error('Missing fields in searchOptions array'))
 
       if(typeof searchOption.field !== 'string')
@@ -126,13 +142,11 @@ class Collection {
     })
 
     return new Promise((resolve, reject) => {
-      this.__extract_data(axios.get(readAddress(), {
-        data: {
-          "collection": this.collectionName,
-          "command": "search",
-          "search": searchOptions
-        }
-      })).then(res => {
+      this.__get_request({
+        "collection": this.collectionName,
+        "command": "search",
+        "search": searchOptions
+      }).then(res => {
         const arr = []
 
         Object.keys(res).forEach(contribID => {
@@ -157,13 +171,11 @@ class Collection {
       return Promise.reject('Incorrect keys')
 
     return new Promise((resolve, reject) => {
-      this.__extract_data(axios.get(readAddress(), {
-        data: {
-          "collection": this.collectionName,
-          "command": "searchKeys",
-          "search": keys
-        }
-      })).then(res => {
+      this.__get_request({
+        "collection": this.collectionName,
+        "command": "searchKeys",
+        "search": keys
+      }).then(res => {
         const arr = []
         Object.keys(res).forEach(contribID => {
           const tmp = res[contribID]
@@ -183,12 +195,10 @@ class Collection {
    */
   read_raw() {
     return new Promise((resolve, reject) => {
-      this.__extract_data(axios.get(readAddress(), {
-        data: {
-          "collection": this.collectionName,
-          "command": "read_raw"
-        }
-      }))
+      this.__get_request({
+        "collection": this.collectionName,
+        "command": "read_raw"
+      })
       .then(data => {
         Object.keys(data).forEach(key => {
           data[key][ID_FIELD_NAME] = key
@@ -208,14 +218,11 @@ class Collection {
   select(selectOption) {
     if(!selectOption) selectOption = {}
     return new Promise((resolve, reject) => {
-      this.__extract_data(axios.get(readAddress(), {
-        data: {
-          'collection': this.collectionName,
-          'command': 'select',
-          'select': selectOption
-        }
-      }))
-      .then(data => {
+      this.__get_request({
+        'collection': this.collectionName,
+        'command': 'select',
+        'select': selectOption
+      }).then(data => {
         Object.keys(data).forEach(key => {
           data[key][ID_FIELD_NAME] = key
           this.addMethods(data[key])
@@ -224,6 +231,48 @@ class Collection {
         resolve(data)
       })
       .catch(reject)
+    })
+  }
+
+  /**
+   * Returns random max entries offsetted with a given seed
+   * @param {Integer} max 
+   * @param {Integer} seed 
+   * @param {Integer} offset 
+   * @returns {Promise} entries
+   */
+  random(max, seed, offset) {
+    const params = {}
+    if(max !== undefined) {
+      if(typeof(max) !== 'number' || !Number.isInteger(max) || max < -1) return Promise.reject(new Error('Expected integer >= -1 for the max'))
+      params.max = max
+    }
+
+    const hasSeed = seed !== undefined
+    const hasOffset = offset !== undefined
+    if(hasOffset && !hasSeed) return Promise.reject(new Error('You can\'t put an offset without a seed'))
+
+    if(hasOffset && (typeof(offset) !== 'number' || !Number.isInteger(offset) || offset < 0)) return Promise.reject(new Error('Expected integer >= -1 for the max'))
+    
+    if(hasSeed) {
+      if((typeof(seed) !== 'number' || !Number.isInteger(seed))) return Promise.reject(new Error('Expected integer for the seed'))
+      
+      if(!hasOffset) offset = 0
+      params.seed = seed
+      params.offset = offset
+    }
+
+    return this.__get_request({
+      'collection': this.collectionName,
+      'command': 'random',
+      'random': params
+    }).then(data => {
+      Object.keys(data).forEach(key => {
+        data[key][ID_FIELD_NAME] = key
+        this.addMethods(data[key])
+      })
+
+      return Promise.resolve(data)
     })
   }
 
@@ -365,11 +414,11 @@ class Collection {
    */
   editFieldBulk(objArray) {
     const data = this.__write_data('editFieldBulk', objArray, undefined)
-    return this.__extract_data(axios.post(writeAddress()), data)
+    return this.__extract_data(axios.post(writeAddress(), data))
   }
 }
 
-module.exports = {
+const firestorm = {
   /**
    * @param {String} newValue The new address value
    */
@@ -404,4 +453,12 @@ module.exports = {
   },
 
   ID_FIELD: ID_FIELD_NAME
+}
+
+try {
+  if(typeof process === 'object') {
+    module.exports = firestorm
+  }
+} catch (_error) {
+  // normal browser
 }

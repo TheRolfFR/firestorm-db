@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/0.21.1/axios.min.js"></script>
+  <script src="../index.js"></script>
+</head>
+<body>
+  <pre id="result">
+
+  </pre>
+</body>
+  
+<script>
+  const ADDRESS = 'http://127.0.0.1:8000/'
+  const TOKEN = 'NeverGonnaGiveYouUp'
+
+  const DATABASE_NAME = 'base'
+  const base = firestorm.collection(DATABASE_NAME)
+  
+  firestorm.address(ADDRESS)
+  firestorm.token(TOKEN)
+
+  document.addEventListener('DOMContentLoaded', () => {
+    base.read_raw().then(res => {
+      const result = document.getElementById('result')
+      result.innerText = JSON.stringify(res, null, 2)
+    }).catch(err => {
+      const result = document.getElementById('result')
+      console.error(err)
+      try {
+        result.innerText = 'error: ' + JSON.stringify(err?.response?.data || err, null, 2)
+      } catch (error) {
+        result.innerText = err.response.data
+      }
+    })
+  })
+</script>
+</html>

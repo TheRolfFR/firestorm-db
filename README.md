@@ -83,6 +83,7 @@ Available methods for a collection:
 | search(searchOptions) | searchOptions: ``SearchOption[]`` | Searches collections and returns matching results |
 | searchKeys(keys) | keys: ``String[] \| Number[]`` | Searches collections with given keys and returns matching results |
 | select(selectOption) | selectOption: ``{ field: String[] }`` | Improved read_raw with field selection |
+| random(max, seed, offset) | max?: ``Integer >= -1`` seed?: ``Integer`` offset?:``Integer >= 0`` | Reads random entries of collection |
 
 Search method can take one or more options to filter entries in a collection. A search option studies a ``field`` with a ``criteria`` and compares it to a ``value``.
 

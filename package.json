@@ -1,14 +1,14 @@
 {
   "name": "firestorm-db",
-  "version": "1.4.0",
+  "version": "1.6.0",
   "description": "Self hosted Firestore-like database with API endpoints based on micro bulk operations",
   "main": "index.js",
   "scripts": {
     "php_start": "node tests/php_setup.js",
-    "test": "mocha tests/**/*.spec.js",
+    "test": "./node_modules/.bin/mocha tests/**/*.spec.js",
     "php_stop": "sh tests/php_server_kill.sh",
     "full": "npm run php_start && npm run test ; npm run php_stop",
-    "local_tests": "sudo act"
+    "local_tests": "sudo act -P ubuntu-latest=shivammathur/node:latest"
   },
   "repository": {
     "type": "git",

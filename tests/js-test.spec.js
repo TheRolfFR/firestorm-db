@@ -274,6 +274,63 @@ describe('GET operations', () => {
       .catch(err => done(err))
     })
   })
+
+  describe('random(max, seed, offset)', () => {
+    it('requires no parameters', (done) => {
+      base.random()
+      .then((res) => {
+        done()
+      }).catch(() => done('Did not expect it to fail'))
+    })
+    it('passes with undefined parameters', (done) => {
+      base.random(undefined, undefined, undefined)
+      .then((res) => {
+        done()
+      }).catch(() => done('Did not expect it to fail'))
+    })
+
+    describe('requires max parameter to be an integer >= -1', () => {
+      // all uncorrect values must catch
+      let uncorrect = [null, false, 'gg', 5.5, -5, -2] // undefined works because max is the whole collection then
+      uncorrect.forEach((unco) => {
+        it(`${JSON.stringify(unco)} value`, done => {
+          base.random(unco)
+          .then(res => done(`got ${JSON.stringify(res)} value`))
+          .catch(() => { done() })
+        })
+      })
+    })
+
+    describe('requires seed parameter to be an integer', () => {
+      // all uncorrect values must catch
+      let uncorrect = [null, false, 'gg', 5.5] // undefined works because then seed is automatic
+      uncorrect.forEach((unco) => {
+        it(`${JSON.stringify(unco)} value`, done => {
+          base.random(5, unco)
+          .then(res => done(`got ${JSON.stringify(res)} value`))
+          .catch(() => { done() })
+        })
+      })
+    })
+
+    it('does not pass if offset but no seed', () => {
+      base.random(5, undefined, 5)
+      .then(res => done(`got ${JSON.stringify(res)} value`))
+      .catch(() => done())
+    })
+
+    describe('requires offset parameter to be an integer >= 0', () => {
+      // all uncorrect values must catch
+      let uncorrect = [null, false, 'gg', 5.5, -1] // undefined works because then offset is 0
+      uncorrect.forEach((unco) => {
+        it(`${JSON.stringify(unco)} value`, done => {
+          base.random(5, 69, unco)
+          .then(res => done(`got ${JSON.stringify(res)} value`))
+          .catch(() => { done() })
+        })
+      })
+    })
+  })
 })
 
 describe('PUT operations', () => {

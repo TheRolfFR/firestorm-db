@@ -1,4 +1,5 @@
 const fs = require('fs').promises
+const { existsSync } = require('fs')
 const fse = require('fs-extra')
 const path = require('path')
 const os = require('os')
@@ -47,33 +48,62 @@ async function setup_php() {
 
       console.log('Moving PHP folder + Checking test php files + Creating files folder + Checking test databases...')
       return Promise.all([
-        copy(path.join(process.cwd(), 'php'), tmpfolder),
-        globProm(path.join(process.cwd(), 'tests', '*.php')),
+        globProm(path.join(process.cwd(), 'php', '**/*.php')),
         fs.mkdir(path.join(tmpfolder, 'files')),
         globProm(path.join(process.cwd(), 'tests', '*.json'))
       ])
     })
     .then((results) => {
-      const glob_php = results[1]
-      const glob_json = results[3]
-      console.log('Copying php test files + test databases...')
-      // console.log(glob_php, glob_json)
+      const glob_php_files = results[0]
 
-      const php_prom = glob_php.map(from => {
+      const php_symbolic_link = glob_php_files.map(from => {
+        const endPath = path.relative(path.join(process.cwd(), 'php'), from)
+        const to = path.join(tmpfolder, endPath)
+        console.log(`Linking ${endPath}...`)
+
+        return fs.mkdir(path.dirname(to), { recursive: true }).then(() => {
+          return fs.symlink(from, to, 'file')
+        }).then(res => {
+          console.log(`Linked ${endPath}`)
+          return res
+        })
+      })
+      const glob_json_files = results[2]
+      console.log('Copying test databases...')
+
+      const json_prom = glob_json_files.map(async from => {
+        const filename = path.basename(from)
+        console.log(`Copying ${filename}...`)
+        const to = path.join(tmpfolder, 'files', filename)
+        return copy(from, to).then(res => {
+          console.log(`Copied ${filename}`)
+          return res
+        })
+      })
+
+      const get_test_php_files = globProm(path.join(process.cwd(), 'tests', '*.php'))
+
+      return Promise.all([get_test_php_files, ...php_symbolic_link, ...json_prom])
+    })
+    .then(results => {
+      console.log("Copying test php config files...")
+      const glob_test_php_files = results[0]
+
+      const php_prom = glob_test_php_files.map(from => {
         const filename = path.basename(from)
         const to = path.join(tmpfolder, filename)
         console.log(`Copying ${filename}...`)
 
-        return copyProm(from, to)
+        let prom = Promise.resolve()
+        if(existsSync(to)) prom = fs.unlink(to)
+        
+        return prom.then(() => copyProm(from, to)).then(res => {
+          console.log(`Copied ${filename}`)
+          return res
+        })
       })
-      const json_prom = glob_json.map(from => {
-        const filename = path.basename(from)
-        console.log(`Copying ${filename}...`)
-        const to = path.join(tmpfolder, 'files', filename)
 
-        return copy(from, to)
-      })
-      return Promise.all([...php_prom, ...json_prom])
+      return Promise.all(php_prom)
     })
     .then(async () => {
       // console.log(await (globProm(path.join(tmpfolder, '/**/*'))))
