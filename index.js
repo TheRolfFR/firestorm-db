@@ -121,10 +121,11 @@ class Collection {
 
   /**
    * Search through collection
-   * @param {SearchOption[]} searchOptions
+   * @param {SearchOption[]} searchOptions Array of search options
+   * @param {(Number|false|true)?} random Random result seed, disabled by default, but can activated with true or a given seed
    * @returns {Promise<T[]>}
    */
-  search(searchOptions) {
+  search(searchOptions, random=false) {
     if(!Array.isArray(searchOptions))
       return Promise.reject(new Error('searchOptions shall be an array'))
 
@@ -141,12 +142,26 @@ class Collection {
       //TODO: add more strict value field warnings in JS and PHP
     })
 
+    let params = {
+      "collection": this.collectionName,
+      "command": "search",
+      "search": searchOptions
+    }
+
+    if(random !== false) {
+      if(random === true) {
+        params.random = {}
+      } else {
+        let seed = parseInt(random)
+        if(isNaN(seed)) return Promise.reject(new Error('random takes as parameter true, false or an integer value'))
+        params.random = {
+          "seed": seed
+        }
+      }
+    }
+
     return new Promise((resolve, reject) => {
-      this.__get_request({
-        "collection": this.collectionName,
-        "command": "search",
-        "search": searchOptions
-      }).then(res => {
+      this.__get_request(params).then(res => {
         const arr = []
 
         Object.keys(res).forEach(contribID => {

@@ -255,7 +255,7 @@ class JSONDatabase {
         $this->write($obj);
     }
     
-    public function search($conditions) {
+    public function search($conditions, $random = false) {
         $obj = $this->read();
         
         $res = [];
@@ -273,7 +273,7 @@ class JSONDatabase {
                 // get condition fields extracted
                 $field = $condition['field'];
                 
-                if(array_key_exists($field, $el)) {
+                if(array_key_exists($field, $el) && array_key_exists('criteria', $condition) && array_key_exists('value', $condition)) {
                     $criteria = $condition['criteria'];
                     $value = $condition['value'];
                     
@@ -418,6 +418,16 @@ class JSONDatabase {
             if($add) {
                 $res[$key] = $el;
             }
+        }
+
+        if($random !== false) {
+            $seed = false;
+            if(is_array($random) && array_key_exists('seed', $random)) {
+                $rawSeed = sec($random['seed']);
+                if(!is_int($rawSeed)) throw new HTTPException("Seed not an integer value for random search result");
+                $seed = intval($rawSeed);
+            }
+            $res = chooseRandom($res, $seed);
         }
         
         return $res;

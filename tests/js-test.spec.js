@@ -210,6 +210,51 @@ describe('GET operations', () => {
     })
   })
 
+  describe('search(searchOptions, random)', () => {
+    let uncorrect = [null, 'gg', ''] // undefined works because random becomes default parameter false, so false works too
+      uncorrect.forEach((unco) => {
+        it(`${JSON.stringify(unco)} seed rejects`, done => {
+          base.search([{
+            criteria: "includes",
+            field: "name",
+            value: ""
+          }], unco).then(res => done(`got ${JSON.stringify(res)} value`))
+          .catch(() => { done() })
+        })
+      })
+
+    it('true seed succeeds', (done) => {
+      base.search([{
+        criteria: "includes",
+        field: "name",
+        value: ""
+      }], true).then(_ => done())
+      .catch(err => {
+        console.error(err)
+        done('Should not reject with error ' + JSON.stringify(err))
+      })
+    })
+
+    it('Gives the same result for the same seed', (done) => {
+      const seed = Date.now()
+      const intents = new Array(20);
+      Promise.all(intents.map(e => {
+        return base.search([{
+          criteria: "includes",
+          field: "name",
+          value: ""
+        }], seed)
+      })).then(results => {
+        for(let i = 1; i < results.length; ++i) {
+          expect(results[0]).to.be.deep.equal(results[i], 'Same seed gave different results')
+        }
+        done()
+      }).catch(err => {
+        done('Should not reject with error ' + JSON.stringify(err))
+      })
+    })
+  })
+
   describe('select(selectOptions)', () => {
     it('requires a fields field', (done) => {
       base.select(undefined)

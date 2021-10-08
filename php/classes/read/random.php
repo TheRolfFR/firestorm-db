@@ -25,21 +25,25 @@ function random($params, $class) {
   if($hasOffset && (gettype($offset) !== 'integer' || $offset < 0)) throw new HTTPException('Expected integer >= 0 for the offset');
 
   // seed verif
-  $seed = $hasSeed ? $params['seed'] : make_seed();
+  $seed = $hasSeed ? $params['seed'] : false;
   if($hasSeed && gettype($seed) !== 'integer') throw new HTTPException('Expected integer for the seed');
   
   $json = $class->read()['content'];
+  
+  return chooseRandom($json, $seed, $max, $offset);
+}
+
+function chooseRandom($json, $seed = false, $max = -1, $offset = 0) {
   $keys = array_keys($json);
+  $keys_selected = array();
   $keys_length = count($keys);
 
   if($offset >= $keys_length) return array(); // return an empty array, there is no more elements you can get
   
   if($max == -1 || $max > $keys_length) $max = $keys_length;
 
-  $keys_selected = array();
-
   // set random seed just before starting picking
-  mt_srand($seed);
+  if($seed !== false) mt_srand($seed);
 
   // the thing is that I need to splice keys from before the offset
   for($i = 0; $i < $offset; ++$i) {
