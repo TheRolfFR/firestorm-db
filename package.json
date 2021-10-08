@@ -1,6 +1,6 @@
 {
   "name": "firestorm-db",
-  "version": "1.6.0",
+  "version": "1.7.0",
   "description": "Self hosted Firestore-like database with API endpoints based on micro bulk operations",
   "main": "index.js",
   "scripts": {
