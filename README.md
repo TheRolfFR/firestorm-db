@@ -182,6 +182,18 @@ $database_list[$tmp->fileName] = $tmp;
 
 Database will be stored in ``<foldePath>/<filename>.json`` and ``autoKey`` allows or forbids some write operations.
 
+## Memory warning
+
+Handling big collections can cause memory allocation issues like :
+```
+Fatal error: 
+Allowed memory size of 134217728 bytes exhausted (tried to allocate 32360168 bytes)
+```
+If you encounter a memory allocation issue, you have to allow more memory through this file ``/etc/php/7.4/apache2/php.ini`` with a bigger value here:
+```
+memory_limit = 256M
+```
+
 ## API endpoints
 
 All JS methods correspond in fact to axios request. Read requests are GET request when write requests are POST requests with a JSON data.

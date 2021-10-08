@@ -1,7 +1,7 @@
 #!/bin/sh
-if ! command -v pkill &> /dev/null
+if ! command -v ps > /dev/null 2>&1
 then
-    echo "pkill not found, server kill skipped"
+    echo "ps not found, server kill skipped"
     exit
 fi
-pkill -e php
+kill -9 $(ps ax | grep php | fgrep -v grep | awk '{ print $1 }') > /dev/null 2>&1

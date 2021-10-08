@@ -7,6 +7,7 @@ const glob = require("glob")
 const copy = require('recursive-copy')
 const child_process = require('child_process')
 
+const PHP_SERVER_START_DELAY = 2000
 const PORT = 8000
 
 const copyProm = (srcDir, destDir) => {
@@ -113,6 +114,9 @@ async function setup_php() {
       const command = args.shift()
 
       child_process.spawn(command, args,{ stdio: 'ignore', detached: true }).unref()
+
+      console.log(`Waiting ${PHP_SERVER_START_DELAY}ms for the server to start...`)
+      await pause(PHP_SERVER_START_DELAY)
     })
     .catch((err) => {
       console.trace(err)
@@ -121,3 +125,22 @@ async function setup_php() {
 }
 
 setup_php()
+
+/**
+ * Promisify setTimeout
+ * @param {Number} ms Timeout in ms 
+ * @param {Function} cb callback function after timeout
+ * @param  {...any} args Optional return arguments
+ * @returns {Promise<any>}
+ */
+const pause = (ms, cb, ...args) =>
+  new Promise((resolve, reject) => {
+    setTimeout(async () => {
+      try {
+        const result = !!cb ? await cb(...args) : undefined
+        resolve(result)
+      } catch (error) {
+        reject(error)
+      }
+    }, ms)
+  })

@@ -469,7 +469,7 @@ class JSONDatabase {
             return false;
             
         // object not found
-        if(!check($obj['content'][$id]))
+        if(!array_key_exists($id, $obj['content']) || !check($obj['content'][$id]))
             return false;
         
         // field required
