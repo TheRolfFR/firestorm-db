@@ -93,13 +93,13 @@ async function setup_php() {
       const php_prom = glob_test_php_files.map(from => {
         const filename = path.basename(from)
         const to = path.join(tmpfolder, filename)
-        console.log(`Copying ${filename}...`)
+        console.log(`Linking test ${filename}...`)
 
         let prom = Promise.resolve()
         if(existsSync(to)) prom = fs.unlink(to)
         
-        return prom.then(() => copyProm(from, to)).then(res => {
-          console.log(`Copied ${filename}`)
+        return prom.then(() => fs.symlink(from, to, 'file')).then(res => {
+          console.log(`Linked ${filename}`)
           return res
         })
       })

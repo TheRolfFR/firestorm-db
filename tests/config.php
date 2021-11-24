@@ -8,6 +8,12 @@ $props = array(
     array('base', true, true),
 );
 
+// whitelist of correct extensions
+$authorized_file_extension = array('.txt', '.png');
+// subfolder of uploads location, must start with dirname($_SERVER['SCRIPT_FILENAME'])
+// to force a subfolder of firestorm installation
+$STORAGE_LOCATION = dirname($_SERVER['SCRIPT_FILENAME']) . '/uploads/';
+
 $database_list = array();
 foreach($props as $prop) {
   $dbName = $prop[0];

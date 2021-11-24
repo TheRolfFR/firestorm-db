@@ -97,4 +97,30 @@ if ($_SERVER['REQUEST_METHOD'] == 'OPTIONS') {
 }
 }
 
+function removeDots($path) {
+    $root = ($path[0] === '/') ? '/' : '';
+
+    $segments = explode('/', trim($path, '/'));
+    $ret = array();
+    foreach($segments as $segment){
+        if (($segment == '.') || strlen($segment) === 0) {
+            continue;
+        }
+        if ($segment == '..') {
+            array_pop($ret);
+        } else {
+            array_push($ret, $segment);
+        }
+    }
+    return $root . implode('/', $ret);
+}
+
+if (! function_exists('str_ends_with')) {
+    function str_ends_with(string $haystack, string $needle): bool
+    {
+        $needle_len = strlen($needle);
+        return ($needle_len === 0 || 0 === substr_compare($haystack, $needle, - $needle_len));
+    }
+}
+
 ?>

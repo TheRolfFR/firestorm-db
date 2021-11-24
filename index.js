@@ -41,12 +41,34 @@ const writeAddress = () => {
   
   return _address + 'post.php'
 }
+const fileAddress = () => {
+  if(!_address)
+    throw new Error('Firestorm address was not configured')
+  
+  return _address + 'files.php'
+}
 
 const writeToken = () => {
   if(!_token)
     throw new Error('Firestorm token was not configured')
 
   return _token
+}
+
+/**
+ * Auto-extracts data from Axios request
+ * @param {Promise<T>} request The Axios concerned request
+ */
+const __extract_data = (request) => {
+  return new Promise((resolve, reject) => {
+    request.then(res => {
+      if ('data' in res) return resolve(res.data)
+      resolve(res)
+    })
+    .catch(err => {
+     reject(err)
+    })
+  })
 }
 
 /**
@@ -85,13 +107,7 @@ class Collection {
    * @param {Promise<T>} request The Axios concerned request
    */
   __extract_data(request) {
-    return new Promise((resolve, reject) => {
-      request.then(res => {
-        if ('data' in res) return resolve(res.data)
-        return resolve(res)
-      })
-      .catch(err => reject(err))
-    })
+    return __extract_data(request)
   }
 
   /**
@@ -467,7 +483,48 @@ const firestorm = {
     return this.collection(name)
   },
 
-  ID_FIELD: ID_FIELD_NAME
+  ID_FIELD: ID_FIELD_NAME,
+
+  files: {
+    /**
+     * gets file back
+     * @param {String} path File path wanted
+     */
+    get: function (path) {
+      return __extract_data(axios.get(fileAddress(), {
+        params: {
+          path: path
+        }
+      }))
+    },
+  
+    /**
+     * Uploads file
+     * @param {FormData} form formdata with path, filename and file
+     * @returns {Promise} http response
+     */
+    upload: function(form) {
+      form.append('token', firestorm.token())
+      return axios.post(fileAddress(), form, {
+        headers: {
+          ...form.getHeaders()
+        }
+      })
+    },
+  
+    /**
+     * @param {String} path File path to delete
+     * @returns {Promise} http response
+     */
+    delete: function(path) {
+      return axios.delete(fileAddress(), {
+        data: {
+          path: path,
+          token: firestorm.token()
+        }
+      })
+    }
+  }
 }
 
 try {

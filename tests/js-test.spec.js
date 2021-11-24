@@ -1,10 +1,12 @@
 const chai = require('chai')
+const FormData = require('form-data')
 const { expect } = chai
 
 const firestorm = require('../index')
 
 const path = require('path')
 const fs = require('fs')
+const { readFile } = require('fs').promises
 
 const ADDRESS = 'http://127.0.0.1:8000/'
 const TOKEN = 'NeverGonnaGiveYouUp'
@@ -45,6 +47,110 @@ const resetDatabaseContent = async() => {
   const raw_house = JSON.parse(fs.readFileSync(HOUSE_DATABASE_FILE).toString())
   await houseCollection.write_raw(raw_house)
 }
+
+describe('File upload, download and delete', () => {
+  it('cannot find an unknown file', (done) => {
+    firestorm.files.get('/path/to/file.txt')
+      .then(res => {
+        done(new Error('Should not succeed, got ' + JSON.stringify(res)))
+      })
+      .catch(requestError => {
+        expect(requestError.response.status).to.equal(404, 'status error incorrect ' + String(requestError))
+        done()
+      })
+      .catch(testError => {
+        done(testError)
+      })
+  })
+  it('finds an uploaded file and get it with same content', (done) => {
+    const timeoutPromise = function(timeout) {
+      return new Promise((resolve) => {
+        setTimeout(() => {
+          resolve();
+        }, timeout);
+      })
+    }
+    let uploaded
+    const formData = new FormData()
+    formData.append('path', '/lyrics.txt')
+    formData.append('overwrite', 'true')
+    readFile(path.join(__dirname, 'lyrics.txt')).then(res => {
+      uploaded = res
+      formData.append('file', res, 'lyrics.txt')
+      return firestorm.files.upload(formData) 
+    })
+    .then((res) => {
+      expect(res).not.to.be.undefined
+      expect(res.status).to.equals(200, 'Upload failed')
+
+      return timeoutPromise(200)
+    })
+    .then(() => {
+      return firestorm.files.get('/lyrics.txt')
+    })
+    .then(fileResult => {
+      const downloaded = Buffer.from(fileResult)
+      expect(downloaded).to.deep.equal(uploaded)
+      done()
+    })
+    .catch(err => {
+      err = err.response ? (err.response.status + ': ' + JSON.stringify(err.response.data || err.response)) : err
+      done(err)
+    })
+  })
+  it('cannot upload an already uploaded file with no overwrite', (done) => {
+    const formData = new FormData()
+    formData.append('path', '/')
+    readFile(path.join(__dirname, 'lyrics.txt'))
+    .catch(() => {
+      done(new Error('Should not succeed at first'))
+    })
+    .then(res => {
+      formData.append('file', res, 'lyrics.txt')
+      return firestorm.files.upload(formData) 
+    })
+    .then(res => {
+      done(res)
+    })
+    .catch(uploadError => {
+      expect(uploadError).not.to.be.undefined
+      expect(uploadError.response).not.to.be.undefined
+      expect(uploadError.response.status).to.equal(403)
+      done()
+    })
+    .catch(err => {
+      err = err.response ? (err.response.status + ': ' + JSON.stringify(err.response.data || err.response)) : err
+      done(err)
+    })
+  })
+  it('can delete file successfully', (done) => {
+    const formData = new FormData()
+    formData.append('path', '/lyrics.txt')
+    formData.append('overwrite', 'true')
+    readFile(path.join(__dirname, 'lyrics.txt'))
+    .catch(() => {
+      done('File read should not failed')
+    })
+    .then(res => {
+      formData.append('file', res, 'lyrics.txt')
+      return firestorm.files.upload(formData) 
+    })
+    .catch(requestError => {
+      done('Upload should not fail, getting ' + JSON.stringify(requestError.response.data))
+    })
+    .then(() => {
+      // now delete it
+      return firestorm.files.delete('lyrics.txt')
+    })
+    .then(res => {
+      done()
+    })
+    .catch(err => {
+      err = err.response ? (err.response.status + ': ' + JSON.stringify(err.response.data || err.response)) : err
+      done(err)
+    })
+  })
+})
 
 describe('GET operations', () => {
   before(async () => {

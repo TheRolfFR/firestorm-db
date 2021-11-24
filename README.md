@@ -182,6 +182,89 @@ $database_list[$tmp->fileName] = $tmp;
 
 Database will be stored in ``<foldePath>/<filename>.json`` and ``autoKey`` allows or forbids some write operations.
 
+## Files
+
+Files API function are detailed in the ``files.php`` PHP script. If you do not want to include this functionnality, then just delete this file.
+
+In you have to add 2 new configuration variables to your ``config.php`` file: 
+```php
+// whitelist of correct extensions
+$authorized_file_extension = array('.txt', '.png');
+
+// subfolder of uploads location, must start with dirname($_SERVER['SCRIPT_FILENAME'])
+// to force a subfolder of firestorm installation
+$STORAGE_LOCATION = dirname($_SERVER['SCRIPT_FILENAME']) . '/uploads/';
+```
+
+You can now use the wrapper functions in order to upload, get and delete a file.
+If the folder is accessible from server url, you can directly type its address.
+
+### Upload a file
+
+In order to upload a file, you have to give the function a FormData object. This class is generated from forms and is [native in modern browsers](https://developer.mozilla.org/en-US/docs/Web/API/FormData/FormData) but in node.js can be imported with [form-data package](https://www.npmjs.com/package/form-data).
+
+File content can be a [String](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String), a [Blob](https://developer.mozilla.org/en-US/docs/Web/API/Blob) or an [ArrayBuffer](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/ArrayBuffer).
+
+You have an overwrite option in order to avoid big mistakes or allow user with unique file names.
+
+```js
+const firestorm = require('firestorm-db')
+firestorm.address('ADRESS_VALUE')
+firestorm.token('TOKEN_VALUE')
+
+const form = new FormData()
+form.append('path', '/quote.txt')
+form.append('file', 'but your kids are gonna love it.', 'quote.txt')
+form.append('overwrite', false) // override optional argument (defaults to false)
+const uploadPromise = firestorm.files.upload(form)
+
+uploadPromise.then(() => {
+  console.log('Upload successful')
+})
+.catch(err => {
+  consoler.error(err)
+})
+```
+
+## Get a file
+
+You can get a file via its direct file URL location or its content with a request
+
+```js
+const firestorm = require('firestorm-db')
+firestorm.address('ADRESS_VALUE')
+
+const getPromise = firestorm.files.get('/quote.txt')
+
+getPromise.then(filecontent => {
+  console.log(filecontent) // 'but your kids are gonna love it.
+})
+.catch(err => {
+  console.error(err)
+})
+```
+
+## Delete a file
+
+Because I am a nice guy, I thought about deletion too. So I figured I would put a method to delete the files too.
+
+```js
+const firestorm = require('firestorm-db')
+firestorm.address('ADRESS_VALUE')
+firestorm.token('TOKEN_VALUE')
+
+const deletePromise = firestorm.files.delete('/quote.txt")
+
+deletePromise.then(() => {
+  console.log('File successfully deleted')
+})
+.catch(err => {
+  console.error(err)
+})
+
+```
+
+
 ## Memory warning
 
 Handling big collections can cause memory allocation issues like :
