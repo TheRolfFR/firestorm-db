@@ -40,7 +40,7 @@ function http_error($code, $message) {
 }
 
 function http_success($message) {
-    http_message($message, 200);
+    http_message($message, 'message', 200);
 }
 
 function check_key_json($key, $arr, $parse = false) {

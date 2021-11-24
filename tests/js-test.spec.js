@@ -767,7 +767,7 @@ describe('PUT operations', () => {
     it('must put the correct value', done => {
       base.set(42, tmp)
       .then(res => {
-        expect(res).to.deep.equals({ "200": "Successful set command" }, 'Message returned should match')
+        expect(res).to.deep.equals({ "message": "Successful set command" }, 'Message returned should match')
         return base.get(42)
       })
       .then(expected => {
