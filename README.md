@@ -182,7 +182,7 @@ $database_list[$tmp->fileName] = $tmp;
 
 Database will be stored in ``<foldePath>/<filename>.json`` and ``autoKey`` allows or forbids some write operations.
 
-## Files
+## Files feature
 
 Files API function are detailed in the ``files.php`` PHP script. If you do not want to include this functionnality, then just delete this file.
 
