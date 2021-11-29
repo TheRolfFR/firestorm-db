@@ -262,6 +262,7 @@ class JSONDatabase {
         
         foreach(array_keys($obj['content']) as $key) {
             $el = $obj['content'][$key];
+            $el_root = $el;
             
             $add = true;
             
@@ -272,8 +273,19 @@ class JSONDatabase {
                 
                 // get condition fields extracted
                 $field = $condition['field'];
+                $field_path = explode(".", $field);
+
+                error_reporting(error_reporting() - E_NOTICE);
+                $field_ind = 0;
                 
-                if(array_key_exists($field, $el) && array_key_exists('criteria', $condition) && array_key_exists('value', $condition)) {
+                while($el != NULL && $field_ind + 1 < count($field_path)) {
+                    $el = $el[$field_path[$field_ind]];
+                    $field_ind = $field_ind + 1;
+                    $field = $field_path[$field_ind];
+                }
+                error_reporting(error_reporting() + E_NOTICE);
+                
+                if($el != NULL && array_key_exists($field, $el) && array_key_exists('criteria', $condition) && array_key_exists('value', $condition)) {
                     $criteria = $condition['criteria'];
                     $value = $condition['value'];
                     
@@ -416,7 +428,7 @@ class JSONDatabase {
             }
             
             if($add) {
-                $res[$key] = $el;
+                $res[$key] = $el_root;
             }
         }
 

@@ -4,7 +4,12 @@
     "age": 23,
     "amazing": true,
     "qualities": ["intelligent", "strong", "efficient"],
-    "friends": ["Monica", "Chandler", "Phoebe", "Ross", "Joe", "Rachel"]
+    "friends": ["Monica", "Chandler", "Phoebe", "Ross", "Joe", "Rachel"],
+    "path": {
+      "to": {
+        "key": "yes"
+      }
+    }
   },
   "1": {
     "name": "Joy papa Buttercup",

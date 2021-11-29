@@ -211,6 +211,51 @@ describe('GET operations', () => {
   })
 
   describe('search(searchOptions, random)', () => {
+    describe('Nested keys test', () => {
+      it('dosn\'t crash if nested key unknown', (done) => {
+        base.search([{
+          criteria: "==",
+          field: "path.to.the.key",
+          value: "gg",
+        }])
+        .then(res => {
+          expect(res).not.to.be.undefined
+          expect(res.length).to.equal(0)
+          done()
+        }).catch(err => {
+          done(err)
+        })
+      })
+      it('can find correct nested value', done => {
+        base.search([{
+          criteria: "==",
+          field: "path.to.key",
+          value: "yes",
+        }])
+        .then(res => {
+          console.log(res)
+          expect(res).not.to.deep.equal([])
+          delete res[0][firestorm.ID_FIELD]
+          expect(res).to.deep.equal([{
+            "name": "Joy Harper",
+            "age": 23,
+            "amazing": true,
+            "qualities": ["intelligent", "strong", "efficient"],
+            "friends": ["Monica", "Chandler", "Phoebe", "Ross", "Joe", "Rachel"],
+            "path": {
+              "to": {
+                "key": "yes"
+              }
+            }
+          }])
+          done()
+        })
+        .catch(err => {
+          done(err)
+        })
+      })
+    })
+
     let uncorrect = [null, 'gg', ''] // undefined works because random becomes default parameter false, so false works too
       uncorrect.forEach((unco) => {
         it(`${JSON.stringify(unco)} seed rejects`, done => {
