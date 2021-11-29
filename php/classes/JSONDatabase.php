@@ -425,6 +425,7 @@ class JSONDatabase {
                 }
                 
                 $condition_index++;
+                $el = $el_root;
             }
             
             if($add) {
