@@ -73,6 +73,11 @@ class JSONDatabase {
         $obj['content'] = stringifier($obj['content'], 1);
         return FileAccess::write($obj);
     }
+
+    public function sha1() {
+        $obj = $this->read_raw();
+        return sha1($obj['content']);
+    }
     
     public function read_raw($waitLock = false) {
         return FileAccess::read($this->fullPath(), $waitLock, json_encode($this->default));

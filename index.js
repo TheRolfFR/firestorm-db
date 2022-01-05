@@ -121,6 +121,16 @@ class Collection {
   }
 
   /**
+   * @returns {String} returns sha1 hash of the file. can be used to see if same file content without downloding the file for example
+   */
+  sha1() {
+    return this.__get_request({
+      "collection": this.collectionName,
+      "command": "sha1",
+    })
+  }
+
+  /**
    * Search through collection
    * @param {SearchOption[]} searchOptions Array of search options
    * @param {(Number|false|true)?} random Random result seed, disabled by default, but can activated with true or a given seed

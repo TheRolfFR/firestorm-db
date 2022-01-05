@@ -3,6 +3,7 @@ const { expect } = chai
 
 const firestorm = require('../index')
 
+const crypto = require('crypto')
 const path = require('path')
 const fs = require('fs')
 
@@ -56,7 +57,6 @@ describe('GET operations', () => {
     await resetDatabaseContent()
   })
 
-
   describe('read_raw()', () => {
     it('fails if table not found', (done) => {
       firestorm.collection('unknown').read_raw()
@@ -75,6 +75,19 @@ describe('GET operations', () => {
           done()
         })
         .catch(err => done(err))
+    })
+
+    it('sha1 content hash is the same', (done) => {
+      base.sha1()
+        .then(res => {
+          const file_sha1 = crypto.createHash('sha1').update(JSON.stringify(content)).digest('hex')
+          expect(res).equals(file_sha1, 'Content hash different')
+          done()
+        })
+        .catch(err => {
+          console.trace(err.response)
+          done(err)
+        })
     })
   });
 

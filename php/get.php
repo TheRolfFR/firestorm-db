@@ -50,7 +50,7 @@ $command = check_key_json('command', $inputJSON);
 if(!$command)
     http_error(400, 'No command provided');
     
-$commands_available = ['read_raw', 'get', 'search', 'searchKeys', 'select', 'random'];
+$commands_available = ['read_raw', 'get', 'search', 'searchKeys', 'select', 'random', 'sha1'];
 
 // var_dump($command);
 // exit();
@@ -59,6 +59,10 @@ if(!in_array($command, $commands_available))
     http_error(404, 'Command not found: ' . $command . '. Available commands: ' . join(', ', $commands_available));
     
 switch($command) {
+    case 'sha1':
+        $res = $db->sha1();
+        http_response($res);
+        break;
     case 'read_raw':
         $res = $db->read_raw();
         $res = $res['content'];
