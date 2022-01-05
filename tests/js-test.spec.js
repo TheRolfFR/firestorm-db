@@ -166,14 +166,19 @@ describe('GET operations', () => {
       ['in', 'age', [23, 13], ['0', '1']],
       ['in', 'age', [21, 19], []],
       ['includes', 'name', 'Joy', ['0', '1', '2']],
+      ['includes', 'name', 'jOy', ['0', '1', '2'], true],
       ['includes', 'name', 'Bobby', []],
       ['startsWith', 'name', 'Joy', ['0', '1']],
+      ['startsWith', 'name', 'joY', ['0', '1'], true],
       ['startsWith', 'name', 'TheRolf', []],
       ['endsWith', 'name', 'Harper', ['0', '2']],
+      ['endsWith', 'name', 'hArPER', ['0', '2'], true],
       ['endsWith', 'name', 'Wick', []],
       ['array-contains', 'qualities', 'strong', ['0', '1']],
+      ['array-contains', 'qualities', 'sTRoNG', ['0', '1'], true],
       ['array-contains', 'qualities', 'handsome', []],
       ['array-contains-any', 'qualities', ['intelligent', 'calm'], ['0', '2']],
+      ['array-contains-any', 'qualities', ['intELLIGent', 'CALm'], ['0', '2'], true],
       ['array-contains-any', 'qualities', ['fast', 'flying'], []],
       ['array-length-eq', 'friends', 6, ['0']],
       ['array-length-eq', 'friends', 2, []],
@@ -193,17 +198,20 @@ describe('GET operations', () => {
       const field = test_item[1]
       const value = test_item[2]
       const ids_found = test_item[3]
-      it(`${criteria} criteria${ids_found.length == 0 ? ' (empty result)' : ''}`, (done) => {
+      const ignore_case = !!test_item[4]
+      it(`${criteria} criteria${ids_found.length == 0 ? ' (empty result)' : ''}${ignore_case ? ' (case insensitive)' : ''}`, (done) => {
         base.search([{
           criteria: criteria,
           field: field,
-          value: value
+          value: value,
+          ignoreCase: ignore_case
         }]).then((res) => {
           expect(res).to.be.a('array', 'Search result must be an array')
           expect(res).to.have.lengthOf(ids_found.length, 'Expected result have not correct length')
           expect(res.map(el => el[firestorm.ID_FIELD])).to.deep.equal(ids_found, 'Incorrect result search')
           done()
         }).catch(err => {
+          console.error(err.raw)
           done(err)
         })
       })
@@ -233,7 +241,6 @@ describe('GET operations', () => {
           value: "yes",
         }])
         .then(res => {
-          console.log(res)
           expect(res).not.to.deep.equal([])
           delete res[0][firestorm.ID_FIELD]
           expect(res).to.deep.equal([{

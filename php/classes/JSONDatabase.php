@@ -4,6 +4,7 @@ require_once('./utils.php');
 require_once('./classes/FileAccess.php');
 require_once('./classes/HTTPException.php');
 require_once(__DIR__.'/read/random.php');
+require_once(__DIR__.'/read/searchArray.php');
 
 class JSONDatabase {
     public $folderPath = './files/';
@@ -294,6 +295,10 @@ class JSONDatabase {
                     
                     // get concerned field type
                     $fieldType = gettype($concernedField);
+
+                    if($criteria == 'array-contains' || $criteria == 'array-contains-any') {
+                        $ignoreCase = array_key_exists('ignoreCase', $condition) && !!$condition['ignoreCase'];
+                    }
                     
                     switch($fieldType) {
                         case 'boolean':
@@ -339,37 +344,45 @@ class JSONDatabase {
                             }
                             break;
                         case 'string':
+                            $ignoreCase = array_key_exists('ignoreCase', $condition) && !!$condition['ignoreCase'];
                             switch($criteria) {
                                 case '!=':
-                                    $add = strcmp($concernedField, $value) != 0;
+                                    $add = ($ignoreCase ? strcasecmp($concernedField, $value) : strcmp($concernedField, $value)) != 0;
                                     break;
                                 case '==':
-                                    $add = strcmp($concernedField, $value) == 0;
+                                    $add = ($ignoreCase ? strcasecmp($concernedField, $value) : strcmp($concernedField, $value)) == 0;
                                     break;
                                 case '>=':
-                                    $add = strcmp($concernedField, $value) >= 0;
+                                    $add = ($ignoreCase ? strcasecmp($concernedField, $value) : strcmp($concernedField, $value)) >= 0;
                                     break;
                                 case '<=':
-                                    $add = strcmp($concernedField, $value) <= 0;
+                                    $add = ($ignoreCase ? strcasecmp($concernedField, $value) : strcmp($concernedField, $value)) <= 0;
                                     break;
                                 case '<':
-                                    $add = strcmp($concernedField, $value) < 0;
+                                    $add = ($ignoreCase ? strcasecmp($concernedField, $value) : strcmp($concernedField, $value)) < 0;
                                     break;
                                 case '>':
-                                    $add = strcmp($concernedField, $value) > 0;
+                                    $add = ($ignoreCase ? strcasecmp($concernedField, $value) : strcmp($concernedField, $value)) > 0;
                                     break;
                                 case 'includes':
                                 case 'contains':
-                                    $add = $value != "" ? (strpos($concernedField, $value) !== false) : true;
+                                    $add = $value != "" ? (($ignoreCase ? stripos($concernedField, $value) : strpos($concernedField, $value)) !== false) : true;
                                     break;
                                 case 'startsWith':
-                                    $add = $value != "" ? (strpos($concernedField, $value) === 0) : true;
+                                    $add = $value != "" ? (($ignoreCase ? stripos($concernedField, $value) : strpos($concernedField, $value)) === 0) : true;
                                     break;
                                 case 'endsWith':
-                                    $add = strlen($value) ? substr($concernedField, -strlen($value)) === $value : false;
+                                    $end = substr($concernedField, -strlen($value));
+                                    $add = $value != "" ? (($ignoreCase ? strcasecmp($end, $value) : strcmp($end, $value)) === 0) : true;
                                     break;
                                 case 'in':
-                                    $add = in_array($concernedField, $value);
+                                    $notfound = false;
+                                    $a_i = 0;
+                                    while($a_i < count($value) && $notfound) {
+                                        $notfound = ($ignoreCase ? strcasecmp($concernedField, $value[$a_i])  : strcmp($concernedField, $value[$a_i])) != 0;
+                                        $a_i++;
+                                    }
+                                    $add = !$notfound;
                                     break;
                                 default:
                                     $add = false;
@@ -379,20 +392,10 @@ class JSONDatabase {
                         case 'array':
                             switch($criteria) {
                                 case "array-contains":
-                                    $add = in_array($value, $concernedField);
+                                    $add = array_contains($concernedField, $value, $ignoreCase);
                                     break;
                                 case "array-contains-any":
-                                    if(gettype($value == 'array')) {
-                                        $tmp = false;
-                                        $tmp_i = 0;
-                                        while($tmp_i < count($value) and !$tmp) {
-                                            $tmp = in_array($value[$tmp_i], $concernedField);
-                                            $tmp_i++;
-                                        }
-                                        $add = $tmp;
-                                    } else {
-                                        $add = false;
-                                    }
+                                    $add = array_contains_any($concernedField, $value, $ignoreCase);
                                     break;
                                 case "array-length":
                                 case "array-length-eq":

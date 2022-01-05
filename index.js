@@ -9,6 +9,7 @@ try {
  * @property {String} field The field you want to search in
  * @property {"!=" | "==" | ">=" | "<=" | "<" | ">" | "in" | "includes" | "startsWith" | "endsWith" | "array-contains" | "array-contains-any" | "array-length-(eq|df|gt|lt|ge|le)" } criteria // filter criteria
  * @property {String | Number | Boolean | Array } value // the value you want to compare
+ * @property {Boolean} ignoreCase Ignore case on search string
  */
 
 /**
@@ -161,9 +162,11 @@ class Collection {
     }
 
     return new Promise((resolve, reject) => {
+      let raw
       this.__get_request(params).then(res => {
         const arr = []
 
+        raw = res
         Object.keys(res).forEach(contribID => {
           const tmp = res[contribID]
           tmp[ID_FIELD_NAME] = contribID
@@ -172,7 +175,10 @@ class Collection {
 
         resolve(this.__add_methods(Promise.resolve(arr)))
 
-      }).catch(err => reject(err))
+      }).catch(err => {
+        err.raw = raw
+        reject(err)
+      })
     })
   }
 
