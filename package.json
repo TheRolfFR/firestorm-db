@@ -12,7 +12,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://TheRolfFR@github.com/TheRolfFR/firestorm.git"
+    "url": "https://github.com/TheRolfFR/firestorm"
   },
   "publishConfig": {
       "registry": "https://npm.pkg.github.com/therolffr"
