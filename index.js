@@ -25,7 +25,18 @@ try {
  * @property {Array<String>} fields Chosen fields to eventually return
  */
 
+/**
+ * @import {AxiosPromise} from 'axios'
+ */
+
+/**
+ * @ignore
+ */
 let _address = undefined
+
+/**
+ * @ignore
+ */
 let _token = undefined
 
 const ID_FIELD_NAME = 'id'
@@ -64,6 +75,13 @@ class Collection {
     this.collectionName = name
   }
 
+  /**
+   * Add user methods to the returned data
+   * @private
+   * @ignore
+   * @param {AxiosPromise} req Incoming request 
+   * @returns {Object|Object[]}
+   */
   __add_methods(req) {
     return new Promise((resolve, reject) => {
       req
@@ -83,7 +101,9 @@ class Collection {
 
   /**
    * Auto-extracts data from Axios request
-   * @param {Promise<T>} request The Axios concerned request
+   * @private
+   * @ignore
+   * @param {AxiosPromise} request The Axios concerned request
    */
   __extract_data(request) {
     return new Promise((resolve, reject) => {
@@ -96,9 +116,11 @@ class Collection {
   }
 
   /**
-   * Send get request and extract data from ir
+   * Send get request and extract data from response
+   * @private
+   * @ignore
    * @param {Object} data Body data
-   * @returns {Promise<Any>} data out
+   * @returns {Promise<Object|Object[]>} data out
    */
   __get_request(data) {
     const request = typeof process === 'object' ? axios.get(readAddress(), {
@@ -308,7 +330,9 @@ class Collection {
   }
 
   /**
-   * 
+   * creates write requests with given value
+   * @private
+   * @ignore
    * @param {String} command The write command you want
    * @param {Object?} value The value for this command 
    * @param {Boolean | undefined} multiple if I need to delete multiple 

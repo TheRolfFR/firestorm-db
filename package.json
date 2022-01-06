@@ -8,14 +8,15 @@
     "test": "./node_modules/.bin/mocha -b tests/**/*.spec.js",
     "php_stop": "sh tests/php_server_kill.sh",
     "full": "npm run php_start && npm run test ; npm run php_stop",
-    "local_tests": "sudo act -P ubuntu-latest=shivammathur/node:latest"
+    "local_tests": "sudo act -P ubuntu-latest=shivammathur/node:latest",
+    "jsdoc": "jsdoc -a all -c jsdoc.json -R README.md index.js -d docs/jsdoc"
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/TheRolfFR/firestorm"
+    "url": "https://github.com/TheRolfFR/firestorm-db"
   },
   "publishConfig": {
-      "registry": "https://npm.pkg.github.com/therolffr"
+    "registry": "https://npm.pkg.github.com/therolffr"
   },
   "keywords": [
     "firebase",
@@ -39,9 +40,12 @@
   "devDependencies": {
     "chai": "^4.3.4",
     "crypto": "^1.0.1",
+    "docdash": "^1.2.0",
     "fs": "0.0.1-security",
     "fs-extra": "^10.0.0",
     "glob": "^7.1.7",
+    "jsdoc": "^3.6.7",
+    "jsdoc-to-markdown": "^7.1.0",
     "mocha": "^9.1.3",
     "path": "^0.12.7",
     "recursive-copy": "^2.0.11"
