@@ -18,7 +18,7 @@ jobs:
           template: docdash
           front_page: README.md
       - name: Copy images
-        run: cp ./img ./out/img/
+        run: cp -r ./img ./out/img/
       - name: Deploy
         uses: peaceiris/actions-gh-pages@v3
         with:
