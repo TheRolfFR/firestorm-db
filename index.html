@@ -1,0 +1,473 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    
+    <meta charset="utf-8">
+    <title>Home - Documentation</title>
+    
+    
+    <meta property="og:title" content="TheRolfFR/firestorm-db: Self hosted Firestore-like database"/>
+    <meta property="og:type" content="website"/>
+    <meta property="og:image" content="https://github.com/TheRolfFR/firestorm-db/raw/main/img/firestorm-128.png"/>
+    <meta property="og:site_name" content="firestorm-db"/>
+    <meta property="og:url" content="https://github.com/TheRolfFR/firestorm-db/"/>
+    
+    <script src="scripts/prettify/prettify.js"></script>
+    <script src="scripts/prettify/lang-css.js"></script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc.css">
+    <script src="scripts/nav.js" defer></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body>
+
+<input type="checkbox" id="nav-trigger" class="nav-trigger" />
+<label for="nav-trigger" class="navicon-button x">
+  <div class="navicon"></div>
+</label>
+
+<label for="nav-trigger" class="overlay"></label>
+
+<nav class="wrap">
+    
+    <input type="text" id="nav-search" placeholder="Search" />
+    
+    <h2><a href="index.html">Home</a></h2><h2><a href="https://github.com/TheRolfFR/firestorm" target="_blank" class="menu-item" id="repository" >Github repo</a></h2><h3>Classes</h3><ul><li><a href="Collection.html">Collection</a><ul class='methods'><li data-type='method'><a href="Collection.html#add">add</a></li><li data-type='method'><a href="Collection.html#add">add</a></li><li data-type='method'><a href="Collection.html#addBulk">addBulk</a></li><li data-type='method'><a href="Collection.html#addBulk">addBulk</a></li><li data-type='method'><a href="Collection.html#editField">editField</a></li><li data-type='method'><a href="Collection.html#editField">editField</a></li><li data-type='method'><a href="Collection.html#editFieldBulk">editFieldBulk</a></li><li data-type='method'><a href="Collection.html#editFieldBulk">editFieldBulk</a></li><li data-type='method'><a href="Collection.html#get">get</a></li><li data-type='method'><a href="Collection.html#get">get</a></li><li data-type='method'><a href="Collection.html#random">random</a></li><li data-type='method'><a href="Collection.html#random">random</a></li><li data-type='method'><a href="Collection.html#read_raw">read_raw</a></li><li data-type='method'><a href="Collection.html#read_raw">read_raw</a></li><li data-type='method'><a href="Collection.html#remove">remove</a></li><li data-type='method'><a href="Collection.html#remove">remove</a></li><li data-type='method'><a href="Collection.html#removeBulk">removeBulk</a></li><li data-type='method'><a href="Collection.html#removeBulk">removeBulk</a></li><li data-type='method'><a href="Collection.html#search">search</a></li><li data-type='method'><a href="Collection.html#search">search</a></li><li data-type='method'><a href="Collection.html#searchKeys">searchKeys</a></li><li data-type='method'><a href="Collection.html#searchKeys">searchKeys</a></li><li data-type='method'><a href="Collection.html#select">select</a></li><li data-type='method'><a href="Collection.html#select">select</a></li><li data-type='method'><a href="Collection.html#set">set</a></li><li data-type='method'><a href="Collection.html#set">set</a></li><li data-type='method'><a href="Collection.html#setBulk">setBulk</a></li><li data-type='method'><a href="Collection.html#setBulk">setBulk</a></li><li data-type='method'><a href="Collection.html#sha1">sha1</a></li><li data-type='method'><a href="Collection.html#sha1">sha1</a></li><li data-type='method'><a href="Collection.html#write_raw">write_raw</a></li><li data-type='method'><a href="Collection.html#write_raw">write_raw</a></li></ul></li><li></li></ul><h3><a href="global.html">Global</a></h3>
+</nav>
+
+<div id="main">
+    
+
+    
+
+
+
+    
+
+
+    <section class="package">
+        <h3> </h3>		
+    </section>
+
+
+
+
+
+
+
+
+
+    
+
+
+
+    <section class="readme usertext">
+        <article><div align="center">
+<img src="img/firestorm-128.png">
+<h1>firestorm-db</h1>
+<p><a href="https://www.npmjs.com/package/firestorm-db" targtet="_blank" ><img alt="npm" src="https://img.shields.io/npm/v/firestorm-db?color=cb0000&logo=npm&style=flat-square"> <img alt="npm bundle size" src="https://img.shields.io/bundlephobia/min/firestorm-db?label=NPM%20minified%20size&style=flat-square"> </a> <img alt="GitHub file size in bytes" src="https://img.shields.io/github/size/TheRolfFR/firestorm-db/index.js?color=43A047&label=Script%20size&logoColor=green&style=flat-square"><a href="https://github.com/TheRolfFR/firestorm-db/actions/workflows/testjs.yml"> <img src="https://github.com/TheRolfFR/firestorm-db/actions/workflows/testjs.yml/badge.svg" alt="Tests" /></a></p>
+</div>
+<p><em>Self hosted Firestore-like database with API endpoints based on micro bulk operations</em></p>
+<h2>Installation</h2>
+<pre class="prettyprint source"><code>npm install --save firestorm-db
+</code></pre>
+<h2>JavaScript Part</h2>
+<p>The JavaScript <a href="./index.js">index.js</a> file is Just an <a href="https://www.npmjs.com/package/axios">axios</a> wrapper of the library.</p>
+<h2>How to use it</h2>
+<p>First you need to configure the address of the API and your token if needed :</p>
+<pre class="prettyprint source lang-js"><code>require('dotenv').config() // add some env variables
+const firestorm = require('firestorm-db')
+
+// ex: 'http://example.com/path/to/firestorm/root/'
+firestorm.address(process.env.FIRESTORM_URL)
+
+// only necessary if you want to write or access private collections
+// must match token stored in tokens.php file
+firestorm.token(process.env.FIRESTORM_TOKEN)
+</code></pre>
+<p>Now you can use it to its full potential:</p>
+<pre class="prettyprint source lang-js"><code>const firestorm = require('firestorm-db')
+
+// returns a Collection instance
+const userCollection = firestorm.collection('users')
+
+// all methods return promises
+userCollection.read_raw()
+.then(res => console.log(res))
+.catch(err => console.error(err))
+</code></pre>
+<h3>Collection contructor</h3>
+<p>Collection takes 1 argument and one optional argument :</p>
+<ul>
+<li>The name of the collection as a <code>String</code></li>
+<li>The method adder which allows to inject methods to the get methods results, which is a <code>Function</code> taking the element as an argument</li>
+</ul>
+<pre class="prettyprint source lang-js"><code>const firestorm = require('firestorm-db')
+
+// returns a Collection instance
+const userCollection = firestorm.collection('users', el => {
+  el.hello = function() {
+    console.log(`${el.name} says hello!`)
+  }
+})
+
+// if you have a 'users' table with a printable field named name
+const johnDoe = await userCollection.get(123456789)
+// gives { name: &quot;John Doe&quot;, hello: function}
+
+johnDoe.hello() // prints out &quot;John Doe says hello!&quot;
+</code></pre>
+<p>Available methods for a collection:</p>
+<h3>Read operations</h3>
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Parameters</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>sha1()</td>
+<td>none</td>
+<td>Returns the file sha1 hash, may vary from read_raw because read_raw adds ID fields to the entries. Compare with stringify version of your file.</td>
+</tr>
+<tr>
+<td>read_raw()</td>
+<td>none</td>
+<td>Reads the entire collection</td>
+</tr>
+<tr>
+<td>get(id)</td>
+<td>id: <code>String\|Name</code></td>
+<td>Tries to get one element by its key</td>
+</tr>
+<tr>
+<td>search(searchOptions, random)</td>
+<td>searchOptions: <code>SearchOption[]</code> random?:<code>false\|true\|Number</code></td>
+<td>Searches collections and returns matching results. <br>You can randomize the ouput order with random as true or a given seed.</td>
+</tr>
+<tr>
+<td>searchKeys(keys)</td>
+<td>keys: <code>String[] \| Number[]</code></td>
+<td>Searches collections with given keys and returns matching results</td>
+</tr>
+<tr>
+<td>select(selectOption)</td>
+<td>selectOption: <code>{ field: String[] }</code></td>
+<td>Improved read_raw with field selection</td>
+</tr>
+<tr>
+<td>random(max, seed, offset)</td>
+<td>max?: <code>Integer &gt;= -1</code> seed?: <code>Integer</code> offset?:<code>Integer &gt;= 0</code></td>
+<td>Reads random entries of collection</td>
+</tr>
+</tbody>
+</table>
+<p>Search method can take one or more options to filter entries in a collection. A search option studies a <code>field</code> with a <code>criteria</code> and compares it to a <code>value</code>. On string values you can now use the boolean <code>ignoreCase</code> option.</p>
+<p>Not all criterias are available depending the field type. There a more options available than the firestore <code>where</code> command allowing you to get better and faster search results.</p>
+<h3>All search options available</h3>
+<table>
+<thead>
+<tr>
+<th>Criteria</th>
+<th>Types allowed</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>'!='</code></td>
+<td>Boolean, Number, String</td>
+<td>Searches if the entry field's value is different from yours</td>
+</tr>
+<tr>
+<td><code>'=='</code></td>
+<td>Boolean, Number, String</td>
+<td>Searches if the entry field's value is equal to yours</td>
+</tr>
+<tr>
+<td><code>'&gt;='</code></td>
+<td>Number, String</td>
+<td>Searches if the entry field's value is greater or equal than yours</td>
+</tr>
+<tr>
+<td><code>'&lt;='</code></td>
+<td>Number, String</td>
+<td>Searches if the entry field's value is equal to than yours</td>
+</tr>
+<tr>
+<td><code>'&gt;'</code></td>
+<td>Number, String</td>
+<td>Searches if the entry field's value is greater than yours</td>
+</tr>
+<tr>
+<td><code>'&lt;'</code></td>
+<td>Number, String</td>
+<td>Searches if the entry field's value is lower than yours</td>
+</tr>
+<tr>
+<td><code>'in'</code></td>
+<td>Number, String</td>
+<td>Searches if the entry field's value is in the array of values you gave</td>
+</tr>
+<tr>
+<td><code>'includes'</code></td>
+<td>String</td>
+<td>Searches if the entry field's value includes your substring</td>
+</tr>
+<tr>
+<td><code>'startsWith'</code></td>
+<td>String</td>
+<td>Searches if the entry field's value starts with your substring</td>
+</tr>
+<tr>
+<td><code>'endsWith'</code></td>
+<td>String</td>
+<td>Searches if the entry field's value ends with your substring</td>
+</tr>
+<tr>
+<td><code>'array-contains'</code></td>
+<td>Array</td>
+<td>Searches if the entry field's array contains your value</td>
+</tr>
+<tr>
+<td><code>'array-contains-any'</code></td>
+<td>Array</td>
+<td>Searches if the entry field's array ends contains your one value of more inside your values array</td>
+</tr>
+<tr>
+<td><code>'array-length-eq'</code></td>
+<td>Number</td>
+<td>Searches if the entry field's array size is equal to your value</td>
+</tr>
+<tr>
+<td><code>'array-length-df'</code></td>
+<td>Number</td>
+<td>Searches if the entry field's array size is different from your value</td>
+</tr>
+<tr>
+<td><code>'array-length-lt'</code></td>
+<td>Number</td>
+<td>Searches if the entry field's array size is lower than your value</td>
+</tr>
+<tr>
+<td><code>'array-length-gt'</code></td>
+<td>Number</td>
+<td>Searches if the entry field's array size is lower greater than your value</td>
+</tr>
+<tr>
+<td><code>'array-length-le'</code></td>
+<td>Number</td>
+<td>Searches if the entry field's array size is lower or equal to your value</td>
+</tr>
+<tr>
+<td><code>'array-length-ge'</code></td>
+<td>Number</td>
+<td>Searches if the entry field's array size is greater or equal to your value</td>
+</tr>
+</tbody>
+</table>
+<h3>Write operations</h3>
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Parameters</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>writes_raw()</td>
+<td>none</td>
+<td>Writes the entire collection <strong>/!\ Very dangerous /!\</strong></td>
+</tr>
+<tr>
+<td>add(value)</td>
+<td>value: <code>Object</code></td>
+<td>Adds one element with autoKey into the collection</td>
+</tr>
+<tr>
+<td>addBulk(values)</td>
+<td>value: <code>Object[]</code></td>
+<td>Adds multiple elements with autoKey into the collection</td>
+</tr>
+<tr>
+<td>remove(key)</td>
+<td>key: <code>String\|Name</code></td>
+<td>Remove one element from the collection with the corresponding key</td>
+</tr>
+<tr>
+<td>removeBulk(keys)</td>
+<td>keys: <code>String[]\|Name[]</code></td>
+<td>Remove multiple elements from the collection with the corresponding keys</td>
+</tr>
+<tr>
+<td>set(key, value)</td>
+<td>key: <code>String\|Name</code>, value: <code>Object</code></td>
+<td>Sets one element with its key and value into the collection</td>
+</tr>
+<tr>
+<td>setBulk(keys, values)</td>
+<td>keys: <code>String[]\|Name[]</code>, values: <code>Object[]</code></td>
+<td>Sets multiple elements with their corresponding keys and values into the collectionn</td>
+</tr>
+<tr>
+<td>editField(obj)</td>
+<td>obj: <code>EditObject</code></td>
+<td>Changes one field of a given element in a collection</td>
+</tr>
+<tr>
+<td>editFieldBulk(objArray)</td>
+<td>objArray: <code>EditObject[]</code></td>
+<td>Changes one field per element in a collection</td>
+</tr>
+</tbody>
+</table>
+<h3>Edit field operations</h3>
+<p>Edit objects have and <code>id</code> to get the wanted element, the <code>field</code> they want to edit, an <code>operation</code>, with what to do to this field, and a possible <code>value</code>. Here is a list of operations:</p>
+<table>
+<thead>
+<tr>
+<th>Operation</th>
+<th>Value required</th>
+<th>Types allowed</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>set</code></td>
+<td>Yes</td>
+<td>any</td>
+<td>Sets a field to a given value</td>
+</tr>
+<tr>
+<td><code>remove</code></td>
+<td>No</td>
+<td>any</td>
+<td>Removes a field from the element</td>
+</tr>
+<tr>
+<td><code>append</code></td>
+<td>Yes</td>
+<td>String</td>
+<td>Appends string at the end of the string field</td>
+</tr>
+<tr>
+<td><code>invert</code></td>
+<td>No</td>
+<td>any</td>
+<td>Inverts tate of boolean field</td>
+</tr>
+<tr>
+<td><code>increment</code></td>
+<td>No</td>
+<td>Number</td>
+<td>Adds a number to the field, default is 1</td>
+</tr>
+<tr>
+<td><code>decrement</code></td>
+<td>No</td>
+<td>Number</td>
+<td>Retrieves a number to the field, default is -1</td>
+</tr>
+<tr>
+<td><code>array-push </code></td>
+<td>Yes</td>
+<td>any</td>
+<td>Push an element to the end of an array field</td>
+</tr>
+<tr>
+<td><code>array-delete</code></td>
+<td>Yes</td>
+<td>Integer</td>
+<td>Removes and element at a certain index in an array field, check <a href="https://www.php.net/manual/function.array-splice">array_splice documentation</a> offset for more infos</td>
+</tr>
+<tr>
+<td><code>array-splice</code></td>
+<td>Yes</td>
+<td>[Integer, Integer]</td>
+<td>Remvoes certains elements, check <a href="https://www.php.net/manual/function.array-splice">array_splice documentation</a> offset and length for more infos</td>
+</tr>
+</tbody>
+</table>
+<br>
+<h2>PHP files</h2>
+<p>The PHP files are the ones handling files, read and writes. It also handles GET and POST request to manipulate the database.</p>
+<h2>PHP setup</h2>
+<p>The developer has to create 2 files at root of this folder: <code>tokens.php</code> and <code>config.php</code></p>
+<p><code>tokens.php</code> will contain the tokens inside a <code>$db_tokens</code> value array with the tokens to use. You will use these tokens to write data or read private tables.</p>
+<p><code>config.php</code> stores all of your collections config. You will create a <code>$database_list</code> variable with an array of <code>JSONDatabase</code> instances</p>
+<pre class="prettyprint source lang-php"><code>&lt;?php
+// config.php
+require_once('./classes/JSONDatabase.php');
+
+$database_list = array();
+
+$tmp = new JSONDatabase;
+$tmp->folderPath = './files/';
+$tmp->fileName = 'users';
+$tmp->autoKey = false;
+
+$database_list[$tmp->fileName] = $tmp;
+
+$tmp = new JSONDatabase;
+$tmp->folderPath = './files/';
+$tmp->fileName = 'paths';
+$tmp->autoKey = true;
+
+$database_list[$tmp->fileName] = $tmp;
+?>
+</code></pre>
+<p>Database will be stored in <code>&lt;foldePath&gt;/&lt;filename&gt;.json</code> and <code>autoKey</code> allows or forbids some write operations.</p>
+<h2>Memory warning</h2>
+<p>Handling big collections can cause memory allocation issues like :</p>
+<pre class="prettyprint source"><code>Fatal error: 
+Allowed memory size of 134217728 bytes exhausted (tried to allocate 32360168 bytes)
+</code></pre>
+<p>If you encounter a memory allocation issue, you have to allow more memory through this file <code>/etc/php/7.4/apache2/php.ini</code> with a bigger value here:</p>
+<pre class="prettyprint source"><code>memory_limit = 256M
+</code></pre>
+<h2>API endpoints</h2>
+<p>All JS methods correspond in fact to axios request. Read requests are GET request when write requests are POST requests with a JSON data.</p>
+<p>You always have the same first keys and the one key per method:</p>
+<pre class="prettyprint source lang-json"><code>{
+  &quot;collection&quot;: &quot;&lt;collectionName>&quot;,
+  &quot;token&quot;: &quot;&lt;writeTokenIfNecessary>&quot;,
+  &quot;command&quot;: &quot;&lt;methodName>&quot;,
+  ...
+}
+</code></pre></article>
+    </section>
+
+
+
+
+
+
+    
+    
+</div>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.6.7</a> on Thu Jan 06 2022 09:30:18 GMT+0000 (Coordinated Universal Time) using the <a href="https://github.com/clenemt/docdash">docdash</a> theme.
+</footer>
+
+<script>prettyPrint();</script>
+<script src="scripts/polyfill.js"></script>
+<script src="scripts/linenumber.js"></script>
+
+<script src="scripts/search.js" defer></script>
+
+
+
+</body>
+</html>
