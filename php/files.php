@@ -105,19 +105,34 @@ if($method === 'POST') {
   if(substr_compare($absolutePath, ".php", -strlen(".php"), null, true) === 0) http_error(403, 'Cannot read php scripts');
 
   if(!file_exists($absolutePath)) http_error(404, 'File not found');
+
+  try {
+    // try to read the image
+    $imginfo = getimagesize($absolutePath);
+    header("Content-type: {$imginfo['mime']}");
+    header('Expires: 0');
+    header('Cache-Control: must-revalidate, post-check=0, pre-check=0');
+    header('Pragma: public');
+    header('Content-Length: ' . filesize($absolutePath));
+    ob_clean();
+    flush();
+    readfile($absolutePath);
+    die();
+  } catch (Throwable $th) {
+    header('Content-Description: File Transfer');
+    header('Content-Type: application/octet-stream');
+    header('Content-Disposition: attachment; filename='.basename($absolutePath));
+    header('Content-Transfer-Encoding: binary');
+    header('Expires: 0');
+    header('Cache-Control: must-revalidate, post-check=0, pre-check=0');
+    header('Pragma: public');
+    header('Content-Length: ' . filesize($absolutePath));
+    ob_clean();
+    flush();
+    readfile($absolutePath);
+    die();
+  }
   
-  header('Content-Description: File Transfer');
-  header('Content-Type: application/octet-stream');
-  header('Content-Disposition: attachment; filename='.basename($absolutePath));
-  header('Content-Transfer-Encoding: binary');
-  header('Expires: 0');
-  header('Cache-Control: must-revalidate, post-check=0, pre-check=0');
-  header('Pragma: public');
-  header('Content-Length: ' . filesize($absolutePath));
-  ob_clean();
-  flush();
-  readfile($absolutePath);
-  die();
 } else if($method === 'DELETE') {
   /**
    * delete is deletion

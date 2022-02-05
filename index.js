@@ -526,9 +526,15 @@ const firestorm = {
 
   ID_FIELD: ID_FIELD_NAME,
 
+  /**
+   * Test child object with child namespace
+   * @memberof firestorm
+   * @type {object}
+   */
   files: {
     /**
      * gets file back
+     * @memberof firestorm.files
      * @param {String} path File path wanted
      */
     get: function (path) {
@@ -541,6 +547,7 @@ const firestorm = {
   
     /**
      * Uploads file
+     * @memberof firestorm.files
      * @param {FormData} form formdata with path, filename and file
      * @returns {Promise} http response
      */
@@ -554,6 +561,8 @@ const firestorm = {
     },
   
     /**
+     * Deletes a file given its path
+     * @memberof firestorm.files
      * @param {String} path File path to delete
      * @returns {Promise} http response
      */
