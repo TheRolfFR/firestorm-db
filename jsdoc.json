@@ -16,9 +16,14 @@
       "title": "TheRolfFR/firestorm-db: Self hosted Firestore-like database",
       "description": "Self hosted Firestore-like database with API endpoints based on micro bulk operations",
       "type": "website",
-      "image": "https://github.com/TheRolfFR/firestorm-db/raw/main/img/firestorm-128.png",
+      "image": "https://github.com/TheRolfFR/firestorm-db/raw/main/img/firestorm-512.png",
       "site_name": "firestorm-db",
       "url": "https://github.com/TheRolfFR/firestorm-db/"
+    },
+    "meta": {
+        "title": "TheRolfFR/firestorm-db: Self hosted Firestore-like database",
+        "description": "Self hosted Firestore-like database with API endpoints based on micro bulk operations",
+        "keyword": "firebase,firestore,db,api,php,micro-operations,bulk"
     },
     "menu": {
       "Github repo": {
@@ -28,9 +33,6 @@
         "id": "repository"
       }
     }
-  },
-  "source": {
-    "include": ["index.js"]
   },
   "templates": {
     "default": {

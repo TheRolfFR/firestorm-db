@@ -69,6 +69,7 @@ const writeToken = () => {
 
 /**
  * Auto-extracts data from Axios request
+ * @ignore
  * @param {Promise<T>} request The Axios concerned request
  */
 const __extract_data = (request) => {

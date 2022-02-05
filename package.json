@@ -23,7 +23,8 @@
     "firestore",
     "db",
     "api",
-    "micro-operations"
+    "micro-operations",
+    "bulk"
   ],
   "author": "TheRolf",
   "license": "MIT",
