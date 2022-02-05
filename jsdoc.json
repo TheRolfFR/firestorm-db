@@ -31,6 +31,12 @@
         "target": "_blank",
         "class": "menu-item",
         "id": "repository"
+      },
+      "npm": {
+        "href": "https://www.npmjs.com/package/firestorm-db",
+        "target": "_blank",
+        "class": "menu-item",
+        "id": "npm"
       }
     }
   },

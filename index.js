@@ -490,6 +490,9 @@ class Collection {
   }
 }
 
+/**
+ * @namespace firestorm
+ */
 const firestorm = {
   /**
    * @param {String} newValue The new address value
@@ -524,6 +527,9 @@ const firestorm = {
     return this.collection(name)
   },
 
+  /**
+   * Value for the id field when researching content
+   */
   ID_FIELD: ID_FIELD_NAME,
 
   /**
