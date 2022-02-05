@@ -9,6 +9,7 @@ try {
  * @property {String} field The field you want to search in
  * @property {"!=" | "==" | ">=" | "<=" | "<" | ">" | "in" | "includes" | "startsWith" | "endsWith" | "array-contains" | "array-contains-any" | "array-length-(eq|df|gt|lt|ge|le)" } criteria // filter criteria
  * @property {String | Number | Boolean | Array } value // the value you want to compare
+ * @property {Boolean} ignoreCase Ignore case on search string
  */
 
 /**
@@ -24,7 +25,18 @@ try {
  * @property {Array<String>} fields Chosen fields to eventually return
  */
 
+/**
+ * @import {AxiosPromise} from 'axios'
+ */
+
+/**
+ * @ignore
+ */
 let _address = undefined
+
+/**
+ * @ignore
+ */
 let _token = undefined
 
 const ID_FIELD_NAME = 'id'
@@ -85,6 +97,13 @@ class Collection {
     this.collectionName = name
   }
 
+  /**
+   * Add user methods to the returned data
+   * @private
+   * @ignore
+   * @param {AxiosPromise} req Incoming request 
+   * @returns {Object|Object[]}
+   */
   __add_methods(req) {
     return new Promise((resolve, reject) => {
       req
@@ -104,16 +123,20 @@ class Collection {
 
   /**
    * Auto-extracts data from Axios request
-   * @param {Promise<T>} request The Axios concerned request
+   * @private
+   * @ignore
+   * @param {AxiosPromise} request The Axios concerned request
    */
   __extract_data(request) {
     return __extract_data(request)
   }
 
   /**
-   * Send get request and extract data from ir
+   * Send get request and extract data from response
+   * @private
+   * @ignore
    * @param {Object} data Body data
-   * @returns {Promise<Any>} data out
+   * @returns {Promise<Object|Object[]>} data out
    */
   __get_request(data) {
     const request = typeof process === 'object' ? axios.get(readAddress(), {
@@ -133,6 +156,16 @@ class Collection {
       "command": "get",
       "id": id
     }))
+  }
+
+  /**
+   * @returns {String} returns sha1 hash of the file. can be used to see if same file content without downloding the file for example
+   */
+  sha1() {
+    return this.__get_request({
+      "collection": this.collectionName,
+      "command": "sha1",
+    })
   }
 
   /**
@@ -177,9 +210,11 @@ class Collection {
     }
 
     return new Promise((resolve, reject) => {
+      let raw
       this.__get_request(params).then(res => {
         const arr = []
 
+        raw = res
         Object.keys(res).forEach(contribID => {
           const tmp = res[contribID]
           tmp[ID_FIELD_NAME] = contribID
@@ -188,7 +223,10 @@ class Collection {
 
         resolve(this.__add_methods(Promise.resolve(arr)))
 
-      }).catch(err => reject(err))
+      }).catch(err => {
+        err.raw = raw
+        reject(err)
+      })
     })
   }
 
@@ -308,7 +346,9 @@ class Collection {
   }
 
   /**
-   * 
+   * creates write requests with given value
+   * @private
+   * @ignore
    * @param {String} command The write command you want
    * @param {Object?} value The value for this command 
    * @param {Boolean | undefined} multiple if I need to delete multiple 

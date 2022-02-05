@@ -4,6 +4,7 @@ require_once('./utils.php');
 require_once('./classes/FileAccess.php');
 require_once('./classes/HTTPException.php');
 require_once(__DIR__.'/read/random.php');
+require_once(__DIR__.'/read/searchArray.php');
 
 class JSONDatabase {
     public $folderPath = './files/';
@@ -71,6 +72,11 @@ class JSONDatabase {
     private function write($obj) {
         $obj['content'] = stringifier($obj['content'], 1);
         return FileAccess::write($obj);
+    }
+
+    public function sha1() {
+        $obj = $this->read_raw();
+        return sha1($obj['content']);
     }
     
     public function read_raw($waitLock = false) {
@@ -262,6 +268,7 @@ class JSONDatabase {
         
         foreach(array_keys($obj['content']) as $key) {
             $el = $obj['content'][$key];
+            $el_root = $el;
             
             $add = true;
             
@@ -272,8 +279,19 @@ class JSONDatabase {
                 
                 // get condition fields extracted
                 $field = $condition['field'];
+                $field_path = explode(".", $field);
+
+                error_reporting(error_reporting() - E_NOTICE);
+                $field_ind = 0;
                 
-                if(array_key_exists($field, $el) && array_key_exists('criteria', $condition) && array_key_exists('value', $condition)) {
+                while($el != NULL && $field_ind + 1 < count($field_path)) {
+                    $el = $el[$field_path[$field_ind]];
+                    $field_ind = $field_ind + 1;
+                    $field = $field_path[$field_ind];
+                }
+                error_reporting(error_reporting() + E_NOTICE);
+                
+                if($el != NULL && array_key_exists($field, $el) && array_key_exists('criteria', $condition) && array_key_exists('value', $condition)) {
                     $criteria = $condition['criteria'];
                     $value = $condition['value'];
                     
@@ -282,6 +300,10 @@ class JSONDatabase {
                     
                     // get concerned field type
                     $fieldType = gettype($concernedField);
+
+                    if($criteria == 'array-contains' || $criteria == 'array-contains-any') {
+                        $ignoreCase = array_key_exists('ignoreCase', $condition) && !!$condition['ignoreCase'];
+                    }
                     
                     switch($fieldType) {
                         case 'boolean':
@@ -327,37 +349,45 @@ class JSONDatabase {
                             }
                             break;
                         case 'string':
+                            $ignoreCase = array_key_exists('ignoreCase', $condition) && !!$condition['ignoreCase'];
                             switch($criteria) {
                                 case '!=':
-                                    $add = strcmp($concernedField, $value) != 0;
+                                    $add = ($ignoreCase ? strcasecmp($concernedField, $value) : strcmp($concernedField, $value)) != 0;
                                     break;
                                 case '==':
-                                    $add = strcmp($concernedField, $value) == 0;
+                                    $add = ($ignoreCase ? strcasecmp($concernedField, $value) : strcmp($concernedField, $value)) == 0;
                                     break;
                                 case '>=':
-                                    $add = strcmp($concernedField, $value) >= 0;
+                                    $add = ($ignoreCase ? strcasecmp($concernedField, $value) : strcmp($concernedField, $value)) >= 0;
                                     break;
                                 case '<=':
-                                    $add = strcmp($concernedField, $value) <= 0;
+                                    $add = ($ignoreCase ? strcasecmp($concernedField, $value) : strcmp($concernedField, $value)) <= 0;
                                     break;
                                 case '<':
-                                    $add = strcmp($concernedField, $value) < 0;
+                                    $add = ($ignoreCase ? strcasecmp($concernedField, $value) : strcmp($concernedField, $value)) < 0;
                                     break;
                                 case '>':
-                                    $add = strcmp($concernedField, $value) > 0;
+                                    $add = ($ignoreCase ? strcasecmp($concernedField, $value) : strcmp($concernedField, $value)) > 0;
                                     break;
                                 case 'includes':
                                 case 'contains':
-                                    $add = $value != "" ? (strpos($concernedField, $value) !== false) : true;
+                                    $add = $value != "" ? (($ignoreCase ? stripos($concernedField, $value) : strpos($concernedField, $value)) !== false) : true;
                                     break;
                                 case 'startsWith':
-                                    $add = $value != "" ? (strpos($concernedField, $value) === 0) : true;
+                                    $add = $value != "" ? (($ignoreCase ? stripos($concernedField, $value) : strpos($concernedField, $value)) === 0) : true;
                                     break;
                                 case 'endsWith':
-                                    $add = strlen($value) ? substr($concernedField, -strlen($value)) === $value : false;
+                                    $end = substr($concernedField, -strlen($value));
+                                    $add = $value != "" ? (($ignoreCase ? strcasecmp($end, $value) : strcmp($end, $value)) === 0) : true;
                                     break;
                                 case 'in':
-                                    $add = in_array($concernedField, $value);
+                                    $notfound = false;
+                                    $a_i = 0;
+                                    while($a_i < count($value) && $notfound) {
+                                        $notfound = ($ignoreCase ? strcasecmp($concernedField, $value[$a_i])  : strcmp($concernedField, $value[$a_i])) != 0;
+                                        $a_i++;
+                                    }
+                                    $add = !$notfound;
                                     break;
                                 default:
                                     $add = false;
@@ -367,20 +397,10 @@ class JSONDatabase {
                         case 'array':
                             switch($criteria) {
                                 case "array-contains":
-                                    $add = in_array($value, $concernedField);
+                                    $add = array_contains($concernedField, $value, $ignoreCase);
                                     break;
                                 case "array-contains-any":
-                                    if(gettype($value == 'array')) {
-                                        $tmp = false;
-                                        $tmp_i = 0;
-                                        while($tmp_i < count($value) and !$tmp) {
-                                            $tmp = in_array($value[$tmp_i], $concernedField);
-                                            $tmp_i++;
-                                        }
-                                        $add = $tmp;
-                                    } else {
-                                        $add = false;
-                                    }
+                                    $add = array_contains_any($concernedField, $value, $ignoreCase);
                                     break;
                                 case "array-length":
                                 case "array-length-eq":
@@ -413,10 +433,11 @@ class JSONDatabase {
                 }
                 
                 $condition_index++;
+                $el = $el_root;
             }
             
             if($add) {
-                $res[$key] = $el;
+                $res[$key] = $el_root;
             }
         }
 

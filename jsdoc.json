@@ -1,0 +1,40 @@
+{
+  "opts": {
+    "template": "node_modules/docdash"
+  },
+  "plugins": ["plugins/markdown"],
+  "docdash": {
+    "static": true,
+    "sort": true,
+    "search": true,
+    "collapse": false,
+    "typedefs": false,
+    "wrap": true,
+    "removeQuotes": "none",
+    "scripts": [],
+    "openGraph": {
+      "title": "TheRolfFR/firestorm-db: Self hosted Firestore-like database",
+      "description": "Self hosted Firestore-like database with API endpoints based on micro bulk operations",
+      "type": "website",
+      "image": "https://github.com/TheRolfFR/firestorm-db/raw/main/img/firestorm-128.png",
+      "site_name": "firestorm-db",
+      "url": "https://github.com/TheRolfFR/firestorm-db/"
+    },
+    "menu": {
+      "Github repo": {
+        "href": "https://github.com/TheRolfFR/firestorm",
+        "target": "_blank",
+        "class": "menu-item",
+        "id": "repository"
+      }
+    }
+  },
+  "source": {
+    "include": ["index.js"]
+  },
+  "templates": {
+    "default": {
+      "useLongnameInNav": true
+    }
+  }
+}

@@ -4,6 +4,7 @@ const { expect } = chai
 
 const firestorm = require('../index')
 
+const crypto = require('crypto')
 const path = require('path')
 const fs = require('fs')
 const { readFile } = require('fs').promises
@@ -162,7 +163,6 @@ describe('GET operations', () => {
     await resetDatabaseContent()
   })
 
-
   describe('read_raw()', () => {
     it('fails if table not found', (done) => {
       firestorm.collection('unknown').read_raw()
@@ -181,6 +181,19 @@ describe('GET operations', () => {
           done()
         })
         .catch(err => done(err))
+    })
+
+    it('sha1 content hash is the same', (done) => {
+      base.sha1()
+        .then(res => {
+          const file_sha1 = crypto.createHash('sha1').update(JSON.stringify(content)).digest('hex')
+          expect(res).equals(file_sha1, 'Content hash different')
+          done()
+        })
+        .catch(err => {
+          console.trace(err.response)
+          done(err)
+        })
     })
   });
 
@@ -272,14 +285,19 @@ describe('GET operations', () => {
       ['in', 'age', [23, 13], ['0', '1']],
       ['in', 'age', [21, 19], []],
       ['includes', 'name', 'Joy', ['0', '1', '2']],
+      ['includes', 'name', 'jOy', ['0', '1', '2'], true],
       ['includes', 'name', 'Bobby', []],
       ['startsWith', 'name', 'Joy', ['0', '1']],
+      ['startsWith', 'name', 'joY', ['0', '1'], true],
       ['startsWith', 'name', 'TheRolf', []],
       ['endsWith', 'name', 'Harper', ['0', '2']],
+      ['endsWith', 'name', 'hArPER', ['0', '2'], true],
       ['endsWith', 'name', 'Wick', []],
       ['array-contains', 'qualities', 'strong', ['0', '1']],
+      ['array-contains', 'qualities', 'sTRoNG', ['0', '1'], true],
       ['array-contains', 'qualities', 'handsome', []],
       ['array-contains-any', 'qualities', ['intelligent', 'calm'], ['0', '2']],
+      ['array-contains-any', 'qualities', ['intELLIGent', 'CALm'], ['0', '2'], true],
       ['array-contains-any', 'qualities', ['fast', 'flying'], []],
       ['array-length-eq', 'friends', 6, ['0']],
       ['array-length-eq', 'friends', 2, []],
@@ -299,17 +317,20 @@ describe('GET operations', () => {
       const field = test_item[1]
       const value = test_item[2]
       const ids_found = test_item[3]
-      it(`${criteria} criteria${ids_found.length == 0 ? ' (empty result)' : ''}`, (done) => {
+      const ignore_case = !!test_item[4]
+      it(`${criteria} criteria${ids_found.length == 0 ? ' (empty result)' : ''}${ignore_case ? ' (case insensitive)' : ''}`, (done) => {
         base.search([{
           criteria: criteria,
           field: field,
-          value: value
+          value: value,
+          ignoreCase: ignore_case
         }]).then((res) => {
           expect(res).to.be.a('array', 'Search result must be an array')
           expect(res).to.have.lengthOf(ids_found.length, 'Expected result have not correct length')
           expect(res.map(el => el[firestorm.ID_FIELD])).to.deep.equal(ids_found, 'Incorrect result search')
           done()
         }).catch(err => {
+          console.error(err.raw)
           done(err)
         })
       })
@@ -317,6 +338,50 @@ describe('GET operations', () => {
   })
 
   describe('search(searchOptions, random)', () => {
+    describe('Nested keys test', () => {
+      it('dosn\'t crash if nested key unknown', (done) => {
+        base.search([{
+          criteria: "==",
+          field: "path.to.the.key",
+          value: "gg",
+        }])
+        .then(res => {
+          expect(res).not.to.be.undefined
+          expect(res.length).to.equal(0)
+          done()
+        }).catch(err => {
+          done(err)
+        })
+      })
+      it('can find correct nested value', done => {
+        base.search([{
+          criteria: "==",
+          field: "path.to.key",
+          value: "yes",
+        }])
+        .then(res => {
+          expect(res).not.to.deep.equal([])
+          delete res[0][firestorm.ID_FIELD]
+          expect(res).to.deep.equal([{
+            "name": "Joy Harper",
+            "age": 23,
+            "amazing": true,
+            "qualities": ["intelligent", "strong", "efficient"],
+            "friends": ["Monica", "Chandler", "Phoebe", "Ross", "Joe", "Rachel"],
+            "path": {
+              "to": {
+                "key": "yes"
+              }
+            }
+          }])
+          done()
+        })
+        .catch(err => {
+          done(err)
+        })
+      })
+    })
+
     let uncorrect = [null, 'gg', ''] // undefined works because random becomes default parameter false, so false works too
       uncorrect.forEach((unco) => {
         it(`${JSON.stringify(unco)} seed rejects`, done => {

@@ -3,7 +3,7 @@
 
 <h1>firestorm-db</h1>
 
-<a href="https://www.npmjs.com/package/firestorm-db" targtet="_blank" ><img alt="npm" src="https://img.shields.io/npm/v/firestorm-db?color=cb0000&logo=npm&style=flat-square"> <img alt="npm bundle size" src="https://img.shields.io/bundlephobia/min/firestorm-db?label=NPM%20minified%20size&style=flat-square"> </a> <img alt="GitHub file size in bytes" src="https://img.shields.io/github/size/TheRolfFR/firestorm-db/index.js?color=43A047&label=Script%20size&logoColor=green&style=flat-square"><a href="https://github.com/TheRolfFR/firestorm-db/actions/workflows/testjs.yml"><img src="https://github.com/TheRolfFR/firestorm-db/actions/workflows/testjs.yml/badge.svg" alt="Tests" /></a>
+<a href="https://www.npmjs.com/package/firestorm-db" targtet="_blank" ><img alt="npm" src="https://img.shields.io/npm/v/firestorm-db?color=cb0000&logo=npm&style=flat-square"> <img alt="npm bundle size" src="https://img.shields.io/bundlephobia/min/firestorm-db?label=NPM%20minified%20size&style=flat-square"> </a> <img alt="GitHub file size in bytes" src="https://img.shields.io/github/size/TheRolfFR/firestorm-db/index.js?color=43A047&label=Script%20size&logoColor=green&style=flat-square"><a href="https://github.com/TheRolfFR/firestorm-db/actions/workflows/testjs.yml"> <img src="https://github.com/TheRolfFR/firestorm-db/actions/workflows/testjs.yml/badge.svg" alt="Tests" /></a>
 
 </div>
 
@@ -78,6 +78,7 @@ Available methods for a collection:
 
 | Name | Parameters | Description |
 |--|--|--|
+| sha1() | none | Returns the file sha1 hash, may vary from read_raw because read_raw adds ID fields to the entries. Compare with stringify version of your file. |
 | read_raw() | none | Reads the entire collection |
 | get(id) | id: ``String\|Name`` | Tries to get one element by its key |
 | search(searchOptions, random) | searchOptions: ``SearchOption[]`` random?:`false\|true\|Number`| Searches collections and returns matching results. <br>You can randomize the ouput order with random as true or a given seed. |
@@ -85,7 +86,7 @@ Available methods for a collection:
 | select(selectOption) | selectOption: ``{ field: String[] }`` | Improved read_raw with field selection |
 | random(max, seed, offset) | max?: ``Integer >= -1`` seed?: ``Integer`` offset?:``Integer >= 0`` | Reads random entries of collection |
 
-Search method can take one or more options to filter entries in a collection. A search option studies a ``field`` with a ``criteria`` and compares it to a ``value``.
+Search method can take one or more options to filter entries in a collection. A search option studies a ``field`` with a ``criteria`` and compares it to a ``value``. On string values you can now use the boolean ``ignoreCase`` option.
 
 Not all criterias are available depending the field type. There a more options available than the firestore ``where`` command allowing you to get better and faster search results.
 
