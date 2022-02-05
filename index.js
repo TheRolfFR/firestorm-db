@@ -536,6 +536,7 @@ const firestorm = {
    * Test child object with child namespace
    * @memberof firestorm
    * @type {object}
+   * @namespace firestorm.files
    */
   files: {
     /**
