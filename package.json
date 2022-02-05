@@ -16,9 +16,6 @@
     "type": "git",
     "url": "https://github.com/TheRolfFR/firestorm-db"
   },
-  "publishConfig": {
-    "registry": "https://npm.pkg.github.com/therolffr"
-  },
   "keywords": [
     "firebase",
     "firestore",
