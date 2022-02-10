@@ -200,11 +200,19 @@ $STORAGE_LOCATION = dirname($_SERVER['SCRIPT_FILENAME']) . '/uploads/';
 You can now use the wrapper functions in order to upload, get and delete a file.
 If the folder is accessible from server url, you can directly type its address.
 
+### File rights
+The PHP scripts creates folders and files. So if the php user doesn't have the rights to write, the script will fail.
+You can give rights to a folder with the following command:
+
+```
+sudo chown -R www-data "/path/to/uploads/"
+```
+
 ### Upload a file
 
 In order to upload a file, you have to give the function a FormData object. This class is generated from forms and is [native in modern browsers](https://developer.mozilla.org/en-US/docs/Web/API/FormData/FormData) but in node.js can be imported with [form-data package](https://www.npmjs.com/package/form-data).
 
-File content can be a [String](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String), a [Blob](https://developer.mozilla.org/en-US/docs/Web/API/Blob) or an [ArrayBuffer](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/ArrayBuffer).
+File content can be a [String](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String), a [Blob](https://developer.mozilla.org/en-US/docs/Web/API/Blob), a [Buffer](https://nodejs.org/api/buffer.html) or an [ArrayBuffer](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/ArrayBuffer).
 
 You have an overwrite option in order to avoid big mistakes or allow user with unique file names.
 
@@ -215,8 +223,8 @@ firestorm.token('TOKEN_VALUE')
 
 const form = new FormData()
 form.append('path', '/quote.txt')
-form.append('file', 'but your kids are gonna love it.', 'quote.txt')
-form.append('overwrite', false) // override optional argument (defaults to false)
+form.append('file', 'but your kids are gonna love it.', 'quote.txt') // make sure to set a temporary name to the file
+form.append('overwrite', 'true') // override optional argument (do not append to set to false)
 const uploadPromise = firestorm.files.upload(form)
 
 uploadPromise.then(() => {
@@ -254,7 +262,7 @@ const firestorm = require('firestorm-db')
 firestorm.address('ADRESS_VALUE')
 firestorm.token('TOKEN_VALUE')
 
-const deletePromise = firestorm.files.delete('/quote.txt")
+const deletePromise = firestorm.files.delete('/quote.txt')
 
 deletePromise.then(() => {
   console.log('File successfully deleted')

@@ -67,7 +67,7 @@ if($method === 'POST') {
   }
   
   if(!check($_FILES) || !check($_FILES['file'])) {
-    http_error(400, 'No files provided');
+    http_error(400, 'No file provided or the provided file did not contain an original name');
   }
 
   // overwrite parameter
@@ -76,8 +76,15 @@ if($method === 'POST') {
   if(!$overwrite && file_exists($absolutePath)) http_error(403, 'File already exists');
 
   $uploaddir = dirname($absolutePath);
-  if (!is_dir($uploaddir) && !mkdir($uploaddir)){
-    http_error(500, "Error creating folder " . $uploaddir);
+
+  // Make sure you can write to this folder.
+  // php default user is www-data
+  // you can give rights to a folder with the following command
+  // sudo chown -R www-data "/path/to/folder/"
+
+  // mkdir(path, rw-r--r--, recursive=true)
+  if (!is_dir($uploaddir) && !mkdir($uploaddir, 0644, true)){
+    http_error(500, "PHP script can't create folder " . $uploaddir . ", check permission, group and owner.");
   }
 
   if(!check($_FILES) || !check($_FILES['file'])) http_error(400, 'No actual file was given');
@@ -88,7 +95,7 @@ if($method === 'POST') {
   if(move_uploaded_file($tmpName, $absolutePath)) {
     http_success('Written file successfully to ' . $relativePath);
   } else {
-    http_error(500, 'File failed to be written');
+    http_error(500, "PHP script can't write to file, check permission, group and owner.");
   }
 
   die();
