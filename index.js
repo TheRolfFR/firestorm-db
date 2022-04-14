@@ -7,8 +7,8 @@ try {
 /**
  * @typedef {Object} SearchOption
  * @property {String} field The field you want to search in
- * @property {"!=" | "==" | ">=" | "<=" | "<" | ">" | "in" | "includes" | "startsWith" | "endsWith" | "array-contains" | "array-contains-any" | "array-length-(eq|df|gt|lt|ge|le)" } criteria // filter criteria
- * @property {String | Number | Boolean | Array } value // the value you want to compare
+ * @property {"!=" | "==" | ">=" | "<=" | "<" | ">" | "in" | "includes" | "startsWith" | "endsWith" | "array-contains" | "array-contains-any" | "array-length-(eq|df|gt|lt|ge|le)" } criteria filter criteria
+ * @property {String | Number | Boolean | Array } value the value you want to compare
  * @property {Boolean} ignoreCase Ignore case on search string
  */
 
@@ -86,7 +86,6 @@ const __extract_data = (request) => {
 
 /**
  * Class representing a collection
- * @template T
  */
 class Collection {
   /** 
@@ -94,6 +93,8 @@ class Collection {
    * @param {Function?} addMethods Additional methods and data to add to the objects
    */
   constructor(name, addMethods = el => el) {
+    if(name === undefined) throw new Exception('Collection must have a name')
+    if(typeof addMethods !== 'function') throw new Exception('Collection must have a addMethods of type function')
     this.addMethods = addMethods
     this.collectionName = name
   }
@@ -496,6 +497,8 @@ class Collection {
 const firestorm = {
   /**
    * @param {String} newValue The new address value
+   * @returns {String} The stored address value
+   * @memberof firestorm
    */
   address: function(newValue = undefined) {
     if(newValue) _address = newValue
@@ -505,6 +508,7 @@ const firestorm = {
 
   /**
    * @param {String} newValue The new write token
+   * @returns {String} The stored write token
    */
   token: function(newValue = undefined) {
     if(newValue) _token = newValue
@@ -513,7 +517,8 @@ const firestorm = {
   },
   /**
    * @param {String} name Collection name to get
-   * @param {Function?} addMethods Additional methods and data to add to the objects
+   * @param {Function} addMethods Additional methods and data to add to the objects
+   * @returns {Collection}
    */
   collection: function(name, addMethods = el => el) {
     return new Collection(name, addMethods)

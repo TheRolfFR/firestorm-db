@@ -21,12 +21,28 @@ const DATABASE_FILE = path.join(__dirname, 'base.json')
 console.log('Testing at address ' + ADDRESS + ' with token ' + TOKEN)
 
 describe('Wrapper informations', () => {
+  it('throws if no address yet', () => {
+    try {
+      let res = firestorm.address()
+      done("address get operation should fail, got " + res)
+    } catch(e) {
+      done()
+    }
+  });
   it('binds good address', function () {
     firestorm.address(ADDRESS)
 
     const actual = firestorm.address()
     expect(actual).to.equal(ADDRESS, 'Incorrect address bind')
   })
+  it('throws if no token yet', () => {
+    try {
+      let res = firestorm.token()
+      done("token get operation should fail, got " + res)
+    } catch(e) {
+      done()
+    }
+  });
   it('binds good token', function () {
     firestorm.token(TOKEN)
 
@@ -125,25 +141,36 @@ describe('File upload, download and delete', () => {
     })
   })
   it('can delete file successfully', (done) => {
+    // create form data
     const formData = new FormData()
     formData.append('path', '/lyrics.txt')
     formData.append('overwrite', 'true')
-    readFile(path.join(__dirname, 'lyrics.txt'))
-    .catch(() => {
+
+    // create file read promise
+    const lyricsPromise = readFile(path.join(__dirname, 'lyrics.txt'))
+
+    // get done now
+    lyricsPromise.catch(() => {
       done('File read should not failed')
     })
-    .then(res => {
+
+    const uploadPromise = lyricsPromise.then(res => {
+      // add file to form data
       formData.append('file', res, 'lyrics.txt')
       return firestorm.files.upload(formData) 
     })
-    .catch(requestError => {
+
+
+    uploadPromise.catch(requestError => {
       done('Upload should not fail, getting ' + JSON.stringify(requestError.response.data))
     })
-    .then(() => {
+
+    // finally i don't need a variable here I take care of then before catch
+    uploadPromise.then(() => {
       // now delete it
       return firestorm.files.delete('lyrics.txt')
     })
-    .then(res => {
+    .then(() => {
       done()
     })
     .catch(err => {

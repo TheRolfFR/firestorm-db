@@ -30,7 +30,7 @@ function execProm(cmd) {
      console.warn(error);
     }
     resolve(stdout? stdout : stderr);
-   }).unref();
+   });
   });
  }
 
@@ -116,7 +116,7 @@ async function setup_php() {
       child_process.spawn(command, args,{ stdio: 'ignore', detached: true }).unref()
 
       console.log(`Waiting ${PHP_SERVER_START_DELAY}ms for the server to start...`)
-      await pause(PHP_SERVER_START_DELAY)
+      return pause(PHP_SERVER_START_DELAY)
     })
     .catch((err) => {
       console.trace(err)
