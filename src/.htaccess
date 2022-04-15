@@ -1,0 +1,15 @@
+RewriteBase /
+ErrorDocument 400     ./error.php?error=400
+ErrorDocument 401     ./error.php?error=401
+ErrorDocument 403     ./error.php?error=403
+ErrorDocument 404     ./error.php?error=404
+ErrorDocument 500     ./error.php?error=500
+ErrorDocument 503     ./error.php?error=503
+
+#Options +FollowSymlinks
+#Options -Indexes
+
+RewriteEngine On
+
+# disable access to json files
+RewriteRule ^.*\.json$ ./error.php?error=401 [R=301,L]
