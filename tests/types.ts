@@ -10,9 +10,14 @@ interface User {
 }
 
 const users: Collection<User> = firestorm.collection<User>("users");
-const id = await users.add({ name: "John", age: 30 });
+const idDad = await users.add({ name: "John", age: 30 });
+const idsMom = await users.addBulk([{ name: "Anna", age: 35 }, { name: "Marge", age: 40 }]);
+const idsChildren = await users.addBulk([{ name: "Jack", age: 5 }, { name: "Jill", age: 2 }, { name: "Joe", age: 7 }]);
 
 interface Family {
+  getDad: () => Promise<User>;
+  getMom: () => Promise<User>;
+  getChildren: () => Promise<User[]>;
   dad: string;
   mom: string;
   children: string[];
@@ -28,13 +33,18 @@ const families = firestorm.collection<Family>("families", (el) => {
 
 const ids: string[] = await families.addBulk([
   {
-    dad: "id",
-    mom: "id",
-    children: ["id"],
+    dad: idDad,
+    mom: idsMom[0],
+    children: [idsChildren[0]],
   },
   {
-    dad: "id",
-    mom: "id",
-    children: ["id", "id"],
+    dad: idDad, // same dad duh
+    mom: idsMom[1],
+    children: [idsChildren[1], idsChildren[2]],
   }
 ]);
+
+ids.forEach(async (id: string) => {
+  const f: Family = await families.get(id);
+  const dad: User = await (await families.get(id)).getDad();
+})

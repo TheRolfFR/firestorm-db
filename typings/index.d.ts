@@ -27,6 +27,10 @@ export interface AddMethods<T> {
     (el: T): T;
 }
 
+export type NoMethods<T> = {
+    [K in keyof T]: T[K] extends Function ? K : never;
+}[keyof T];
+
 export class Collection<T> {
     /**
      * @param {String} name - The name of the collection
@@ -93,17 +97,17 @@ export class Collection<T> {
 
     /**
      * Add automatically a value to the JSON file
-     * @param {T} value - The value to add
+     * @param {Omit<T, NoMethods<T>>} value - The value, without methods, to add
      * @returns {Promise<String>} The id of the added element
      */
-    public add(value: T): Promise<string>;
+    public add(value: Omit<T, NoMethods<T>>): Promise<string>;
 
     /**
      * Add automatically multiple values to the JSON file
-     * @param {T[]} values - The values to add
+     * @param {Omit<T, NoMethods<T>>[]} values - The values, without methods, to add
      * @returns {Promise<String[]>} The ids of the added elements
      */
-    public addBulk(values: T[]): Promise<string[]>;
+    public addBulk(values: Omit<T, NoMethods<T>>[]): Promise<string[]>;
 
     /**
      * Remove an element from the collection by its id
@@ -122,18 +126,18 @@ export class Collection<T> {
     /**
      * Set a value in the collection by its id
      * @param {String|Number} id - The id of the element you want to edit
-     * @param {T} value - The value you want to edit
+     * @param {Omit<T, NoMethods<T>>} value - The value, without methods, you want to edit
      * @returns {Promise<T>} The edited element
      */
-    public set(id: string|number, value: T): Promise<T>;
+    public set(id: string|number, value: Omit<T, NoMethods<T>>): Promise<T>;
 
     /**
      * Set multiple values in the collection by their ids
      * @param {String[]|Number[]} ids - The ids of the elements you want to edit
-     * @param {T[]} values - The values you want to edit
+     * @param {Omit<T, NoMethods<T>>[]} values - The values, without methods, you want to edit
      * @returns {Promise<T[]>} The edited elements
      */
-    public setBulk(ids: string[]|number[], values: T[]): Promise<T[]>;
+    public setBulk(ids: string[]|number[], values: Omit<T, NoMethods<T>>[]): Promise<T[]>;
 
     /**
      * Edit one field of the collection
