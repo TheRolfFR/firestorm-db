@@ -1,38 +1,42 @@
+
+// "!="                    /** @param {Number|String|Boolean} field - Search if entry field's value is not equal to the value provided */
+// | "=="                  /** @param {Number|String|Boolean} field - Search if entry field's value is equal to the value provided */
+// | ">="                  /** @param {Number|String} field - Search if entry field's value is greater than or equal to the value provided */
+// | "<="                  /** @param {Number|String} field - Search if entry field's value is less than or equal to the value provided */
+// | "<"                   /** @param {Number|String} field - Search if entry field's value is less than the value provided */
+// | ">"                   /** @param {Number|String} field - Search if entry field's value is greater than the value provided */
+// | "in"                  /** @param {Array|Number} field - Search if entry field's value is in the array of values you provided */
+// | "includes"            /** @param {String} field - Search if entry field's value includes the value provided */
+// | "startsWith"          /** @param {String} field - Search if entry field's value starts with the value provided */
+// | "endsWith"            /** @param {String} field - Search if entry field's value ends with the value provided */
+// | "array-contains"      /** @param {Array} field - Search if entry field's array contains the value you provided */
+// | "array-contains-any"  /** @param {Array} field - Search if entry field's array contains any of the values of the array you provided */
+// | "array-length-eq"     /** @param {Number} field - Search if entry field's array length is equal to the value provided */
+// | "array-length-df"     /** @param {Number} field - Search if entry field's array length is different from the value provided */
+// | "array-length-gt"     /** @param {Number} field - Search if entry field's array length is greater than the value provided */
+// | "array-length-lt"     /** @param {Number} field - Search if entry field's array length is less than the value provided */
+// | "array-length-ge"     /** @param {Number} field - Search if entry field's array length is greater than or equal to the value provided */
+// | "array-length-le";    /** @param {Number} field - Search if entry field's array length is less than or equal to the value provided */
+
+export type CriteriaAlone = "!=" | "==" | ">=" | "<=" | ">" | "<" | "startsWith" | "endsWith" | "includes" | "contains" | "array-contains" | "array-length-eq" | "array-length-df" | "array-length-gt" | "array-length-lt" | "array-length-ge" | "array-length-le";
+export type CriteriaMultiple = "in" | "array-contains-any";
+
+export type t<T> = (T & { id: string|number });
+
 export type SearchOption<T> = { 
-    [K in keyof T]: { 
+    [K in keyof t<T>]: { 
         // The field you want to search in (any field from T + "id")
-        field: K | "id";
-        // filter criteria // todo: split this into their own type (maybe?)
-        criteria: 
-            "!="                    /** @param {Number|String|Boolean} field - Search if entry field's value is not equal to the value provided */
-            | "=="                  /** @param {Number|String|Boolean} field - Search if entry field's value is equal to the value provided */
-            | ">="                  /** @param {Number|String} field - Search if entry field's value is greater than or equal to the value provided */
-            | "<="                  /** @param {Number|String} field - Search if entry field's value is less than or equal to the value provided */
-            | "<"                   /** @param {Number|String} field - Search if entry field's value is less than the value provided */
-            | ">"                   /** @param {Number|String} field - Search if entry field's value is greater than the value provided */
-            | "in"                  /** @param {Array|Number} field - Search if entry field's value is in the array of values you provided */
-            | "includes"            /** @param {String} field - Search if entry field's value includes the value provided */
-            | "startsWith"          /** @param {String} field - Search if entry field's value starts with the value provided */
-            | "endsWith"            /** @param {String} field - Search if entry field's value ends with the value provided */
-            | "array-contains"      /** @param {Array} field - Search if entry field's array contains the value you provided */
-            | "array-contains-any"  /** @param {Array} field - Search if entry field's array contains any of the values of the array you provided */
-            | "array-length-eq"     /** @param {Number} field - Search if entry field's array length is equal to the value provided */
-            | "array-length-df"     /** @param {Number} field - Search if entry field's array length is different from the value provided */
-            | "array-length-gt"     /** @param {Number} field - Search if entry field's array length is greater than the value provided */
-            | "array-length-lt"     /** @param {Number} field - Search if entry field's array length is less than the value provided */
-            | "array-length-ge"     /** @param {Number} field - Search if entry field's array length is greater than or equal to the value provided */
-            | "array-length-le";    /** @param {Number} field - Search if entry field's array length is less than or equal to the value provided */
+        field: K;
+        // filter criteria
+        criteria: CriteriaAlone | CriteriaMultiple;
 
         // the value you want to compare
-        //! the below solution is only partial
-        // todo: add T[K][] when criteria is type of criteria indicate to search into an array / from an array
-        // todo: add string type when field type/value is equal to "id"
-        value: T[K];
+        value: t<T>[K] | t<T>[K][];
 
         // Ignore case on search string
         ignoreCase?: boolean;
     }
-}[keyof T];
+}[keyof t<T>];
 
 
 // todo: rewrite this using the same format as SearchOption<T>

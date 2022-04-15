@@ -28,8 +28,8 @@ interface Family {
 const families = firestorm.collection<Family>("families", (el) => {
   el.getDad = async (): Promise<User> => users.get(el.dad);
   el.getMom = async (): Promise<User> => users.get(el.mom);
-  el.getChildren = async (): Promise<User[]> => users.search([{ field: "id", criteria: "==", value:  }]);
-  el.getChildren = async (): Promise<User[]> => users.search([{ field: "age", criteria: "==", value:  }]);
+  el.getChildren = async (): Promise<User[]> => users.search([{ field: "id" , criteria: "==", value:  }]);
+  el.getChildren = async (): Promise<User[]> => users.search([{ field: "age", criteria: "in", value:  }]);
 
   return el;
 });
