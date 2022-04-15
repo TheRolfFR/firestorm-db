@@ -1,9 +1,10 @@
 // todo: test here typings from "../typings/index.d.ts"
-import { firestorm, Collection } from "../typings/index";
+import { firestorm, Collection, Raw } from "../typings/index";
 
 firestorm.address("http://localhost/firestorm/"); // php files location
 firestorm.token("12345"); // identification token for php files
 
+// declare User collection
 interface User {
   name: string;
   age: number;
@@ -48,3 +49,12 @@ ids.forEach(async (id: string) => {
   const f: Family = await families.get(id);
   const dad: User = await (await families.get(id)).getDad();
 })
+
+const u: Raw<User> = await users.read_raw();
+await users.write_raw(u);
+
+users.search([{
+  field: "age",
+  criteria: "==",
+  value: "1"
+}])

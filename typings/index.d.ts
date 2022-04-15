@@ -1,30 +1,58 @@
-export interface SearchOption {
+export interface SearchOption<T> {
     // The field you want to search in
-    field: string;
+    field: keyof T | "id";
     // filter criteria
-    criteria: "!=" | "==" | ">=" | "<=" | "<" | ">" | "in" | "includes" | "startsWith" | "endsWith" | "array-contains" | "array-contains-any" | "array-length-(eq|df|gt|lt|ge|le)";
+    criteria: "!="              /** @param {Number|String|Boolean} field - Search if entry field's value is not equal to the value provided */
+        | "=="                  /** @param {Number|String|Boolean} field - Search if entry field's value is equal to the value provided */
+        | ">="                  /** @param {Number|String} field - Search if entry field's value is greater than or equal to the value provided */
+        | "<="                  /** @param {Number|String} field - Search if entry field's value is less than or equal to the value provided */
+        | "<"                   /** @param {Number|String} field - Search if entry field's value is less than the value provided */
+        | ">"                   /** @param {Number|String} field - Search if entry field's value is greater than the value provided */
+        | "in"                  /** @param {Array|Number} field - Search if entry field's value is in the array of values you provided */
+        | "includes"            /** @param {String} field - Search if entry field's value includes the value provided */
+        | "startsWith"          /** @param {String} field - Search if entry field's value starts with the value provided */
+        | "endsWith"            /** @param {String} field - Search if entry field's value ends with the value provided */
+        | "array-contains"      /** @param {Array} field - Search if entry field's array contains the value you provided */
+        | "array-contains-any"  /** @param {Array} field - Search if entry field's array contains any of the array of values you provided */
+        | "array-length-eq"     /** @param {Number} field - Search if entry field's array length is equal to the value provided */
+        | "array-length-df"     /** @param {Number} field - Search if entry field's array length is different from the value provided */
+        | "array-length-gt"     /** @param {Number} field - Search if entry field's array length is greater than the value provided */
+        | "array-length-lt"     /** @param {Number} field - Search if entry field's array length is less than the value provided */
+        | "array-length-ge"     /** @param {Number} field - Search if entry field's array length is greater than or equal to the value provided */
+        | "array-length-le";    /** @param {Number} field - Search if entry field's array length is less than or equal to the value provided */
     // the value you want to compare
-    value: string | number | boolean | any[];
+    value: T[keyof T] | T[keyof T][]; // todo: force this value type to be the same type as the field key->value type (or an array of it)
     // Ignore case on search string
     ignoreCase?: boolean;
 }
-export interface EditObject {
+export interface EditObject<T> {
     // the affected element
     id: string | number;
     // The field you want to edit
-    field: string;
+    field: keyof T;
     // Wanted operation on field
-    operation: "set" | "remove" | "append" | "increment" | "decrement" | "array-push" | "array-delete" | "array-splice";
+    operation: "set"      /** @param {any} field - Set the field to the value provided */
+        | "remove"        /** @param {any} field - Remove the field */
+        | "append"        /** @param {String} field - Append the value provided at the end of the string field */
+        | "increment"     /** @param {Number} field - Increment the number field by the value provided, or by 1 if not provided */
+        | "decrement"     /** @param {Number} field - Decrement the number field by the value provided, or by 1 if not provided */
+        | "array-push"    /** @param {any} field - Push the value provided at the end of the array field */
+        | "array-delete"  /** @param {Integer} field - Delete the value at the index value provided @see https://www.php.net/manual/fr/function.array-splice */
+        | "array-splice"; /** @param {Integer[]} field - Remove certains elements @see https://www.php.net/manual/fr/function.array-splice */
     // the value you want to edit
-    value?: string | number | boolean | any[];
+    value?: T[keyof T] | T[keyof T][]; // todo: force this value type to be the same type as the field key->value type (or an array of it)
 }
-export interface SelectOption  {
+export interface SelectOption<T> {
     // Chosen fields to eventually return
-    fields: string[];
+    fields: Array<keyof T | "id">;
 }
 
 export interface AddMethods<T> {
     (el: T): T;
+}
+
+export interface Raw<T> {
+    [key: string]: T;
 }
 
 export type NoMethods<T> = {
@@ -53,11 +81,11 @@ export class Collection<T> {
 
     /**
      * Search trough the collection
-     * @param {SearchOption[]} options - Array of searched options
+     * @param {SearchOption<T>[]} options - Array of searched options
      * @param {(Number|Boolean)?} random - Random result seed, disabled by default, but can activated with true or a given seed
      * @returns {Promise<T[]>} The found elements
      */
-    public search(options: SearchOption[], random?: boolean|number): Promise<T[]>;
+    public search(options: SearchOption<T>[], random?: boolean|number): Promise<T[]>;
 
     /**
      * Search specific keys through the collection
@@ -68,16 +96,16 @@ export class Collection<T> {
 
     /**
      * Returns the whole content of the file
-     * @returns {Promise<any>}
+     * @returns {Promise<Raw<T>>}
      */
-    public read_raw(): Promise<any>;
+    public read_raw(): Promise<Raw<T>>;
 
     /**
      * Get only selected elements from the collection
-     * @param {SelectOption} option - The option you want to select
+     * @param {SelectOption<T>} option - The option you want to select
      * @returns {Promise<any[]>} Only selected elements from T
      */
-    public select(option: SelectOption): Promise<any[]>;
+    public select(option: SelectOption<T>): Promise<any[]>;
 
     /**
      * Get random max entries offset with a given seed
@@ -90,10 +118,10 @@ export class Collection<T> {
 
     /**
      * Write the whole content in the JSON file
-     * @param {T} value - The value to write
-     * @returns {Promise<any>}
+     * @param {Raw<T>} value - The value to write
+     * @returns {Promise<String>}
      */
-    public write_raw(value: T): Promise<any>;
+    public write_raw(value: Raw<T>): Promise<string>;
 
     /**
      * Add automatically a value to the JSON file
@@ -112,46 +140,46 @@ export class Collection<T> {
     /**
      * Remove an element from the collection by its id
      * @param {String|Number} id - The id of the element you want to remove
-     * @returns {Promise<any>}
+     * @returns {Promise<String>}
      */
-    public remove(id: string|number): Promise<any>;
+    public remove(id: string|number): Promise<string>;
 
     /**
      * Remove multiple elements from the collection by their ids
      * @param {String[]|Number[]} ids - The ids of the elements you want to remove
-     * @returns {Promise<any>}
+     * @returns {Promise<String>}
      */
-    public removeBulk(ids: string[]|number[]): Promise<any>;
+    public removeBulk(ids: string[]|number[]): Promise<string>;
 
     /**
      * Set a value in the collection by its id
      * @param {String|Number} id - The id of the element you want to edit
      * @param {Omit<T, NoMethods<T>>} value - The value, without methods, you want to edit
-     * @returns {Promise<T>} The edited element
+     * @returns {Promise<String>} The edited element
      */
-    public set(id: string|number, value: Omit<T, NoMethods<T>>): Promise<T>;
+    public set(id: string|number, value: Omit<T, NoMethods<T>>): Promise<string>;
 
     /**
      * Set multiple values in the collection by their ids
      * @param {String[]|Number[]} ids - The ids of the elements you want to edit
      * @param {Omit<T, NoMethods<T>>[]} values - The values, without methods, you want to edit
-     * @returns {Promise<T[]>} The edited elements
+     * @returns {Promise<String>} The edited elements
      */
-    public setBulk(ids: string[]|number[], values: Omit<T, NoMethods<T>>[]): Promise<T[]>;
+    public setBulk(ids: string[]|number[], values: Omit<T, NoMethods<T>>[]): Promise<string>;
 
     /**
      * Edit one field of the collection
-     * @param {EditObject} edit - The edit object
+     * @param {EditObject<T>} edit - The edit object
      * @returns {Promise<T>} The edited element
      */
-    public editField(edit: EditObject): Promise<T>;
+    public editField(edit: EditObject<T>): Promise<T>;
 
     /**
      * Change one field from multiple elements of the collection
-     * @param {EditObject[]} edits - The edit objects
+     * @param {EditObject<T>[]} edits - The edit objects
      * @returns {Promise<T[]>} The edited elements
      */
-    public editFieldBulk(edits: EditObject[]): Promise<T[]>;
+    public editFieldBulk(edits: EditObject<T>[]): Promise<T[]>;
 }
 
 export namespace firestorm {
