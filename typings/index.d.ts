@@ -18,6 +18,12 @@
 // | "array-length-ge"     /** @param {Number} field - Search if entry field's array length is greater than or equal to the value provided */
 // | "array-length-le";    /** @param {Number} field - Search if entry field's array length is less than or equal to the value provided */
 
+
+
+
+export type CriteriaUniqueNumber = "!=" | "==" | ">=" | "<=" | ">" | "<" | "array-length-eq" | "array-length-df" | "array-length-gt" | "array-length-lt" | "array-length-ge" | "array-length-le";
+export type CriteriaUniqueString = "!=" | "==" | ">=" | "<=" | ">" | "<";
+
 export type CriteriaAlone = "!=" | "==" | ">=" | "<=" | ">" | "<" | "startsWith" | "endsWith" | "includes" | "contains" | "array-contains" | "array-length-eq" | "array-length-df" | "array-length-gt" | "array-length-lt" | "array-length-ge" | "array-length-le";
 export type CriteriaMultiple = "in" | "array-contains-any";
 
