@@ -1,37 +1,49 @@
-export interface SearchOption<T> {
-    // The field you want to search in
-    field: keyof T | "id";
-    // filter criteria
-    criteria: "!="              /** @param {Number|String|Boolean} field - Search if entry field's value is not equal to the value provided */
-        | "=="                  /** @param {Number|String|Boolean} field - Search if entry field's value is equal to the value provided */
-        | ">="                  /** @param {Number|String} field - Search if entry field's value is greater than or equal to the value provided */
-        | "<="                  /** @param {Number|String} field - Search if entry field's value is less than or equal to the value provided */
-        | "<"                   /** @param {Number|String} field - Search if entry field's value is less than the value provided */
-        | ">"                   /** @param {Number|String} field - Search if entry field's value is greater than the value provided */
-        | "in"                  /** @param {Array|Number} field - Search if entry field's value is in the array of values you provided */
-        | "includes"            /** @param {String} field - Search if entry field's value includes the value provided */
-        | "startsWith"          /** @param {String} field - Search if entry field's value starts with the value provided */
-        | "endsWith"            /** @param {String} field - Search if entry field's value ends with the value provided */
-        | "array-contains"      /** @param {Array} field - Search if entry field's array contains the value you provided */
-        | "array-contains-any"  /** @param {Array} field - Search if entry field's array contains any of the array of values you provided */
-        | "array-length-eq"     /** @param {Number} field - Search if entry field's array length is equal to the value provided */
-        | "array-length-df"     /** @param {Number} field - Search if entry field's array length is different from the value provided */
-        | "array-length-gt"     /** @param {Number} field - Search if entry field's array length is greater than the value provided */
-        | "array-length-lt"     /** @param {Number} field - Search if entry field's array length is less than the value provided */
-        | "array-length-ge"     /** @param {Number} field - Search if entry field's array length is greater than or equal to the value provided */
-        | "array-length-le";    /** @param {Number} field - Search if entry field's array length is less than or equal to the value provided */
-    // the value you want to compare
-    value: T[keyof T] | T[keyof T][]; // todo: force this value type to be the same type as the field key->value type (or an array of it)
-    // Ignore case on search string
-    ignoreCase?: boolean;
-}
+export type SearchOption<T> = { 
+    [K in keyof T]: { 
+        // The field you want to search in (any field from T + "id")
+        field: K | "id";
+        // filter criteria // todo: split this into their own type (maybe?)
+        criteria: 
+            "!="                    /** @param {Number|String|Boolean} field - Search if entry field's value is not equal to the value provided */
+            | "=="                  /** @param {Number|String|Boolean} field - Search if entry field's value is equal to the value provided */
+            | ">="                  /** @param {Number|String} field - Search if entry field's value is greater than or equal to the value provided */
+            | "<="                  /** @param {Number|String} field - Search if entry field's value is less than or equal to the value provided */
+            | "<"                   /** @param {Number|String} field - Search if entry field's value is less than the value provided */
+            | ">"                   /** @param {Number|String} field - Search if entry field's value is greater than the value provided */
+            | "in"                  /** @param {Array|Number} field - Search if entry field's value is in the array of values you provided */
+            | "includes"            /** @param {String} field - Search if entry field's value includes the value provided */
+            | "startsWith"          /** @param {String} field - Search if entry field's value starts with the value provided */
+            | "endsWith"            /** @param {String} field - Search if entry field's value ends with the value provided */
+            | "array-contains"      /** @param {Array} field - Search if entry field's array contains the value you provided */
+            | "array-contains-any"  /** @param {Array} field - Search if entry field's array contains any of the values of the array you provided */
+            | "array-length-eq"     /** @param {Number} field - Search if entry field's array length is equal to the value provided */
+            | "array-length-df"     /** @param {Number} field - Search if entry field's array length is different from the value provided */
+            | "array-length-gt"     /** @param {Number} field - Search if entry field's array length is greater than the value provided */
+            | "array-length-lt"     /** @param {Number} field - Search if entry field's array length is less than the value provided */
+            | "array-length-ge"     /** @param {Number} field - Search if entry field's array length is greater than or equal to the value provided */
+            | "array-length-le";    /** @param {Number} field - Search if entry field's array length is less than or equal to the value provided */
+
+        // the value you want to compare
+        //! the below solution is only partial
+        // todo: add T[K][] when criteria is type of criteria indicate to search into an array / from an array
+        // todo: add string type when field type/value is equal to "id"
+        value: T[K];
+
+        // Ignore case on search string
+        ignoreCase?: boolean;
+    }
+}[keyof T];
+
+
+// todo: rewrite this using the same format as SearchOption<T>
 export interface EditObject<T> {
     // the affected element
     id: string | number;
     // The field you want to edit
     field: keyof T;
     // Wanted operation on field
-    operation: "set"      /** @param {any} field - Set the field to the value provided */
+    operation: 
+          "set"           /** @param {any} field - Set the field to the value provided */
         | "remove"        /** @param {any} field - Remove the field */
         | "append"        /** @param {String} field - Append the value provided at the end of the string field */
         | "increment"     /** @param {Number} field - Increment the number field by the value provided, or by 1 if not provided */
@@ -40,7 +52,7 @@ export interface EditObject<T> {
         | "array-delete"  /** @param {Integer} field - Delete the value at the index value provided @see https://www.php.net/manual/fr/function.array-splice */
         | "array-splice"; /** @param {Integer[]} field - Remove certains elements @see https://www.php.net/manual/fr/function.array-splice */
     // the value you want to edit
-    value?: T[keyof T] | T[keyof T][]; // todo: force this value type to be the same type as the field key->value type (or an array of it)
+    value?: T[keyof T] | T[keyof T][]; // todo: implement it the same way as SearchOption<T>
 }
 export interface SelectOption<T> {
     // Chosen fields to eventually return

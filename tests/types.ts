@@ -8,12 +8,13 @@ firestorm.token("12345"); // identification token for php files
 interface User {
   name: string;
   age: number;
+  alive: boolean;
 }
 
 const users: Collection<User> = firestorm.collection<User>("users");
-const idDad = await users.add({ name: "John", age: 30 });
-const idsMom = await users.addBulk([{ name: "Anna", age: 35 }, { name: "Marge", age: 40 }]);
-const idsChildren = await users.addBulk([{ name: "Jack", age: 5 }, { name: "Jill", age: 2 }, { name: "Joe", age: 7 }]);
+const idDad = await users.add({ name: "John", age: 30, alive: true });
+const idsMom = await users.addBulk([{ name: "Anna", age: 35, alive: false }, { name: "Marge", age: 40, alive: true }]);
+const idsChildren = await users.addBulk([{ name: "Jack", age: 5, alive: true }, { name: "Jill", age: 2, alive: true }, { name: "Joe", age: 7, alive: true }]);
 
 interface Family {
   getDad: () => Promise<User>;
@@ -27,7 +28,8 @@ interface Family {
 const families = firestorm.collection<Family>("families", (el) => {
   el.getDad = async (): Promise<User> => users.get(el.dad);
   el.getMom = async (): Promise<User> => users.get(el.mom);
-  el.getChildren = async (): Promise<User[]> => users.search([{ field: "id", criteria: "in", value: el.children }]);
+  el.getChildren = async (): Promise<User[]> => users.search([{ field: "id", criteria: "==", value:  }]);
+  el.getChildren = async (): Promise<User[]> => users.search([{ field: "age", criteria: "==", value:  }]);
 
   return el;
 });
