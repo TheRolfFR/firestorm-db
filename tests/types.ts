@@ -15,17 +15,19 @@ interface User {
     city: string;
     country: string;
   },
+  friend: User;
 }
 
 const users: Collection<User> = firestorm.collection<User>("users");
-// const idDad = await users.add({ name: "John", age: 30, alive: true, cars: ["BMW", "Citroen"] });
+const idDad = await users.add({ name: "John", age: 30, alive: true, cars: ["BMW", "Citroen"], address: null, friend: null });
 // const idsMom = await users.addBulk([{ name: "Anna", age: 35, alive: false, cars: [] }, { name: "Marge", age: 40, alive: true, cars: ["Audi", "Mazda"] }]);
 // const idsChildren = await users.addBulk([{ name: "Jack", age: 5, alive: true, cars: [] }, { name: "Jill", age: 2, alive: true, cars: [] }, { name: "Joe", age: 7, alive: true, cars: [] }]);
-const idDad = null;
+// const idDad = null;
 const idsMom = null;
 const idsChildren = null;
 
 interface Family {
+  getChildren3: () => Promise<User[]>;
   getChildren2: () => Promise<User[]>;
   getDad: () => Promise<User>;
   getMom: () => Promise<User>;
@@ -36,12 +38,26 @@ interface Family {
 }
 
 const families = firestorm.collection<Family>("families", (el) => {
-  el.getChildren  = async (): Promise<User[]> => users.search([{ field: "address", criteria: "is", value: { field: "country", criteria: "==", value: "France" } }]);
+  el.getChildren  = async (): Promise<User[]> => users.search([{ field: "id", criteria: "==", value: 0 }]);
   el.getChildren2 = async (): Promise<User[]> => users.search([{ field: "age", criteria: ">=", value: 5 }]);
-  el.getChildren2 = async (): Promise<User[]> => users.search([{ field: "name", criteria: "in", value:  }]);
+  el.getChildren3 = async (): Promise<User[]> => users.search([{ field: "name", criteria: "in", value: ["Jack", "Jill", "Joe"] }]);
 
   return el;
 });
+
+users.editField({
+  id: idDad,
+  field: "name",
+  operation: "remove"
+})
+
+users.editField({
+  id: idDad,
+  field: "cars",
+  operation: "array-push",
+  value: "yolo"
+})
+
 
 const ids: string[] = await families.addBulk([
   {

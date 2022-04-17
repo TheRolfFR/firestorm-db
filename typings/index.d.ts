@@ -1,43 +1,90 @@
 
-// "!="                    /** @param {Number|String|Boolean} field - Search if entry field's value is not equal to the value provided */
-// | "=="                  /** @param {Number|String|Boolean} field - Search if entry field's value is equal to the value provided */
-// | ">="                  /** @param {Number|String} field - Search if entry field's value is greater than or equal to the value provided */
-// | "<="                  /** @param {Number|String} field - Search if entry field's value is less than or equal to the value provided */
-// | "<"                   /** @param {Number|String} field - Search if entry field's value is less than the value provided */
-// | ">"                   /** @param {Number|String} field - Search if entry field's value is greater than the value provided */
-// | "in"                  /** @param {Number|String} field - Search if entry field's value is in the array of values you provided */
-// | "includes"            /** @param {String} field - Search if entry field's value includes the value provided */
-// | "startsWith"          /** @param {String} field - Search if entry field's value starts with the value provided */
-// | "endsWith"            /** @param {String} field - Search if entry field's value ends with the value provided */
-// | "array-contains"      /** @param {Array} field - Search if entry field's array contains the value you provided */
-// | "array-contains-any"  /** @param {Array} field - Search if entry field's array contains any of the values of the array you provided */
-// | "array-length-eq"     /** @param {Array} field - Search if entry field's array length is equal to the value provided */
-// | "array-length-df"     /** @param {Array} field - Search if entry field's array length is different from the value provided */
-// | "array-length-gt"     /** @param {Array} field - Search if entry field's array length is greater than the value provided */
-// | "array-length-lt"     /** @param {Array} field - Search if entry field's array length is less than the value provided */
-// | "array-length-ge"     /** @param {Array} field - Search if entry field's array length is greater than or equal to the value provided */
-// | "array-length-le";    /** @param {Array} field - Search if entry field's array length is less than or equal to the value provided */
+export type math_criteria = 
+    | "==" // test if the value is equal to the provided value
+    | "!=" // test if the value is not equal to the provided value
+    | "<"  // test if the value is less than the provided value
+    | "<=" // test if the value is less than or equal to the provided value
+    | ">"  // test if the value is greater than the provided value
+    | ">=" // test if the value is greater than or equal to the provided value
+    | "in"; // test if the value is in the given array
 
-import { arr_response, Criteria, obj_response } from "./criteria";
-import { any_operation, Operation } from "./operation";
+export type str_criteria = 
+    | "==" // test if the string value is equal to the provided value
+    | "!=" // test if the string value is not equal to the provided value
+    | "<"  // test if the string value length is less than the provided value
+    | "<=" // test if the string value length is less than or equal to the provided value
+    | ">"  // test if the string value length is greater than the provided value
+    | ">=" // test if the string value length is greater than or equal to the provided value
+    | "in" // test if the string value is in the given array
+    | "includes" // test if the string value includes the provided value
+    | "contains" // same as "includes"
+    | "startsWith" // test if the string value starts with the provided value
+    | "endsWith"; // test if the string value ends with the provided value
 
-export type SearchOption<T> = { 
+export type arr_criteria =
+    | "array-contains" // test if the value is in the given array
+    | "array-contains-any" // test if the any value of the array is in the given array
+    | "array-length-eq" // test if the array length is equal to the provided value
+    | "array-length-df" // test if the array length is different from the provided value
+    | "array-length-gt" // test if the array length is greater than the provided value
+    | "array-length-lt" // test if the array length is less than the provided value
+    | "array-length-ge" // test if the array length is greater than or equal to the provided value
+    | "array-length-le"; // test if the array length is less than or equal to the provided value
+
+export type bool_criteria = 
+    | "!=" // test if the value is not equal to the provided value
+    | "=="; // test if the value is equal to the provided value
+
+export type any_criteria = str_criteria | arr_criteria | bool_criteria | math_criteria;
+
+export type Criteria<T> = 
+    | T extends Function ? never : never // methods are not allowed in the field (they are not saved in the collection JSON file)
+    | T extends Array<unknown> ? arr_criteria : never
+    | T extends string ? str_criteria : never
+    | T extends number ? math_criteria : never
+    | T extends boolean ? bool_criteria : never
+
+export type any_operation = 
+    | "set"       /** @param {T} value - set the field to the given value */
+    | "remove"    /** @param {null|undefined|any} value - remove the field */
+
+export type string_operation = 
+    | "append"    /** @param {string} value - append the given value to the field */
+
+export type number_operation = 
+    | "increment"  /** @param {number?} value - increment the field by the given value, or by one */
+    | "decrement"  /** @param {number?} value - decrement the field by the given value, or by one */
+
+export type array_operation  = 
+    | "array-push"   /** @param {any} value - push the given value to the field */
+    | "array-delete" /** @param {number} index - delete the value at the given index @see https://www.php.net/manual/fr/function.array-splice */
+    | "array-splice" /** @param {number[]} indexes - remove certains elements of the array field @see https://www.php.net/manual/fr/function.array-splice */
+
+export type _operation<T> =
+    | T extends string ? string_operation : never
+    | T extends number ? number_operation : never
+    | T extends Array<unknown> ? array_operation : never
+    | T extends object|Function ? never : never
+
+export type Operation<T> = _operation<T> | any_operation;
+
+export type SearchOption<T> = {
     [K in keyof T]: {
         field: K;
         criteria: Criteria<T[K]>;
-        value: T[K] extends object ? T[K] | SearchOption<T[K]> | SearchOption<T[K]>[] : (T[K] | T[K][]); // todo: find something more precise here
+        value: any;
         ignoreCase?: boolean;
     }
 }[keyof T]
 
-export type EditObject<T> = {
+export type EditField<T> = {
     [K in keyof T]: {
-        id: string|number;
+        id: number|string;
         field: K;
-        operation: Operation<T[K]> | any_operation;
-        value?: T[K] | T[K][];
+        operation: Operation<K>;
+        value?: any;
     }
-}[keyof T];
+}[keyof T]
 export interface SelectOption<T> {
     // Chosen fields to eventually return
     fields: Array<keyof T | "id">;
