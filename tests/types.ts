@@ -1,4 +1,4 @@
-// todo: test here typings from "../typings/index.d.ts"
+//* test here typings from "../typings/index.d.ts"
 import { firestorm, Collection, Raw } from "../typings/index";
 
 firestorm.address("http://localhost/firestorm/"); // php files location
@@ -9,14 +9,24 @@ interface User {
   name: string;
   age: number;
   alive: boolean;
+  cars: string[];
+  address: {
+    street: string;
+    city: string;
+    country: string;
+  },
 }
 
 const users: Collection<User> = firestorm.collection<User>("users");
-const idDad = await users.add({ name: "John", age: 30, alive: true });
-const idsMom = await users.addBulk([{ name: "Anna", age: 35, alive: false }, { name: "Marge", age: 40, alive: true }]);
-const idsChildren = await users.addBulk([{ name: "Jack", age: 5, alive: true }, { name: "Jill", age: 2, alive: true }, { name: "Joe", age: 7, alive: true }]);
+// const idDad = await users.add({ name: "John", age: 30, alive: true, cars: ["BMW", "Citroen"] });
+// const idsMom = await users.addBulk([{ name: "Anna", age: 35, alive: false, cars: [] }, { name: "Marge", age: 40, alive: true, cars: ["Audi", "Mazda"] }]);
+// const idsChildren = await users.addBulk([{ name: "Jack", age: 5, alive: true, cars: [] }, { name: "Jill", age: 2, alive: true, cars: [] }, { name: "Joe", age: 7, alive: true, cars: [] }]);
+const idDad = null;
+const idsMom = null;
+const idsChildren = null;
 
 interface Family {
+  getChildren2: () => Promise<User[]>;
   getDad: () => Promise<User>;
   getMom: () => Promise<User>;
   getChildren: () => Promise<User[]>;
@@ -26,10 +36,9 @@ interface Family {
 }
 
 const families = firestorm.collection<Family>("families", (el) => {
-  el.getDad = async (): Promise<User> => users.get(el.dad);
-  el.getMom = async (): Promise<User> => users.get(el.mom);
-  el.getChildren = async (): Promise<User[]> => users.search([{ field: "id" , criteria: "==", value:  }]);
-  el.getChildren = async (): Promise<User[]> => users.search([{ field: "age", criteria: "in", value:  }]);
+  el.getChildren  = async (): Promise<User[]> => users.search([{ field: "address", criteria: "is", value: { field: "country", criteria: "==", value: "France" } }]);
+  el.getChildren2 = async (): Promise<User[]> => users.search([{ field: "age", criteria: ">=", value: 5 }]);
+  el.getChildren2 = async (): Promise<User[]> => users.search([{ field: "name", criteria: "in", value:  }]);
 
   return el;
 });
@@ -54,9 +63,3 @@ ids.forEach(async (id: string) => {
 
 const u: Raw<User> = await users.read_raw();
 await users.write_raw(u);
-
-users.search([{
-  field: "age",
-  criteria: "==",
-  value: "1"
-}])
