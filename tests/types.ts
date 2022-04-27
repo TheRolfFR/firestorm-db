@@ -1,5 +1,5 @@
 //* test here typings from "../typings/index.d.ts"
-import { firestorm, Collection, Raw } from "../typings/index";
+import { firestorm, Collection, Raw, EditField } from "../typings/index";
 
 firestorm.address("http://localhost/firestorm/"); // php files location
 firestorm.token("12345"); // identification token for php files
@@ -48,7 +48,15 @@ const families = firestorm.collection<Family>("families", (el) => {
 users.editField({
   id: idDad,
   field: "name",
-  operation: "remove"
+  operation: "remove",
+  value: "true" // should not work
+})
+
+users.editField({
+  id: idDad,
+  field: "alive",
+  operation: "invert",
+  value: "true" // should not work
 })
 
 users.editField({

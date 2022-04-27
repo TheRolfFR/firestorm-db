@@ -1,3 +1,4 @@
+import { Except } from "type-fest";
 
 export type math_criteria = 
     | "==" // test if the value is equal to the provided value
@@ -60,31 +61,66 @@ export type array_operation  =
     | "array-delete" /** @param {number} index - delete the value at the given index @see https://www.php.net/manual/fr/function.array-splice */
     | "array-splice" /** @param {number[]} indexes - remove certains elements of the array field @see https://www.php.net/manual/fr/function.array-splice */
 
-export type _operation<T> =
+type _operation<T> =
     | T extends string ? string_operation : never
     | T extends number ? number_operation : never
     | T extends Array<unknown> ? array_operation : never
     | T extends object|Function ? never : never
 
-export type Operation<T> = _operation<T> | any_operation;
+
+export type Operation<T> = {
+    [K in keyof T]: _operation<T[K]>
+}[keyof T] | any_operation;
+
+type BaseEditField<T> = {
+    [K in keyof T]: {
+        id: number|string;
+    }
+}[keyof T];
+
+type Field<P, T> = {
+    [K in keyof T]: T[K] extends P ? K : never;
+}[keyof T];
+
+export type EditField<T> = {
+    [K in keyof T]: BaseEditField<T> & ({
+        field: K | string;
+        operation: "remove";
+    } |{
+        field: Field<Boolean, T>;
+        operation: "invert";
+    } | {
+        field: Field<Number,T>;
+        operation: "increment" | "decrement";
+        value?: Number;
+    } | {
+        field: Field<T[K], T> | String;
+        operation: "set";
+        value: T[K] | any;
+    } | {
+        field: Field<Array<unknown>, T>;
+        operation: "array-push";
+        value: T[K];
+    } | {
+        field: Field<Array<unknown>, T>;
+        operation: "array-delete",
+        value: Number
+    } | {
+        field: Field<Array<unknown>, T>;
+        operation: "array-slice",
+        value: [Number, Number]
+    })
+}[keyof T]
 
 export type SearchOption<T> = {
     [K in keyof T]: {
-        field: K;
+        field: K | String;
         criteria: Criteria<T[K]>;
-        value: any;
+        value?: any;
         ignoreCase?: boolean;
     }
 }[keyof T]
 
-export type EditField<T> = {
-    [K in keyof T]: {
-        id: number|string;
-        field: K;
-        operation: Operation<K>;
-        value?: any;
-    }
-}[keyof T]
 export interface SelectOption<T> {
     // Chosen fields to eventually return
     fields: Array<keyof T | "id">;
@@ -215,14 +251,14 @@ export class Collection<T> {
      * @param {EditObject<T>} edit - The edit object
      * @returns {Promise<T>} The edited element
      */
-    public editField(edit: EditObject<T>): Promise<T>;
+    public editField(edit: EditField<T>): Promise<T>;
 
     /**
      * Change one field from multiple elements of the collection
      * @param {EditObject<T>[]} edits - The edit objects
      * @returns {Promise<T[]>} The edited elements
      */
-    public editFieldBulk(edits: EditObject<T>[]): Promise<T[]>;
+    public editFieldBulk(edits: EditField<T>[]): Promise<T[]>;
 }
 
 export namespace firestorm {
