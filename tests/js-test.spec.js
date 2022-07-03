@@ -284,6 +284,7 @@ describe('GET operations', () => {
       ['<', 'age', 13, []],
       ['in', 'age', [23, 13], ['0', '1']],
       ['in', 'age', [21, 19], []],
+      ['in', 'name', ["Joy Harper"], ['0'],],
       ['includes', 'name', 'Joy', ['0', '1', '2']],
       ['includes', 'name', 'jOy', ['0', '1', '2'], true],
       ['includes', 'name', 'Bobby', []],

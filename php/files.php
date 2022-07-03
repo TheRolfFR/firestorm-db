@@ -83,7 +83,7 @@ if($method === 'POST') {
   // sudo chown -R www-data "/path/to/folder/"
 
   // mkdir(path, rw-r--r--, recursive=true)
-  if (!is_dir($uploaddir) && !mkdir($uploaddir, 0644, true)){
+  if (!is_dir($uploaddir) && !mkdir($uploaddir, 0766, true)){
     http_error(500, "PHP script can't create folder " . $uploaddir . ", check permission, group and owner.");
   }
 

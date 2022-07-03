@@ -381,7 +381,7 @@ class JSONDatabase {
                                     $add = $value != "" ? (($ignoreCase ? strcasecmp($end, $value) : strcmp($end, $value)) === 0) : true;
                                     break;
                                 case 'in':
-                                    $notfound = false;
+                                    $notfound = true;
                                     $a_i = 0;
                                     while($a_i < count($value) && $notfound) {
                                         $notfound = ($ignoreCase ? strcasecmp($concernedField, $value[$a_i])  : strcmp($concernedField, $value[$a_i])) != 0;
