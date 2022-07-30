@@ -8,7 +8,7 @@ function make_seed()
   return intval($sec + $usec * 1000000);
 }
 
-// can run with a maximum amount of random entries (if collection is smaller you cannot garantied) (is opptional, else it will be all the results)
+// can run with a maximum amount of random entries (if collection is smaller you cannot guarantied) (is optional, else it will be all the results)
 function random($params, $class) {
   $hasMax =  array_key_exists('max', $params);
   $max = $hasMax ? $params['max'] : -1;

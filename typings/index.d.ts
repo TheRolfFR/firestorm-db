@@ -1,5 +1,3 @@
-import { Except } from "type-fest";
-
 export type math_criteria = 
     | "==" // test if the value is equal to the provided value
     | "!=" // test if the value is not equal to the provided value

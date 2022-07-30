@@ -161,7 +161,7 @@ class Collection {
   }
 
   /**
-   * @returns {String} returns sha1 hash of the file. can be used to see if same file content without downloding the file for example
+   * @returns {String} returns sha1 hash of the file. can be used to see if same file content without downloading the file for example
    */
   sha1() {
     return this.__get_request({
@@ -306,7 +306,7 @@ class Collection {
   }
 
   /**
-   * Returns random max entries offsetted with a given seed
+   * Returns random max entries offsets with a given seed
    * @param {Integer} max 
    * @param {Integer} seed 
    * @param {Integer} offset 
@@ -560,7 +560,7 @@ const firestorm = {
     /**
      * Uploads file
      * @memberof firestorm.files
-     * @param {FormData} form formdata with path, filename and file
+     * @param {FormData} form formData with path, filename and file
      * @returns {Promise} http response
      */
     upload: function(form) {

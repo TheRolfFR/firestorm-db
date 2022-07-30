@@ -7,7 +7,7 @@ error_reporting(E_ALL - E_NOTICE);
 
 require_once('./config.php');
 
-if(!$STORAGE_LOCATION) http_error(501, 'Deveoper forgot the $STORAGE_LOCATION');
+if(!$STORAGE_LOCATION) http_error(501, 'Developer forgot the $STORAGE_LOCATION');
 
 // import useful functions
 require_once('./utils.php');
@@ -50,7 +50,7 @@ if($method === 'POST') {
   $absolutePath = removeDots($STORAGE_LOCATION . $relativePath);
   $myPath = removeDots($STORAGE_LOCATION);
 
-  // avoid hacks to write script or files unthorized
+  // avoid hacks to write script or files unauthorized
   if(strpos($absolutePath, $myPath) !== 0) http_error(403, 'Path not authorized');
   // no php script allowed
   if(str_ends_with($absolutePath, '.php') === 0) http_error(403, 'Cannot write php scripts');
@@ -106,7 +106,7 @@ if($method === 'POST') {
   // check path lower than me
   $absolutePath = removeDots($STORAGE_LOCATION . $path);
   $myPath = removeDots($STORAGE_LOCATION);
-  // avoid hacks to write script or files unthorized
+  // avoid hacks to write script or files unauthorized
   if(strpos($absolutePath, $myPath) !== 0) http_error(403, 'Path not authorized');
   // no php script allowed
   if(substr_compare($absolutePath, ".php", -strlen(".php"), null, true) === 0) http_error(403, 'Cannot read php scripts');
@@ -174,7 +174,7 @@ if($method === 'POST') {
   $absolutePath = removeDots($STORAGE_LOCATION . $relativePath);
   $myPath = removeDots($STORAGE_LOCATION);
 
-  // avoid hacks to write script or files unthorized
+  // avoid hacks to write script or files unauthorized
   if(strpos($absolutePath, $myPath) !== 0) http_error(403, 'Path not authorized');
 
   if(!file_exists($absolutePath)) http_error(404, 'File not found');

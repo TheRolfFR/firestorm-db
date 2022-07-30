@@ -5,8 +5,8 @@ require_once('./classes/JSONDatabase.php');
 
 $props = array(
     array('users', false), // Key is Discord ID
-    array('paths', true), // I need auto key but not necessarly autoIncrement
-    array('contributions', true), // I need auto key but not necessarly autoIncrement
+    array('paths', true), // I need auto key but not necessarily autoIncrement
+    array('contributions', true), // I need auto key but not necessarily autoIncrement
     array('textures', true), // I need auto increment ID
     array('uses', true), // I need auto increment ID
     array('animation', false), // key is texture use ID

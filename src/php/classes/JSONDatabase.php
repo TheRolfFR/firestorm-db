@@ -30,8 +30,8 @@ class JSONDatabase {
             return 400;
         }
 
-        // value must not be a sequantial array with values inside [1, 2, 3]
-        // we accept sequential arrays but with objects not pprimitives
+        // value must not be a sequential array with values inside [1, 2, 3]
+        // we accept sequential arrays but with objects not primitives
         if(is_array($content) and !array_assoc($content)) {
             foreach($content as $item) {
                 $item_type = gettype($item);
