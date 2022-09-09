@@ -34,13 +34,13 @@
     "index.js"
   ],
   "dependencies": {
-    "axios": "^0.21.1"
+    "axios": "^0.21.4"
   },
   "devDependencies": {
     "chai": "^4.3.4",
-    "form-data": "^4.0.0",
     "crypto": "^1.0.1",
     "docdash": "^1.2.0",
+    "form-data": "^4.0.0",
     "fs": "0.0.1-security",
     "fs-extra": "^10.0.0",
     "glob": "^7.1.7",
