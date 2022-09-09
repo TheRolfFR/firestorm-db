@@ -2,7 +2,7 @@ const chai = require('chai')
 const FormData = require('form-data')
 const { expect } = chai
 
-const firestorm = require('../index')
+const firestorm = require('../src/index')
 
 const crypto = require('crypto')
 const path = require('path')
@@ -21,12 +21,29 @@ const DATABASE_FILE = path.join(__dirname, 'base.json')
 console.log('Testing at address ' + ADDRESS + ' with token ' + TOKEN)
 
 describe('Wrapper informations', () => {
+  it('throws if no address yet', (done) => {
+    try {
+      let res = firestorm.address()
+      done("address get operation should fail, got " + res)
+    } catch(e) {
+      console.error(e)
+      done()
+    }
+  });
   it('binds good address', function () {
     firestorm.address(ADDRESS)
 
     const actual = firestorm.address()
     expect(actual).to.equal(ADDRESS, 'Incorrect address bind')
   })
+  it('throws if no token yet', () => {
+    try {
+      let res = firestorm.token()
+      done("token get operation should fail, got " + res)
+    } catch(e) {
+      done()
+    }
+  });
   it('binds good token', function () {
     firestorm.token(TOKEN)
 
@@ -125,25 +142,36 @@ describe('File upload, download and delete', () => {
     })
   })
   it('can delete file successfully', (done) => {
+    // create form data
     const formData = new FormData()
     formData.append('path', '/lyrics.txt')
     formData.append('overwrite', 'true')
-    readFile(path.join(__dirname, 'lyrics.txt'))
-    .catch(() => {
+
+    // create file read promise
+    const lyricsPromise = readFile(path.join(__dirname, 'lyrics.txt'))
+
+    // get done now
+    lyricsPromise.catch(() => {
       done('File read should not failed')
     })
-    .then(res => {
+
+    const uploadPromise = lyricsPromise.then(res => {
+      // add file to form data
       formData.append('file', res, 'lyrics.txt')
       return firestorm.files.upload(formData) 
     })
-    .catch(requestError => {
+
+
+    uploadPromise.catch(requestError => {
       done('Upload should not fail, getting ' + JSON.stringify(requestError.response.data))
     })
-    .then(() => {
+
+    // finally i don't need a variable here I take care of then before catch
+    uploadPromise.then(() => {
       // now delete it
       return firestorm.files.delete('lyrics.txt')
     })
-    .then(res => {
+    .then(() => {
       done()
     })
     .catch(err => {
@@ -166,7 +194,7 @@ describe('GET operations', () => {
   describe('read_raw()', () => {
     it('fails if table not found', (done) => {
       firestorm.collection('unknown').read_raw()
-        .then(() => done(new Error('Request should not fullfill')))
+        .then(() => done(new Error('Request should not full-fill')))
         .catch((err) => {
           if('response' in err && err.response.status == 404) { done(); return }
           done(new Error('Should return 404'))
@@ -269,7 +297,7 @@ describe('GET operations', () => {
   })
 
   describe('search(searchOptions)', () => {
-    // [criteria, field, value, idsfound]
+    // [criteria, field, value, idsFound]
     const test_array = [
       ['!=', 'age' , 13, ['0', '2']],
       ['==', 'age', 13, ['1']],
@@ -340,7 +368,7 @@ describe('GET operations', () => {
 
   describe('search(searchOptions, random)', () => {
     describe('Nested keys test', () => {
-      it('dosn\'t crash if nested key unknown', (done) => {
+      it('doesn\'t crash if nested key unknown', (done) => {
         base.search([{
           criteria: "==",
           field: "path.to.the.key",
@@ -383,8 +411,8 @@ describe('GET operations', () => {
       })
     })
 
-    let uncorrect = [null, 'gg', ''] // undefined works because random becomes default parameter false, so false works too
-      uncorrect.forEach((unco) => {
+    let incorrect = [null, 'gg', ''] // undefined works because random becomes default parameter false, so false works too
+      incorrect.forEach((unco) => {
         it(`${JSON.stringify(unco)} seed rejects`, done => {
           base.search([{
             criteria: "includes",
@@ -435,9 +463,9 @@ describe('GET operations', () => {
       }).catch(() => done())
     })
     describe('requires field to be a string array', () => {
-      // all uncorrect values must catch
-      let uncorrect = [undefined, null, false, 5, 12.5, 'gg', {toto: 'tata'}]
-      uncorrect.forEach((unco) => {
+      // all incorrect values must catch
+      let incorrect = [undefined, null, false, 5, 12.5, 'gg', {toto: 'tata'}]
+      incorrect.forEach((unco) => {
         it(`${JSON.stringify(unco)} value`, done => {
           base.select({ fields: unco })
           .then(res => done(`got ${JSON.stringify(res)} value`))
@@ -457,9 +485,9 @@ describe('GET operations', () => {
     })
 
     describe(`must accept only string arrays`, () => {
-      // uncorrect arrays
-      uncorrect = [undefined, null, false, 5, 12.5, {}]
-      uncorrect.forEach(async (unco) => {
+      // incorrect arrays
+      incorrect = [undefined, null, false, 5, 12.5, {}]
+      incorrect.forEach(async (unco) => {
         it(`[${JSON.stringify(unco)}] value`, done => {
           base.select({ fields: [unco] })
           .then(() => done(`[${JSON.stringify(unco)}] value passed`))
@@ -507,9 +535,9 @@ describe('GET operations', () => {
     })
 
     describe('requires max parameter to be an integer >= -1', () => {
-      // all uncorrect values must catch
-      let uncorrect = [null, false, 'gg', 5.5, -5, -2] // undefined works because max is the whole collection then
-      uncorrect.forEach((unco) => {
+      // all incorrect values must catch
+      let incorrect = [null, false, 'gg', 5.5, -5, -2] // undefined works because max is the whole collection then
+      incorrect.forEach((unco) => {
         it(`${JSON.stringify(unco)} value`, done => {
           base.random(unco)
           .then(res => done(`got ${JSON.stringify(res)} value`))
@@ -519,9 +547,9 @@ describe('GET operations', () => {
     })
 
     describe('requires seed parameter to be an integer', () => {
-      // all uncorrect values must catch
-      let uncorrect = [null, false, 'gg', 5.5] // undefined works because then seed is automatic
-      uncorrect.forEach((unco) => {
+      // all incorrect values must catch
+      let incorrect = [null, false, 'gg', 5.5] // undefined works because then seed is automatic
+      incorrect.forEach((unco) => {
         it(`${JSON.stringify(unco)} value`, done => {
           base.random(5, unco)
           .then(res => done(`got ${JSON.stringify(res)} value`))
@@ -537,9 +565,9 @@ describe('GET operations', () => {
     })
 
     describe('requires offset parameter to be an integer >= 0', () => {
-      // all uncorrect values must catch
-      let uncorrect = [null, false, 'gg', 5.5, -1] // undefined works because then offset is 0
-      uncorrect.forEach((unco) => {
+      // all incorrect values must catch
+      let incorrect = [null, false, 'gg', 5.5, -1] // undefined works because then offset is 0
+      incorrect.forEach((unco) => {
         it(`${JSON.stringify(unco)} value`, done => {
           base.random(5, 69, unco)
           .then(res => done(`got ${JSON.stringify(res)} value`))
@@ -569,13 +597,13 @@ describe('PUT operations', () => {
 
 
     describe('You must give him a correct value', () => {
-      const incorrect_bodies = [undefined, null, false, 42, 6.9, 'ACDC', [1, 2, 3], ['I', 'will', 'find', 'you'], { '5': 'is' }]
+      const incorrect_bodies = [undefined, null, false, 42, 6.9, 'AC-DC', [1, 2, 3], ['I', 'will', 'find', 'you'], { '5': 'is' }]
       
       incorrect_bodies.forEach((body, index) => {
         it(`${JSON.stringify(body)} value rejects`, (done) => {
           base.write_raw(body)
             .then(res => {
-              done(new Error(`Should not fullfill returning ${JSON.stringify(res) }`))
+              done(new Error(`Should not full-fill returning ${JSON.stringify(res) }`))
             })
             .catch(err => {
               if(index < 2) {
@@ -614,7 +642,7 @@ describe('PUT operations', () => {
         furniture: ['table', 'chair', 'flowerpot']
       })
       .then(() => {
-        done(new Error('This request should not fullfill'))
+        done(new Error('This request should not full-fill'))
       })
       .catch((err) => {
         if('response' in err && err.response.status == 400) { done(); return }
@@ -640,15 +668,15 @@ describe('PUT operations', () => {
       })
     })
 
-    describe('It should not accept uncorrect values', () => {
-      const uncorrect_values = [undefined, null, false, 16, 'Muse', [1, 2, 3]]
+    describe('It should not accept incorrect values', () => {
+      const incorrect_values = [undefined, null, false, 16, 'Muse', [1, 2, 3]]
       // I wanted to to test [] but serialized it's the same as an empty object which must be accepted
 
-      uncorrect_values.forEach(unco => {
+      incorrect_values.forEach(unco => {
         it(`${ JSON.stringify(unco) } value rejects`, (done) => {
           base.add(unco)
             .then(res => {
-              done(new Error(`Should not fullfill with res ${res}`))
+              done(new Error(`Should not full-fill with res ${res}`))
             })
             .catch(err => {
               if('response' in err && err.response.status == 400) { done(); return }
@@ -667,7 +695,7 @@ describe('PUT operations', () => {
       }]
 
       correct_values.forEach((co, index) => {
-        it(`${ index === 0 ? 'Empty object' : 'Complex object' } should fullfill`, done => {
+        it(`${ index === 0 ? 'Empty object' : 'Complex object' } should full-fill`, done => {
           base.add(co)
             .then(() => {
               done()
@@ -681,7 +709,7 @@ describe('PUT operations', () => {
   })
 
   describe('addBulk operations', () => {
-    it('must fullfill with empty array', done => {
+    it('must full-fill with empty array', done => {
       base.addBulk([])
         .then(res => {
           expect(res).to.deep.equal([])
@@ -693,15 +721,15 @@ describe('PUT operations', () => {
         })
     })
 
-    describe('must reject with uncorrect base values', () => {
-      const uncorrect_values = [undefined, null, false, 16, 'Muse', [1, 2, 3]]
+    describe('must reject with incorrect base values', () => {
+      const incorrect_values = [undefined, null, false, 16, 'Muse', [1, 2, 3]]
 
 
-      uncorrect_values.forEach(unco => {
+      incorrect_values.forEach(unco => {
         it(`${ JSON.stringify(unco) } value rejects`, done => {
           base.addBulk(unco)
             .then(res => {
-              done(new Error(`Should not fullfill with res ${res}`))
+              done(new Error(`Should not full-fill with res ${res}`))
             })
             .catch(err => {
               if('response' in err && err.response.status == 400) { done(); return }
@@ -711,14 +739,14 @@ describe('PUT operations', () => {
       })
     })
 
-    describe('must reject with uncorrect array', () => {
-      const uncorrect_values = [undefined, null, false, 16, 'Muse', [1, 2, 3]]
+    describe('must reject with incorrect array', () => {
+      const incorrect_values = [undefined, null, false, 16, 'Muse', [1, 2, 3]]
 
-      uncorrect_values.forEach(unco => {
+      incorrect_values.forEach(unco => {
         it(`[${ JSON.stringify(unco) }] value rejects`, done => {
           base.addBulk([unco])
             .then(res => {
-              done(new Error(`Should not fullfill with res ${res}`))
+              done(new Error(`Should not full-fill with res ${res}`))
             })
             .catch(err => {
               if('response' in err && err.response.status == 400) { done(); return }
@@ -779,13 +807,13 @@ describe('PUT operations', () => {
 
   describe('remove operations', () => {
     describe('must accept only string keys', () => {
-      const uncorrect_values = [undefined, null, false, 16, 22.2, [], [1, 2, 3], {}, { "i'm": "batman"}]
+      const incorrect_values = [undefined, null, false, 16, 22.2, [], [1, 2, 3], {}, { "i'm": "batman"}]
 
-      uncorrect_values.forEach(unco => {
+      incorrect_values.forEach(unco => {
         it(`${ JSON.stringify(unco) } value rejects`, done => {
           base.remove(unco)
             .then(res => {
-              done(new Error(`Should not fullfill with value ${  JSON.stringify(res) }`))
+              done(new Error(`Should not full-fill with value ${  JSON.stringify(res) }`))
             })
             .catch(err => {
               if('response' in err && err.response.status == 400) { done(); return }
@@ -825,13 +853,13 @@ describe('PUT operations', () => {
 
   describe('removeBulk operations', () => {
     describe('must accept only string array', () => {
-      const uncorrect_values = [undefined, null, false, [], [1, 2, 3], {}, { "i'm": "batman"}]
+      const incorrect_values = [undefined, null, false, [], [1, 2, 3], {}, { "i'm": "batman"}]
 
-      uncorrect_values.forEach(unco => {
+      incorrect_values.forEach(unco => {
         it(`[${ JSON.stringify(unco) }] value rejects`, done => {
           base.removeBulk([unco])
             .then(res => {
-              done(new Error(`Should not fullfill with value ${  JSON.stringify(res) }`))
+              done(new Error(`Should not full-fill with value ${  JSON.stringify(res) }`))
             })
             .catch(err => {
               if('response' in err && err.response.status == 400) done()
@@ -879,17 +907,17 @@ describe('PUT operations', () => {
       }
     })
 
-    it('Should not succeed with no parameters in the methos', done => {
+    it('Should not succeed with no parameters in the methods', done => {
       base.set()
-        .then(() => done(new Error('Should not fullfill')))
+        .then(() => done(new Error('Should not full-fill')))
         .catch(() => done() )
     })
 
-    describe('0 values fullfill', () => {
+    describe('0 values full-fill', () => {
       const correct_values = ["0", 0, 0.00]
 
       correct_values.forEach(unco => {
-        it(`${ JSON.stringify(unco) } value fullfills`, (done) => {
+        it(`${ JSON.stringify(unco) } value full-fills`, (done) => {
           base.set(unco, tmp)
             .then(res => {
               done()
@@ -903,13 +931,13 @@ describe('PUT operations', () => {
     })
 
     describe('Key must be a string or an integer', () => {
-      const uncorrect_values = [undefined, null, false, [], [1, 2, 3], {}, { "i'm": "batman"}]
+      const incorrect_values = [undefined, null, false, [], [1, 2, 3], {}, { "i'm": "batman"}]
 
-      uncorrect_values.forEach(unco => {
+      incorrect_values.forEach(unco => {
         it(`${ JSON.stringify(unco) } value rejects`, done => {
           base.set(unco, tmp)
             .then(res => {
-              done(new Error(`Should not fullfill with value ${  JSON.stringify(res) }`))
+              done(new Error(`Should not full-fill with value ${  JSON.stringify(res) }`))
             })
             .catch(err => {
               if('response' in err && err.response.status == 400) { done(); return }
@@ -920,13 +948,13 @@ describe('PUT operations', () => {
     })
 
     describe('Value must be an object', () => {
-      const uncorrect_values = [undefined, null, false, 16, 22.2, [1, 2, 3]]
+      const incorrect_values = [undefined, null, false, 16, 22.2, [1, 2, 3]]
 
-      uncorrect_values.forEach(unco => {
+      incorrect_values.forEach(unco => {
         it(`${ JSON.stringify(unco) } value rejects`, done => {
           base.set('1', unco)
             .then(res => {
-              done(new Error(`Should not fullfill with value ${  JSON.stringify(res) }`))
+              done(new Error(`Should not full-fill with value ${  JSON.stringify(res) }`))
             })
             .catch(err => {
               if('response' in err && err.response.status == 400) { done(); return }
@@ -962,7 +990,7 @@ describe('PUT operations', () => {
           done(new Error(`Should return 400 not ${ JSON.stringify(err) }`))
         })
     })
-    it('Fullfills with two empty arrays', (done) => {
+    it('full-fills with two empty arrays', (done) => {
       base.read_raw()
         .then(before => {
 
@@ -994,13 +1022,13 @@ describe('PUT operations', () => {
     })
 
     describe('keys should be an array of string', () => {
-      const uncorrect_values = [undefined, null, false, [], [1, 2, 3], {}, { "i'm": "batman"}]
+      const incorrect_values = [undefined, null, false, [], [1, 2, 3], {}, { "i'm": "batman"}]
 
-      uncorrect_values.forEach(unco => {
+      incorrect_values.forEach(unco => {
         it(`[${ JSON.stringify(unco) }] value rejects`, (done) => {
           base.setBulk([unco], [tmp])
             .then(res => {
-              done(new Error(`Should not fullfill with value ${  JSON.stringify(res) }`))
+              done(new Error(`Should not full-fill with value ${  JSON.stringify(res) }`))
             })
             .catch(err => {
               if('response' in err && err.response.status == 400) { done(); return }
@@ -1033,13 +1061,13 @@ describe('PUT operations', () => {
     })
 
     describe('Reject with incorrect values', () => {
-      const uncorrect_values = [undefined, null, false, 16, 0.5, '', 'gg', [], {}]
+      const incorrect_values = [undefined, null, false, 16, 0.5, '', 'gg', [], {}]
 
-      uncorrect_values.forEach(unco => {
+      incorrect_values.forEach(unco => {
         it(`${ JSON.stringify(unco) } value rejects`, done => {
           base.editField(unco)
           .then(res => {
-            done(new Error('Should not fullfill with ' + JSON.stringify(res)))
+            done(new Error('Should not full-fill with ' + JSON.stringify(res)))
           })
           .catch(err => {
             if('response' in err && err.response.status == 400) { done(); return }
@@ -1061,7 +1089,7 @@ describe('PUT operations', () => {
         it(`${i+1} args is not enough`, done => {
           base.editField(obj)
           .then(res => {
-            done(new Error('Should not fullfill with ' + JSON.stringify(res)))
+            done(new Error('Should not full-fill with ' + JSON.stringify(res)))
           })
           .catch(err => {
             if('response' in err && err.response.status == 400) { done(); return }
@@ -1080,7 +1108,7 @@ describe('PUT operations', () => {
             field: 'name'
           })
           .then(res => {
-            done(new Error('Should not fullfill with ' + JSON.stringify(res)))
+            done(new Error('Should not full-fill with ' + JSON.stringify(res)))
           })
           .catch(err => {
             if('response' in err && err.response.status == 400) { done(); return }
@@ -1090,14 +1118,14 @@ describe('PUT operations', () => {
       })
     })
 
-    it('Rejects with unknow operation', done => {
+    it('Rejects with unknown operation', done => {
       base.editField({
         id: '2',
         operation: 'smile',
         field: 'name'
       })
       .then(res => {
-        done(new Error('Should not fullfill with ' + JSON.stringify(res)))
+        done(new Error('Should not full-fill with ' + JSON.stringify(res)))
       })
       .catch(err => {
         if('response' in err && err.response.status == 400) { done(); return }
