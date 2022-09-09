@@ -34,9 +34,9 @@ describe('Wrapper informations', () => {
     firestorm.address(ADDRESS)
 
     const actual = firestorm.address()
-    expect(actual).to.equal(ADDRESS, 'Incorrect address bind')
+    expect(actual).to.equal(ADDRESS + 'get.php', 'Incorrect address bind')
   })
-  it('throws if no token yet', () => {
+  it('throws if no token yet', (done) => {
     try {
       let res = firestorm.token()
       done("token get operation should fail, got " + res)

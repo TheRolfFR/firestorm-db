@@ -49,7 +49,7 @@ async function setup_php() {
 
       console.log('Moving PHP folder + Checking test php files + Creating files folder + Checking test databases...')
       return Promise.all([
-        globProm(path.join(process.cwd(), 'php', '**/*.php')),
+        globProm(path.join(process.cwd(), 'src/php', '**/*.php')),
         fs.mkdir(path.join(tmpFolder, 'files')),
         globProm(path.join(process.cwd(), 'tests', '*.json'))
       ])
@@ -58,7 +58,7 @@ async function setup_php() {
       const glob_php_files = results[0]
 
       const php_symbolic_link = glob_php_files.map(from => {
-        const endPath = path.relative(path.join(process.cwd(), 'php'), from)
+        const endPath = path.relative(path.join(process.cwd(), 'src', 'php'), from)
         const to = path.join(tmpFolder, endPath)
         console.log(`Linking ${endPath}...`)
 

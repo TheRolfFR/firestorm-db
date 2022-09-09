@@ -501,6 +501,7 @@ const firestorm = {
    * @memberof firestorm
    */
   address: function(newValue = undefined) {
+    if(newValue === undefined) return readAddress()
     if(newValue) _address = newValue
 
     return _address
@@ -511,6 +512,7 @@ const firestorm = {
    * @returns {String} The stored write token
    */
   token: function(newValue = undefined) {
+    if(newValue === undefined) return writeToken()
     if(newValue) _token = newValue
 
     return _token
