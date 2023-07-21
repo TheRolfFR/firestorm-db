@@ -3,7 +3,10 @@
 
 <h1>firestorm-db</h1>
 
-<a href="https://www.npmjs.com/package/firestorm-db" targtet="_blank" ><img alt="npm" src="https://img.shields.io/npm/v/firestorm-db?color=cb0000&logo=npm&style=flat-square"> <img alt="npm bundle size" src="https://img.shields.io/bundlephobia/min/firestorm-db?label=NPM%20minified%20size&style=flat-square"> </a> <img alt="GitHub file size in bytes" src="https://img.shields.io/github/size/TheRolfFR/firestorm-db/index.js?color=43A047&label=Script%20size&logoColor=green&style=flat-square"><a href="https://github.com/TheRolfFR/firestorm-db/actions/workflows/testjs.yml"> <img src="https://github.com/TheRolfFR/firestorm-db/actions/workflows/testjs.yml/badge.svg" alt="Tests" /></a>
+<a href="https://www.npmjs.com/package/firestorm-db" targtet="_blank" ><img alt="npm" src="https://img.shields.io/npm/v/firestorm-db?color=cb0000&logo=npm&style=flat-square"></a>
+<img alt="GitHub file size in bytes" src="https://img.shields.io/github/size/TheRolfFR/firestorm-db/src%2Findex.js?color=43A047&label=Script%20size&logoColor=green&style=flat-square">
+<a href="https://github.com/TheRolfFR/firestorm-db/actions/workflows/testjs.yml"> <img src="https://img.shields.io/github/actions/workflow/status/TheRolfFR/firestorm-db/testjs.yml?style=flat-square
+" alt="Tests" /></a>
 
 </div>
 
