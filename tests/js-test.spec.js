@@ -21,14 +21,8 @@ const DATABASE_FILE = path.join(__dirname, 'base.json')
 console.log('Testing at address ' + ADDRESS + ' with token ' + TOKEN)
 
 describe('Wrapper informations', () => {
-  it('throws if no address yet', (done) => {
-    try {
-      let res = firestorm.address()
-      done("address get operation should fail, got " + res)
-    } catch(e) {
-      console.error(e)
-      done()
-    }
+  it('throws if no address yet', () => {
+    expect(firestorm.address).to.throw(Error,'Firestorm address was not configured');
   });
   it('binds good address', function () {
     firestorm.address(ADDRESS)
