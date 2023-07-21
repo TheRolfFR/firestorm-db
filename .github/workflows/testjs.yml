@@ -7,19 +7,23 @@ jobs:
     steps:
       - name: Check out repository code
         uses: actions/checkout@v2
-      - name: Install node
-        uses: actions/setup-node@v2
+      - uses: pnpm/action-setup@v2
         with:
-          node-version: '12'
+          version: 8
+      - name: Use Node.js 18
+        uses: actions/setup-node@v3
+        with:
+          node-version: lts/Hydrogen
+          cache: 'pnpm'
       - name: Install PHP
         uses: shivammathur/setup-php@v2
         with:
           php-version: '7.4'
       - name: Install developer dependencies
-        run: npm install --save-dev
+        run: pnpm install
       - name: Setup and run PHP server for API
-        run: npm run php_start
+        run: pnpm run php_start
       - name: Test da code
-        run: npm test
+        run: pnpm test
       - name: Kill PHP server
-        run: npm run php_stop
+        run: pnpm run php_stop
