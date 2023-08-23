@@ -2,7 +2,7 @@ const chai = require('chai')
 const FormData = require('form-data')
 const { expect } = chai
 
-const firestorm = require('../dist/firestorm-db')
+const firestorm = require('../src/index')
 
 const crypto = require('crypto')
 const path = require('path')

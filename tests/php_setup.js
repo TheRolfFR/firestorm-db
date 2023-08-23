@@ -6,10 +6,13 @@ const os = require('os')
 const glob = require("glob")
 const copy = require('recursive-copy')
 const child_process = require('child_process')
-const net = require("net")
 
 const PHP_SERVER_START_DELAY = 2000
 const PORT = 8000
+
+const copyProm = (srcDir, destDir) => {
+  return fs.copyFile(srcDir, destDir)
+}
 
 const globProm = (pattern) => {
   return new Promise((resolve, reject) => {
@@ -21,61 +24,28 @@ const globProm = (pattern) => {
 }
 
 function execProm(cmd) {
-  return new Promise((resolve, reject) => {
+  return new Promise((resolve) => {
    child_process.exec(cmd, (error, stdout, stderr) => {
     if (error) {
-      reject(error);
-      return;
+     console.warn(error);
     }
-    if (stderr) {
-      reject(stderr);
-      return;
-    }
-
-    resolve(stdout);
+    resolve(stdout? stdout : stderr);
    });
   });
  }
 
-/**
- * 
- * @param {Number} port port number
- * @returns {Promise<void>} resolves if opened
- */
-function isPortOpen(port) {
-  return new Promise((resolve, reject) => {
-    let s = net.createServer()
-    s.once("error", (err) => {
-      s.close()
-      if (err["code"] == "EADDRINUSE") {
-        reject("Port " + port + ": " + err["code"])
-      } else {
-        resolve() // or throw error!!
-      }
-    })
-    s.once("listening", () => {
-      resolve()
-      s.close()
-    })
-    s.listen(port)
-  })
-}
+console.log('Setup of PHP files...')
+console.log('Creating tmp folder...')
 
-async function setup_php(nic_ip='127.0.0.1', port=PORT) {
+async function setup_php() {
   // create tmp folder for PHP
   let tmpFolder
   child_process.execSync('rm -rf /tmp/php-*')
   
-  console.log("Verifying port opened...")
-  return isPortOpen(port)
-    .then(() => {
-      console.log('Creating tmp folder...')
-      return fs.mkdtemp(path.join(os.tmpdir(), 'php-'))
-    })
+  await fs.mkdtemp(path.join(os.tmpdir(), 'php-'))
     .then((folder) => {
       tmpFolder = folder
       console.log(`Created ${tmpFolder}`)
-      console.log('Setup of PHP files...')
 
       console.log('Moving PHP folder + Checking test php files + Creating files folder + Checking test databases...')
       return Promise.all([
@@ -138,7 +108,7 @@ async function setup_php(nic_ip='127.0.0.1', port=PORT) {
     })
     .then(async () => {
       // console.log(await (globProm(path.join(tmpFolder, '/**/*'))))
-      const php_server_command = `sh tests/php_server_start.sh ${tmpFolder} ${nic_ip} ${port}`
+      const php_server_command = `sh tests/php_server_start.sh ${tmpFolder} ${PORT}`
       console.log('Starting php server with command "' + php_server_command + '"')
       const args = php_server_command.split(' ')
       const command = args.shift()
@@ -148,10 +118,13 @@ async function setup_php(nic_ip='127.0.0.1', port=PORT) {
       console.log(`Waiting ${PHP_SERVER_START_DELAY}ms for the server to start...`)
       return pause(PHP_SERVER_START_DELAY)
     })
-    .then(() => {
-      return Promise.resolve([nic_ip, port])
-    })
+    .catch((err) => {
+      console.trace(err)
+      process.exit(1)
+    })  
 }
+
+setup_php()
 
 /**
  * Promisify setTimeout
@@ -161,7 +134,6 @@ async function setup_php(nic_ip='127.0.0.1', port=PORT) {
  * @returns {Promise<any>}
  */
 const pause = (ms, cb, ...args) =>
-{
   new Promise((resolve, reject) => {
     setTimeout(async () => {
       try {
@@ -172,17 +144,3 @@ const pause = (ms, cb, ...args) =>
       }
     }, ms)
   })
-}
-
-// export to use in JS
-module.exports = setup_php;
-
-if (typeof require !== "undefined" && require.main === module) {
-  (async () => {
-    let [_nic_ip, _port] = await setup_php()
-    process.exit(0)
-  })().catch(err => {
-    console.trace(err)
-    process.exit(1)
-  })
-}
