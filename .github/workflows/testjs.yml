@@ -21,6 +21,8 @@ jobs:
           php-version: '7.4'
       - name: Install developer dependencies
         run: pnpm install
+      - name: Pack UMD
+        run: pnpm run pack
       - name: Setup and run PHP server for API
         run: pnpm run php_start
       - name: Test da code

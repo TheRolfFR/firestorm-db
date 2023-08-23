@@ -2,12 +2,13 @@
   "name": "firestorm-db",
   "version": "1.10.2",
   "description": "Self hosted Firestore-like database with API endpoints based on micro bulk operations",
-  "main": "index.js",
+  "main": "dist/firestorm-db.js",
   "scripts": {
+    "pack": "webpack",
     "php_start": "node tests/php_setup.js",
     "test": "./node_modules/.bin/mocha tests/**/*.spec.js",
     "php_stop": "sh tests/php_server_kill.sh",
-    "full": "npm run php_stop ; npm run php_start && npm run test ; npm run php_stop",
+    "full": "npm run php_stop ; npm run pack && npm run php_start && npm run test ; npm run php_stop",
     "local_tests": "sudo act -P ubuntu-latest=shivammathur/node:latest -j js-wrapper-test",
     "jsdoc": "jsdoc -a all -c jsdoc.json -R README.md src/index.js -d docs/jsdoc",
     "nodemon_jsdoc": "nodemon -x npm run jsdoc --watch src/index.js --watch jsdoc.json",
@@ -54,7 +55,9 @@
     "nyc": "^15.1.0",
     "path": "^0.12.7",
     "recursive-copy": "^2.0.14",
-    "typescript": "^4.9.5"
+    "typescript": "^4.9.5",
+    "webpack": "^5.88.2",
+    "webpack-cli": "^5.1.4"
   },
   "types": "typings/index.d.ts"
 }

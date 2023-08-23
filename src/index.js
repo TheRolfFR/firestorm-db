@@ -1,8 +1,4 @@
-try {
-  if(typeof process === 'object') {
-    var axios = require("axios").default
-  }
-} catch(_error) {}
+var axios = require("axios").default
 
 /**
  * @typedef {Object} SearchOption
@@ -591,10 +587,4 @@ const firestorm = {
   }
 }
 
-try {
-  if(typeof process === 'object') {
-    module.exports = firestorm
-  }
-} catch (_error) {
-  // normal browser
-}
+exports.firestorm = firestorm
