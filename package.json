@@ -2,7 +2,7 @@
   "name": "firestorm-db",
   "version": "1.10.2",
   "description": "Self hosted Firestore-like database with API endpoints based on micro bulk operations",
-  "main": "index.js",
+  "main": "src/index.js",
   "scripts": {
     "php_start": "node tests/php_setup.js",
     "test": "./node_modules/.bin/mocha tests/**/*.spec.js",
