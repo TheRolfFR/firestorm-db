@@ -44,19 +44,19 @@ const ID_FIELD_NAME = 'id'
 const readAddress = () => {
   if(!_address)
     throw new Error('Firestorm address was not configured')
-  
+
   return _address + 'get.php'
 }
 const writeAddress = () => {
   if(!_address)
     throw new Error('Firestorm address was not configured')
-  
+
   return _address + 'post.php'
 }
 const fileAddress = () => {
   if(!_address)
     throw new Error('Firestorm address was not configured')
-  
+
   return _address + 'files.php'
 }
 
@@ -88,7 +88,7 @@ const __extract_data = (request) => {
  * Class representing a collection
  */
 class Collection {
-  /** 
+  /**
    * @param {String} name The name of the Collection
    * @param {Function?} addMethods Additional methods and data to add to the objects
    */
@@ -103,7 +103,7 @@ class Collection {
    * Add user methods to the returned data
    * @private
    * @ignore
-   * @param {AxiosPromise} req Incoming request 
+   * @param {AxiosPromise} req Incoming request
    * @returns {Object|Object[]}
    */
   __add_methods(req) {
@@ -307,9 +307,9 @@ class Collection {
 
   /**
    * Returns random max entries offsets with a given seed
-   * @param {Integer} max 
-   * @param {Integer} seed 
-   * @param {Integer} offset 
+   * @param {Integer} max
+   * @param {Integer} seed
+   * @param {Integer} offset
    * @returns {Promise} entries
    */
   random(max, seed, offset) {
@@ -324,10 +324,10 @@ class Collection {
     if(hasOffset && !hasSeed) return Promise.reject(new Error('You can\'t put an offset without a seed'))
 
     if(hasOffset && (typeof(offset) !== 'number' || !Number.isInteger(offset) || offset < 0)) return Promise.reject(new Error('Expected integer >= -1 for the max'))
-    
+
     if(hasSeed) {
       if((typeof(seed) !== 'number' || !Number.isInteger(seed))) return Promise.reject(new Error('Expected integer for the seed'))
-      
+
       if(!hasOffset) offset = 0
       params.seed = seed
       params.offset = offset
@@ -352,8 +352,8 @@ class Collection {
    * @private
    * @ignore
    * @param {String} command The write command you want
-   * @param {Object?} value The value for this command 
-   * @param {Boolean | undefined} multiple if I need to delete multiple 
+   * @param {Object?} value The value for this command
+   * @param {Boolean | undefined} multiple if I need to delete multiple
    * @returns {Object} Write data object
    */
   __write_data(command, value = undefined, multiple = false) {
@@ -364,7 +364,7 @@ class Collection {
     }
     if(multiple === true && Array.isArray(value)) { // solves errors with undefined and null values
       value.forEach(v => {
-        if(typeof value != 'number' && typeof value != 'string' && !Array.isArray(value)) 
+        if(typeof value != 'number' && typeof value != 'string' && !Array.isArray(value))
           delete v[ID_FIELD_NAME]
       })
     } else if(multiple === false && value != null && value != undefined && typeof value != 'number' && typeof value != 'string' && !Array.isArray(value)) { // solves errors with undefined and null values
@@ -527,7 +527,7 @@ const firestorm = {
   },
 
   /**
-   * 
+   *
    * @param {String} name Table name to get
    */
   table: function(name) {
@@ -558,7 +558,7 @@ const firestorm = {
         }
       }))
     },
-  
+
     /**
      * Uploads file
      * @memberof firestorm.files
@@ -573,7 +573,7 @@ const firestorm = {
         }
       })
     },
-  
+
     /**
      * Deletes a file given its path
      * @memberof firestorm.files

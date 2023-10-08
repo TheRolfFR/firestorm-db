@@ -1,6 +1,5 @@
 const fs = require('fs').promises
 const { existsSync } = require('fs')
-const fse = require('fs-extra')
 const path = require('path')
 const os = require('os')
 const glob = require("glob")
@@ -41,7 +40,7 @@ async function setup_php() {
   // create tmp folder for PHP
   let tmpFolder
   child_process.execSync('rm -rf /tmp/php-*')
-  
+
   await fs.mkdtemp(path.join(os.tmpdir(), 'php-'))
     .then((folder) => {
       tmpFolder = folder
@@ -97,7 +96,7 @@ async function setup_php() {
 
         let prom = Promise.resolve()
         if(existsSync(to)) prom = fs.unlink(to)
-        
+
         return prom.then(() => fs.symlink(from, to, 'file')).then(res => {
           console.log(`Linked ${filename}`)
           return res
@@ -121,14 +120,14 @@ async function setup_php() {
     .catch((err) => {
       console.trace(err)
       process.exit(1)
-    })  
+    })
 }
 
 setup_php()
 
 /**
  * Promisify setTimeout
- * @param {Number} ms Timeout in ms 
+ * @param {Number} ms Timeout in ms
  * @param {Function} cb callback function after timeout
  * @param  {...any} args Optional return arguments
  * @returns {Promise<any>}
