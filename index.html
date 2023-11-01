@@ -77,7 +77,7 @@
         <article><div align="center">
 <img src="img/firestorm-128.png">
 <h1>firestorm-db</h1>
-<p><a href="https://www.npmjs.com/package/firestorm-db" targtet="_blank" ><img alt="npm" src="https://img.shields.io/npm/v/firestorm-db?color=cb0000&logo=npm&style=flat-square"></a>
+<p><a href="https://www.npmjs.com/package/firestorm-db" target="_blank" ><img alt="npm" src="https://img.shields.io/npm/v/firestorm-db?color=cb0000&logo=npm&style=flat-square"></a>
 <img alt="GitHub file size in bytes" src="https://img.shields.io/github/size/TheRolfFR/firestorm-db/src%2Findex.js?color=43A047&label=Script%20size&logoColor=green&style=flat-square">
 <a href="https://github.com/TheRolfFR/firestorm-db/blob/main/CHANGELOG.md"> <img alt="Static Badge" src="https://img.shields.io/badge/Changelog-Read_here-blue?style=flat-square"></a>
 <a href="https://github.com/TheRolfFR/firestorm-db/actions/workflows/testjs.yml"> <img src="https://img.shields.io/github/actions/workflow/status/TheRolfFR/firestorm-db/testjs.yml?style=flat-square
@@ -88,50 +88,51 @@
 <pre class="prettyprint source"><code>npm install --save firestorm-db
 </code></pre>
 <h2>JavaScript Part</h2>
-<p>The JavaScript <a href="./index.js">index.js</a> file is Just an <a href="https://www.npmjs.com/package/axios">axios</a> wrapper of the library.</p>
+<p>The JavaScript <a href="./src/index.js">index.js</a> file is just an <a href="https://www.npmjs.com/package/axios">Axios</a> wrapper of the library.</p>
 <h2>How to use it</h2>
-<p>First you need to configure the address of the API and your token if needed :</p>
-<pre class="prettyprint source lang-js"><code>require('dotenv').config() // add some env variables
-const firestorm = require('firestorm-db')
+<p>First, you need to configure the address of the API, and your token if needed:</p>
+<pre class="prettyprint source lang-js"><code>require(&quot;dotenv&quot;).config(); // add some env variables
+const firestorm = require(&quot;firestorm-db&quot;);
 
 // ex: 'http://example.com/path/to/firestorm/root/'
-firestorm.address(process.env.FIRESTORM_URL)
+firestorm.address(process.env.FIRESTORM_URL);
 
 // only necessary if you want to write or access private collections
 // must match token stored in tokens.php file
-firestorm.token(process.env.FIRESTORM_TOKEN)
+firestorm.token(process.env.FIRESTORM_TOKEN);
 </code></pre>
-<p>Now you can use it to its full potential:</p>
-<pre class="prettyprint source lang-js"><code>const firestorm = require('firestorm-db')
+<p>Now you can use Firestorm to its full potential:</p>
+<pre class="prettyprint source lang-js"><code>const firestorm = require(&quot;firestorm-db&quot;);
 
 // returns a Collection instance
-const userCollection = firestorm.collection('users')
+const userCollection = firestorm.collection(&quot;users&quot;);
 
 // all methods return promises
-userCollection.read_raw()
-.then(res => console.log(res))
-.catch(err => console.error(err))
+userCollection
+    .read_raw()
+    .then((res) => console.log(res))
+    .catch((err) => console.error(err));
 </code></pre>
-<h3>Collection contructor</h3>
-<p>Collection takes 1 argument and one optional argument :</p>
+<h3>Collection constructor</h3>
+<p>A collection takes one required argument and one optional argument:</p>
 <ul>
-<li>The name of the collection as a <code>String</code></li>
-<li>The method adder which allows to inject methods to the get methods results, which is a <code>Function</code> taking the element as an argument</li>
+<li>The name of the collection as a <code>String</code>.</li>
+<li>The method adder, which allows to inject methods to the get methods results. This would be a <code>Function</code> taking the element as an argument.</li>
 </ul>
-<pre class="prettyprint source lang-js"><code>const firestorm = require('firestorm-db')
+<pre class="prettyprint source lang-js"><code>const firestorm = require(&quot;firestorm-db&quot;);
 
 // returns a Collection instance
-const userCollection = firestorm.collection('users', el => {
-  el.hello = function() {
-    console.log(`${el.name} says hello!`)
-  }
-})
+const userCollection = firestorm.collection(&quot;users&quot;, (el) => {
+    el.hello = function () {
+        console.log(`${el.name} says hello!`);
+    };
+});
 
 // if you have a 'users' table with a printable field named name
-const johnDoe = await userCollection.get(123456789)
+const johnDoe = await userCollection.get(123456789);
 // gives { name: &quot;John Doe&quot;, hello: function}
 
-johnDoe.hello() // prints out &quot;John Doe says hello!&quot;
+johnDoe.hello(); // prints out &quot;John Doe says hello!&quot;
 </code></pre>
 <p>Available methods for a collection:</p>
 <h3>Read operations</h3>
@@ -147,7 +148,7 @@ johnDoe.hello() // prints out &quot;John Doe says hello!&quot;
 <tr>
 <td>sha1()</td>
 <td>none</td>
-<td>Returns the file sha1 hash, may vary from read_raw because read_raw adds ID fields to the entries. Compare with stringify version of your file.</td>
+<td>Returns the file sha1 hash. May vary from read_raw because read_raw adds ID fields to the entries. Compare with stringify version of your file.</td>
 </tr>
 <tr>
 <td>read_raw()</td>
@@ -162,7 +163,7 @@ johnDoe.hello() // prints out &quot;John Doe says hello!&quot;
 <tr>
 <td>search(searchOptions, random)</td>
 <td>searchOptions: <code>SearchOption[]</code> random?:<code>false\|true\|Number</code></td>
-<td>Searches collections and returns matching results. <br>You can randomize the ouput order with random as true or a given seed.</td>
+<td>Searches collections and returns matching results. <br>You can randomize the output order with random as true or a given seed.</td>
 </tr>
 <tr>
 <td>searchKeys(keys)</td>
@@ -182,7 +183,7 @@ johnDoe.hello() // prints out &quot;John Doe says hello!&quot;
 </tbody>
 </table>
 <p>Search method can take one or more options to filter entries in a collection. A search option studies a <code>field</code> with a <code>criteria</code> and compares it to a <code>value</code>. On string values you can now use the boolean <code>ignoreCase</code> option.</p>
-<p>Not all criterias are available depending the field type. There a more options available than the firestore <code>where</code> command allowing you to get better and faster search results.</p>
+<p>Not all criterias are available depending the field type. There are more options available than the firestore <code>where</code> command, allowing you to get better and faster search results.</p>
 <h3>All search options available</h3>
 <table>
 <thead>
@@ -328,7 +329,7 @@ johnDoe.hello() // prints out &quot;John Doe says hello!&quot;
 <tr>
 <td>setBulk(keys, values)</td>
 <td>keys: <code>String[]\|Name[]</code>, values: <code>Object[]</code></td>
-<td>Sets multiple elements with their corresponding keys and values into the collectionn</td>
+<td>Sets multiple elements with their corresponding keys and values into the collection</td>
 </tr>
 <tr>
 <td>editField(obj)</td>
@@ -343,7 +344,7 @@ johnDoe.hello() // prints out &quot;John Doe says hello!&quot;
 </tbody>
 </table>
 <h3>Edit field operations</h3>
-<p>Edit objects have and <code>id</code> to get the wanted element, the <code>field</code> they want to edit, an <code>operation</code>, with what to do to this field, and a possible <code>value</code>. Here is a list of operations:</p>
+<p>Edit objects have an <code>id</code> to get the wanted element, a <code>field</code> they want to edit, an <code>operation</code> with what to do to this field, and a possible <code>value</code>. Here is a list of operations:</p>
 <table>
 <thead>
 <tr>
@@ -406,15 +407,15 @@ johnDoe.hello() // prints out &quot;John Doe says hello!&quot;
 <td><code>array-splice</code></td>
 <td>Yes</td>
 <td>[Integer, Integer]</td>
-<td>Remvoes certains elements, check <a href="https://www.php.net/manual/function.array-splice">array_splice documentation</a> offset and length for more infos</td>
+<td>Removes certain elements, check <a href="https://www.php.net/manual/function.array-splice">array_splice documentation</a> offset and length for more infos</td>
 </tr>
 </tbody>
 </table>
 <br>
 <h2>PHP files</h2>
-<p>The PHP files are the ones handling files, read and writes. It also handles GET and POST request to manipulate the database.</p>
+<p>The PHP files are the ones handling files, read and writes. They also handle GET and POST requests to manipulate the database.</p>
 <h2>PHP setup</h2>
-<p>The developer has to create 2 files at root of this folder: <code>tokens.php</code> and <code>config.php</code></p>
+<p>The developer has to create 2 files at the root of this folder: <code>tokens.php</code> and <code>config.php</code></p>
 <p><code>tokens.php</code> will contain the tokens inside a <code>$db_tokens</code> value array with the tokens to use. You will use these tokens to write data or read private tables.</p>
 <p><code>config.php</code> stores all of your collections config. You will create a <code>$database_list</code> variable with an array of <code>JSONDatabase</code> instances</p>
 <pre class="prettyprint source lang-php"><code>&lt;?php
@@ -438,10 +439,10 @@ $tmp->autoKey = true;
 $database_list[$tmp->fileName] = $tmp;
 ?>
 </code></pre>
-<p>Database will be stored in <code>&lt;foldePath&gt;/&lt;filename&gt;.json</code> and <code>autoKey</code> allows or forbids some write operations.</p>
+<p>The database will be stored in <code>&lt;folderPath&gt;/&lt;filename&gt;.json</code> and <code>autoKey</code> allows or forbids some write operations.</p>
 <h2>Files feature</h2>
-<p>Files API function are detailed in the <code>files.php</code> PHP script. If you do not want to include this functionnality, then just delete this file.</p>
-<p>In you have to add 2 new configuration variables to your <code>config.php</code> file:</p>
+<p>File API functions are detailed in the <code>files.php</code> PHP script. If you do not want to include this functionality, then just delete this file.</p>
+<p>You have to add 2 new configuration variables to your <code>config.php</code> file:</p>
 <pre class="prettyprint source lang-php"><code>// whitelist of correct extensions
 $authorized_file_extension = array('.txt', '.png');
 
@@ -452,71 +453,73 @@ $STORAGE_LOCATION = dirname($_SERVER['SCRIPT_FILENAME']) . '/uploads/';
 <p>You can now use the wrapper functions in order to upload, get and delete a file.
 If the folder is accessible from server url, you can directly type its address.</p>
 <h3>File rights</h3>
-<p>The PHP scripts creates folders and files. So if the php user doesn't have the rights to write, the script will fail.
+<p>The PHP scripts creates folders and files. So if the PHP user doesn't have the rights to write, the script will fail.
 You can give rights to a folder with the following command:</p>
 <pre class="prettyprint source"><code>sudo chown -R www-data &quot;/path/to/uploads/&quot;
 </code></pre>
 <h3>Upload a file</h3>
-<p>In order to upload a file, you have to give the function a FormData object. This class is generated from forms and is <a href="https://developer.mozilla.org/en-US/docs/Web/API/FormData/FormData">native in modern browsers</a> but in node.js can be imported with <a href="https://www.npmjs.com/package/form-data">form-data package</a>.</p>
-<p>File content can be a <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">String</a>, a <a href="https://developer.mozilla.org/en-US/docs/Web/API/Blob">Blob</a>, a <a href="https://nodejs.org/api/buffer.html">Buffer</a> or an <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/ArrayBuffer">ArrayBuffer</a>.</p>
-<p>You have an overwrite option in order to avoid big mistakes or allow user with unique file names.</p>
-<pre class="prettyprint source lang-js"><code>const firestorm = require('firestorm-db')
-firestorm.address('ADRESS_VALUE')
-firestorm.token('TOKEN_VALUE')
+<p>In order to upload a file, you have to give the function a <code>FormData</code> object. This class is generated from forms and is <a href="https://developer.mozilla.org/en-US/docs/Web/API/FormData/FormData">native in modern browsers</a> but in Node.js can be imported with the <a href="https://www.npmjs.com/package/form-data">form-data package</a>.</p>
+<p>The uploaded file content can be a <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String">String</a>, a <a href="https://developer.mozilla.org/en-US/docs/Web/API/Blob">Blob</a>, a <a href="https://nodejs.org/api/buffer.html">Buffer</a> or an <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/ArrayBuffer">ArrayBuffer</a>.</p>
+<p>There is additionally an overwrite option in order to avoid big mistakes and allow unique file names.</p>
+<pre class="prettyprint source lang-js"><code>const firestorm = require(&quot;firestorm-db&quot;);
+firestorm.address(&quot;ADDRESS_VALUE&quot;);
+firestorm.token(&quot;TOKEN_VALUE&quot;);
 
-const form = new FormData()
-form.append('path', '/quote.txt')
-form.append('file', 'but your kids are gonna love it.', 'quote.txt') // make sure to set a temporary name to the file
-form.append('overwrite', 'true') // override optional argument (do not append to set to false)
-const uploadPromise = firestorm.files.upload(form)
+const form = new FormData();
+form.append(&quot;path&quot;, &quot;/quote.txt&quot;);
+form.append(&quot;file&quot;, &quot;but your kids are gonna love it.&quot;, &quot;quote.txt&quot;); // make sure to set a temporary name to the file
+form.append(&quot;overwrite&quot;, &quot;true&quot;); // override optional argument (do not append to set to false)
+const uploadPromise = firestorm.files.upload(form);
 
-uploadPromise.then(() => {
-  console.log('Upload successful')
-})
-.catch(err => {
-  consoler.error(err)
-})
+uploadPromise
+    .then(() => {
+        console.log(&quot;Upload successful&quot;);
+    })
+    .catch((err) => {
+        consoler.error(err);
+    });
 </code></pre>
 <h2>Get a file</h2>
-<p>You can get a file via its direct file URL location or its content with a request</p>
-<pre class="prettyprint source lang-js"><code>const firestorm = require('firestorm-db')
-firestorm.address('ADRESS_VALUE')
+<p>You can get a file via its direct file URL location or its content with a request.</p>
+<pre class="prettyprint source lang-js"><code>const firestorm = require(&quot;firestorm-db&quot;);
+firestorm.address(&quot;ADDRESS_VALUE&quot;);
 
-const getPromise = firestorm.files.get('/quote.txt')
+const getPromise = firestorm.files.get(&quot;/quote.txt&quot;);
 
-getPromise.then(filecontent => {
-  console.log(filecontent) // 'but your kids are gonna love it.
-})
-.catch(err => {
-  console.error(err)
-})
+getPromise
+    .then((filecontent) => {
+        console.log(filecontent); // 'but your kids are gonna love it.
+    })
+    .catch((err) => {
+        console.error(err);
+    });
 </code></pre>
 <h2>Delete a file</h2>
 <p>Because I am a nice guy, I thought about deletion too. So I figured I would put a method to delete the files too.</p>
-<pre class="prettyprint source lang-js"><code>const firestorm = require('firestorm-db')
-firestorm.address('ADRESS_VALUE')
-firestorm.token('TOKEN_VALUE')
+<pre class="prettyprint source lang-js"><code>const firestorm = require(&quot;firestorm-db&quot;);
+firestorm.address(&quot;ADDRESS_VALUE&quot;);
+firestorm.token(&quot;TOKEN_VALUE&quot;);
 
-const deletePromise = firestorm.files.delete('/quote.txt')
+const deletePromise = firestorm.files.delete(&quot;/quote.txt&quot;);
 
-deletePromise.then(() => {
-  console.log('File successfully deleted')
-})
-.catch(err => {
-  console.error(err)
-})
-
+deletePromise
+    .then(() => {
+        console.log(&quot;File successfully deleted&quot;);
+    })
+    .catch((err) => {
+        console.error(err);
+    });
 </code></pre>
 <h2>Memory warning</h2>
-<p>Handling big collections can cause memory allocation issues like :</p>
-<pre class="prettyprint source"><code>Fatal error: 
+<p>Handling big collections can cause memory allocation issues like:</p>
+<pre class="prettyprint source"><code>Fatal error:
 Allowed memory size of 134217728 bytes exhausted (tried to allocate 32360168 bytes)
 </code></pre>
 <p>If you encounter a memory allocation issue, you have to allow more memory through this file <code>/etc/php/7.4/apache2/php.ini</code> with a bigger value here:</p>
 <pre class="prettyprint source"><code>memory_limit = 256M
 </code></pre>
 <h2>API endpoints</h2>
-<p>All JS methods correspond in fact to axios request. Read requests are GET request when write requests are POST requests with a JSON data.</p>
+<p>All Firestorm methods correspond to an equivalent Axios request. Read requests are GET request and write requests are POST requests with a JSON data.</p>
 <p>You always have the same first keys and the one key per method:</p>
 <pre class="prettyprint source lang-json"><code>{
   &quot;collection&quot;: &quot;&lt;collectionName>&quot;,
@@ -539,7 +542,7 @@ Allowed memory size of 134217728 bytes exhausted (tried to allocate 32360168 byt
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.6.7</a> on Wed Nov 01 2023 15:54:29 GMT+0000 (Coordinated Universal Time) using the <a href="https://github.com/clenemt/docdash">docdash</a> theme.
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.6.7</a> on Wed Nov 01 2023 16:16:57 GMT+0000 (Coordinated Universal Time) using the <a href="https://github.com/clenemt/docdash">docdash</a> theme.
 </footer>
 
 <script>prettyPrint();</script>
