@@ -1,8 +1,8 @@
 try {
-  if(typeof process === 'object') {
-    var axios = require("axios").default
-  }
-} catch(_error) {}
+	if (typeof process === "object") {
+		var axios = require("axios").default;
+	}
+} catch (_error) {}
 
 /**
  * @typedef {Object} SearchOption
@@ -32,40 +32,36 @@ try {
 /**
  * @ignore
  */
-let _address = undefined
+let _address = undefined;
 
 /**
  * @ignore
  */
-let _token = undefined
+let _token = undefined;
 
-const ID_FIELD_NAME = 'id'
+const ID_FIELD_NAME = "id";
 
 const readAddress = () => {
-  if(!_address)
-    throw new Error('Firestorm address was not configured')
-  
-  return _address + 'get.php'
-}
+	if (!_address) throw new Error("Firestorm address was not configured");
+
+	return _address + "get.php";
+};
 const writeAddress = () => {
-  if(!_address)
-    throw new Error('Firestorm address was not configured')
-  
-  return _address + 'post.php'
-}
+	if (!_address) throw new Error("Firestorm address was not configured");
+
+	return _address + "post.php";
+};
 const fileAddress = () => {
-  if(!_address)
-    throw new Error('Firestorm address was not configured')
-  
-  return _address + 'files.php'
-}
+	if (!_address) throw new Error("Firestorm address was not configured");
+
+	return _address + "files.php";
+};
 
 const writeToken = () => {
-  if(!_token)
-    throw new Error('Firestorm token was not configured')
+	if (!_token) throw new Error("Firestorm token was not configured");
 
-  return _token
-}
+	return _token;
+};
 
 /**
  * Auto-extracts data from Axios request
@@ -73,528 +69,562 @@ const writeToken = () => {
  * @param {Promise<T>} request The Axios concerned request
  */
 const __extract_data = (request) => {
-  return new Promise((resolve, reject) => {
-    request.then(res => {
-      if ('data' in res) return resolve(res.data)
-      resolve(res)
-    })
-    .catch(err => {
-     reject(err)
-    })
-  })
-}
+	return new Promise((resolve, reject) => {
+		request
+			.then((res) => {
+				if ("data" in res) return resolve(res.data);
+				resolve(res);
+			})
+			.catch((err) => {
+				reject(err);
+			});
+	});
+};
 
 /**
  * Class representing a collection
  */
 class Collection {
-  /** 
-   * @param {String} name The name of the Collection
-   * @param {Function?} addMethods Additional methods and data to add to the objects
-   */
-  constructor(name, addMethods = el => el) {
-    if(name === undefined) throw new Exception('Collection must have a name')
-    if(typeof addMethods !== 'function') throw new Exception('Collection must have a addMethods of type function')
-    this.addMethods = addMethods
-    this.collectionName = name
-  }
+	/**
+	 * @param {String} name The name of the Collection
+	 * @param {Function?} addMethods Additional methods and data to add to the objects
+	 */
+	constructor(name, addMethods = (el) => el) {
+		if (name === undefined) throw new Exception("Collection must have a name");
+		if (typeof addMethods !== "function")
+			throw new Exception("Collection must have a addMethods of type function");
+		this.addMethods = addMethods;
+		this.collectionName = name;
+	}
 
-  /**
-   * Add user methods to the returned data
-   * @private
-   * @ignore
-   * @param {AxiosPromise} req Incoming request 
-   * @returns {Object|Object[]}
-   */
-  __add_methods(req) {
-    return new Promise((resolve, reject) => {
-      req
-      .then(el => {
-        if(Array.isArray(el)) {
-          return resolve(el.map(e => this.addMethods(e)))
-        }
+	/**
+	 * Add user methods to the returned data
+	 * @private
+	 * @ignore
+	 * @param {AxiosPromise} req Incoming request
+	 * @returns {Object|Object[]}
+	 */
+	__add_methods(req) {
+		return new Promise((resolve, reject) => {
+			req
+				.then((el) => {
+					if (Array.isArray(el)) {
+						return resolve(el.map((e) => this.addMethods(e)));
+					}
 
-        el[Object.keys(el)[0]][ID_FIELD_NAME] = Object.keys(el)[0]
-        el = el[Object.keys(el)[0]]
+					el[Object.keys(el)[0]][ID_FIELD_NAME] = Object.keys(el)[0];
+					el = el[Object.keys(el)[0]];
 
-        // else on the object itself
-        return resolve(this.addMethods(el))
-      }).catch(err => reject(err))
-    })
-  }
+					// else on the object itself
+					return resolve(this.addMethods(el));
+				})
+				.catch((err) => reject(err));
+		});
+	}
 
-  /**
-   * Auto-extracts data from Axios request
-   * @private
-   * @ignore
-   * @param {AxiosPromise} request The Axios concerned request
-   */
-  __extract_data(request) {
-    return __extract_data(request)
-  }
+	/**
+	 * Auto-extracts data from Axios request
+	 * @private
+	 * @ignore
+	 * @param {AxiosPromise} request The Axios concerned request
+	 */
+	__extract_data(request) {
+		return __extract_data(request);
+	}
 
-  /**
-   * Send get request and extract data from response
-   * @private
-   * @ignore
-   * @param {Object} data Body data
-   * @returns {Promise<Object|Object[]>} data out
-   */
-  __get_request(data) {
-    const request = typeof process === 'object' ? axios.get(readAddress(), {
-      data: data
-    }) : axios.post(readAddress(), data)
-    return this.__extract_data(request)
-  }
+	/**
+	 * Send get request and extract data from response
+	 * @private
+	 * @ignore
+	 * @param {Object} data Body data
+	 * @returns {Promise<Object|Object[]>} data out
+	 */
+	__get_request(data) {
+		const request =
+			typeof process === "object"
+				? axios.get(readAddress(), {
+						data: data,
+				  })
+				: axios.post(readAddress(), data);
+		return this.__extract_data(request);
+	}
 
-  /**
-   * Get an element from the collection
-   * @param {String|Number} id The entry ID
-   * @returns {Promise<T>} Result entry you may be looking for
-   */
-  get(id) {
-    return this.__add_methods(this.__get_request({
-      "collection": this.collectionName,
-      "command": "get",
-      "id": id
-    }))
-  }
+	/**
+	 * Get an element from the collection
+	 * @param {String|Number} id The entry ID
+	 * @returns {Promise<T>} Result entry you may be looking for
+	 */
+	get(id) {
+		return this.__add_methods(
+			this.__get_request({
+				collection: this.collectionName,
+				command: "get",
+				id: id,
+			}),
+		);
+	}
 
-  /**
-   * @returns {String} returns sha1 hash of the file. can be used to see if same file content without downloading the file for example
-   */
-  sha1() {
-    return this.__get_request({
-      "collection": this.collectionName,
-      "command": "sha1",
-    })
-  }
+	/**
+	 * @returns {String} returns sha1 hash of the file. can be used to see if same file content without downloading the file for example
+	 */
+	sha1() {
+		return this.__get_request({
+			collection: this.collectionName,
+			command: "sha1",
+		});
+	}
 
-  /**
-   * Search through collection
-   * @param {SearchOption[]} searchOptions Array of search options
-   * @param {(Number|false|true)?} random Random result seed, disabled by default, but can activated with true or a given seed
-   * @returns {Promise<T[]>}
-   */
-  search(searchOptions, random=false) {
-    if(!Array.isArray(searchOptions))
-      return Promise.reject(new Error('searchOptions shall be an array'))
+	/**
+	 * Search through collection
+	 * @param {SearchOption[]} searchOptions Array of search options
+	 * @param {(Number|false|true)?} random Random result seed, disabled by default, but can activated with true or a given seed
+	 * @returns {Promise<T[]>}
+	 */
+	search(searchOptions, random = false) {
+		if (!Array.isArray(searchOptions))
+			return Promise.reject(new Error("searchOptions shall be an array"));
 
-    searchOptions.forEach(searchOption => {
-      if(searchOption.field === undefined || searchOption.criteria === undefined || searchOption.value === undefined)
-        return Promise.reject(new Error('Missing fields in searchOptions array'))
+		searchOptions.forEach((searchOption) => {
+			if (
+				searchOption.field === undefined ||
+				searchOption.criteria === undefined ||
+				searchOption.value === undefined
+			)
+				return Promise.reject(new Error("Missing fields in searchOptions array"));
 
-      if(typeof searchOption.field !== 'string')
-        return Promise.reject(new Error(`${JSON.stringify(searchOption)} search option field is not a string`))
+			if (typeof searchOption.field !== "string")
+				return Promise.reject(
+					new Error(`${JSON.stringify(searchOption)} search option field is not a string`),
+				);
 
-      if(searchOption.criteria == 'in' && !Array.isArray(searchOption.value))
-        return Promise.reject(new Error('in takes an array of values'))
+			if (searchOption.criteria == "in" && !Array.isArray(searchOption.value))
+				return Promise.reject(new Error("in takes an array of values"));
 
-      //TODO: add more strict value field warnings in JS and PHP
-    })
+			//TODO: add more strict value field warnings in JS and PHP
+		});
 
-    let params = {
-      "collection": this.collectionName,
-      "command": "search",
-      "search": searchOptions
-    }
+		let params = {
+			collection: this.collectionName,
+			command: "search",
+			search: searchOptions,
+		};
 
-    if(random !== false) {
-      if(random === true) {
-        params.random = {}
-      } else {
-        let seed = parseInt(random)
-        if(isNaN(seed)) return Promise.reject(new Error('random takes as parameter true, false or an integer value'))
-        params.random = {
-          "seed": seed
-        }
-      }
-    }
+		if (random !== false) {
+			if (random === true) {
+				params.random = {};
+			} else {
+				let seed = parseInt(random);
+				if (isNaN(seed))
+					return Promise.reject(
+						new Error("random takes as parameter true, false or an integer value"),
+					);
+				params.random = {
+					seed: seed,
+				};
+			}
+		}
 
-    return new Promise((resolve, reject) => {
-      let raw
-      this.__get_request(params).then(res => {
-        const arr = []
+		return new Promise((resolve, reject) => {
+			let raw;
+			this.__get_request(params)
+				.then((res) => {
+					const arr = [];
 
-        raw = res
-        Object.keys(res).forEach(contribID => {
-          const tmp = res[contribID]
-          tmp[ID_FIELD_NAME] = contribID
-          arr.push(tmp)
-        })
+					raw = res;
+					Object.keys(res).forEach((contribID) => {
+						const tmp = res[contribID];
+						tmp[ID_FIELD_NAME] = contribID;
+						arr.push(tmp);
+					});
 
-        resolve(this.__add_methods(Promise.resolve(arr)))
+					resolve(this.__add_methods(Promise.resolve(arr)));
+				})
+				.catch((err) => {
+					err.raw = raw;
+					reject(err);
+				});
+		});
+	}
 
-      }).catch(err => {
-        err.raw = raw
-        reject(err)
-      })
-    })
-  }
+	/**
+	 * Search specific keys through collection
+	 * @param {String[]|Number[]} keys Wanted keys
+	 * @returns {Promise<T[]>} Search results
+	 */
+	searchKeys(keys) {
+		if (!Array.isArray(keys)) return Promise.reject("Incorrect keys");
 
-  /**
-   * Search specific keys through collection
-   * @param {String[]|Number[]} keys Wanted keys
-   * @returns {Promise<T[]>} Search results
-   */
-  searchKeys(keys) {
-    if(!Array.isArray(keys))
-      return Promise.reject('Incorrect keys')
+		return new Promise((resolve, reject) => {
+			this.__get_request({
+				collection: this.collectionName,
+				command: "searchKeys",
+				search: keys,
+			})
+				.then((res) => {
+					const arr = [];
+					Object.keys(res).forEach((contribID) => {
+						const tmp = res[contribID];
+						tmp[ID_FIELD_NAME] = contribID;
+						arr.push(tmp);
+					});
 
-    return new Promise((resolve, reject) => {
-      this.__get_request({
-        "collection": this.collectionName,
-        "command": "searchKeys",
-        "search": keys
-      }).then(res => {
-        const arr = []
-        Object.keys(res).forEach(contribID => {
-          const tmp = res[contribID]
-          tmp[ID_FIELD_NAME] = contribID
-          arr.push(tmp)
-        })
+					resolve(this.__add_methods(Promise.resolve(arr)));
+				})
+				.catch((err) => reject(err));
+		});
+	}
 
-        resolve(this.__add_methods(Promise.resolve(arr)))
+	/**
+	 * Returns the whole content of the file
+	 * @returns {Promise} // the get promise of the collection raw file content
+	 */
+	read_raw() {
+		return new Promise((resolve, reject) => {
+			this.__get_request({
+				collection: this.collectionName,
+				command: "read_raw",
+			})
+				.then((data) => {
+					Object.keys(data).forEach((key) => {
+						data[key][ID_FIELD_NAME] = key;
+						this.addMethods(data[key]);
+					});
 
-      }).catch(err => reject(err))
-    })
-  }
+					resolve(data);
+				})
+				.catch(reject);
+		});
+	}
 
-  /**
-   * Returns the whole content of the file
-   * @returns {Promise} // the get promise of the collection raw file content
-   */
-  read_raw() {
-    return new Promise((resolve, reject) => {
-      this.__get_request({
-        "collection": this.collectionName,
-        "command": "read_raw"
-      })
-      .then(data => {
-        Object.keys(data).forEach(key => {
-          data[key][ID_FIELD_NAME] = key
-          this.addMethods(data[key])
-        })
+	/**
+	 * Upgraded read raw with field selection
+	 * @param {SelectOption} selectOption Select options
+	 */
+	select(selectOption) {
+		if (!selectOption) selectOption = {};
+		return new Promise((resolve, reject) => {
+			this.__get_request({
+				collection: this.collectionName,
+				command: "select",
+				select: selectOption,
+			})
+				.then((data) => {
+					Object.keys(data).forEach((key) => {
+						data[key][ID_FIELD_NAME] = key;
+						this.addMethods(data[key]);
+					});
 
-        resolve(data)
-      })
-      .catch(reject)
-    })
-  }
+					resolve(data);
+				})
+				.catch(reject);
+		});
+	}
 
-  /**
-   * Upgraded read raw with field selection
-   * @param {SelectOption} selectOption Select options
-   */
-  select(selectOption) {
-    if(!selectOption) selectOption = {}
-    return new Promise((resolve, reject) => {
-      this.__get_request({
-        'collection': this.collectionName,
-        'command': 'select',
-        'select': selectOption
-      }).then(data => {
-        Object.keys(data).forEach(key => {
-          data[key][ID_FIELD_NAME] = key
-          this.addMethods(data[key])
-        })
+	/**
+	 * Returns random max entries offsets with a given seed
+	 * @param {Integer} max
+	 * @param {Integer} seed
+	 * @param {Integer} offset
+	 * @returns {Promise} entries
+	 */
+	random(max, seed, offset) {
+		const params = {};
+		if (max !== undefined) {
+			if (typeof max !== "number" || !Number.isInteger(max) || max < -1)
+				return Promise.reject(new Error("Expected integer >= -1 for the max"));
+			params.max = max;
+		}
 
-        resolve(data)
-      })
-      .catch(reject)
-    })
-  }
+		const hasSeed = seed !== undefined;
+		const hasOffset = offset !== undefined;
+		if (hasOffset && !hasSeed)
+			return Promise.reject(new Error("You can't put an offset without a seed"));
 
-  /**
-   * Returns random max entries offsets with a given seed
-   * @param {Integer} max 
-   * @param {Integer} seed 
-   * @param {Integer} offset 
-   * @returns {Promise} entries
-   */
-  random(max, seed, offset) {
-    const params = {}
-    if(max !== undefined) {
-      if(typeof(max) !== 'number' || !Number.isInteger(max) || max < -1) return Promise.reject(new Error('Expected integer >= -1 for the max'))
-      params.max = max
-    }
+		if (hasOffset && (typeof offset !== "number" || !Number.isInteger(offset) || offset < 0))
+			return Promise.reject(new Error("Expected integer >= -1 for the max"));
 
-    const hasSeed = seed !== undefined
-    const hasOffset = offset !== undefined
-    if(hasOffset && !hasSeed) return Promise.reject(new Error('You can\'t put an offset without a seed'))
+		if (hasSeed) {
+			if (typeof seed !== "number" || !Number.isInteger(seed))
+				return Promise.reject(new Error("Expected integer for the seed"));
 
-    if(hasOffset && (typeof(offset) !== 'number' || !Number.isInteger(offset) || offset < 0)) return Promise.reject(new Error('Expected integer >= -1 for the max'))
-    
-    if(hasSeed) {
-      if((typeof(seed) !== 'number' || !Number.isInteger(seed))) return Promise.reject(new Error('Expected integer for the seed'))
-      
-      if(!hasOffset) offset = 0
-      params.seed = seed
-      params.offset = offset
-    }
+			if (!hasOffset) offset = 0;
+			params.seed = seed;
+			params.offset = offset;
+		}
 
-    return this.__get_request({
-      'collection': this.collectionName,
-      'command': 'random',
-      'random': params
-    }).then(data => {
-      Object.keys(data).forEach(key => {
-        data[key][ID_FIELD_NAME] = key
-        this.addMethods(data[key])
-      })
+		return this.__get_request({
+			collection: this.collectionName,
+			command: "random",
+			random: params,
+		}).then((data) => {
+			Object.keys(data).forEach((key) => {
+				data[key][ID_FIELD_NAME] = key;
+				this.addMethods(data[key]);
+			});
 
-      return Promise.resolve(data)
-    })
-  }
+			return Promise.resolve(data);
+		});
+	}
 
-  /**
-   * creates write requests with given value
-   * @private
-   * @ignore
-   * @param {String} command The write command you want
-   * @param {Object?} value The value for this command 
-   * @param {Boolean | undefined} multiple if I need to delete multiple 
-   * @returns {Object} Write data object
-   */
-  __write_data(command, value = undefined, multiple = false) {
-    const obj = {
-      "token": writeToken(),
-      "collection": this.collectionName,
-      "command": command
-    }
-    if(multiple === true && Array.isArray(value)) { // solves errors with undefined and null values
-      value.forEach(v => {
-        if(typeof value != 'number' && typeof value != 'string' && !Array.isArray(value)) 
-          delete v[ID_FIELD_NAME]
-      })
-    } else if(multiple === false && value != null && value != undefined && typeof value != 'number' && typeof value != 'string' && !Array.isArray(value)) { // solves errors with undefined and null values
-      delete value[ID_FIELD_NAME]
-    }
-    if(value) {
-      if(multiple)
-        obj["values"] = value
-      else
-        obj["value"] = value
-    }
+	/**
+	 * creates write requests with given value
+	 * @private
+	 * @ignore
+	 * @param {String} command The write command you want
+	 * @param {Object?} value The value for this command
+	 * @param {Boolean | undefined} multiple if I need to delete multiple
+	 * @returns {Object} Write data object
+	 */
+	__write_data(command, value = undefined, multiple = false) {
+		const obj = {
+			token: writeToken(),
+			collection: this.collectionName,
+			command: command,
+		};
+		if (multiple === true && Array.isArray(value)) {
+			// solves errors with undefined and null values
+			value.forEach((v) => {
+				if (typeof value != "number" && typeof value != "string" && !Array.isArray(value))
+					delete v[ID_FIELD_NAME];
+			});
+		} else if (
+			multiple === false &&
+			value != null &&
+			value != undefined &&
+			typeof value != "number" &&
+			typeof value != "string" &&
+			!Array.isArray(value)
+		) {
+			// solves errors with undefined and null values
+			delete value[ID_FIELD_NAME];
+		}
+		if (value) {
+			if (multiple) obj["values"] = value;
+			else obj["value"] = value;
+		}
 
-    return obj
-  }
+		return obj;
+	}
 
-  /**
-   * Writes the raw JSON file
-   * @param {Object} value The whole JSON to write
-   * @returns {Promise<any>}
-   */
-  write_raw(value) {
-    if(value === undefined || value === null) {
-      return Promise.reject(new Error('write_raw value must not be undefined or null'))
-    }
-    return this.__extract_data(axios.post(writeAddress(), this.__write_data('write_raw', value)))
-  }
+	/**
+	 * Writes the raw JSON file
+	 * @param {Object} value The whole JSON to write
+	 * @returns {Promise<any>}
+	 */
+	write_raw(value) {
+		if (value === undefined || value === null) {
+			return Promise.reject(new Error("write_raw value must not be undefined or null"));
+		}
+		return this.__extract_data(axios.post(writeAddress(), this.__write_data("write_raw", value)));
+	}
 
-  /**
-   * Add automatically a value to the JSON
-   * @param {Object} value The value to add
-   * @returns {Promise<any>}
-   */
-  add(value) {
-    return new Promise((resolve, reject) => {
-      axios.post(writeAddress(), this.__write_data('add', value))
-        .then(res => {
-          return this.__extract_data(Promise.resolve(res))
-        })
-        .then(res => {
-          if(typeof res != 'object' || !('id' in res) || typeof res.id != 'string') throw(new Error('Incorrect result'))
-          resolve(res.id)
-        })
-        .catch(err => {
-          reject(err)
-        })
-    })
-  }
+	/**
+	 * Add automatically a value to the JSON
+	 * @param {Object} value The value to add
+	 * @returns {Promise<any>}
+	 */
+	add(value) {
+		return new Promise((resolve, reject) => {
+			axios
+				.post(writeAddress(), this.__write_data("add", value))
+				.then((res) => {
+					return this.__extract_data(Promise.resolve(res));
+				})
+				.then((res) => {
+					if (typeof res != "object" || !("id" in res) || typeof res.id != "string")
+						throw new Error("Incorrect result");
+					resolve(res.id);
+				})
+				.catch((err) => {
+					reject(err);
+				});
+		});
+	}
 
-  /**
-   * Add automatically multiple values to the JSON
-   * @param {Object[]} values The values to add
-   * @returns {Promise<any>}
-   */
-  addBulk(values) {
-    return new Promise((resolve, reject) => {
-    this.__extract_data(axios.post(writeAddress(), this.__write_data('addBulk', values, true)))
-      .then(res => {
-        resolve(res.ids)
-      })
-      .catch(reject)
-    })
-  }
+	/**
+	 * Add automatically multiple values to the JSON
+	 * @param {Object[]} values The values to add
+	 * @returns {Promise<any>}
+	 */
+	addBulk(values) {
+		return new Promise((resolve, reject) => {
+			this.__extract_data(axios.post(writeAddress(), this.__write_data("addBulk", values, true)))
+				.then((res) => {
+					resolve(res.ids);
+				})
+				.catch(reject);
+		});
+	}
 
-  /**
-   * Remove entry with its key from the JSON
-   * @param {String | Number} key The key from the entry to remove
-   * @returns {Promise<any>}
-   */
-  remove(key) {
-    return this.__extract_data(axios.post(writeAddress(), this.__write_data('remove', key)))
-  }
+	/**
+	 * Remove entry with its key from the JSON
+	 * @param {String | Number} key The key from the entry to remove
+	 * @returns {Promise<any>}
+	 */
+	remove(key) {
+		return this.__extract_data(axios.post(writeAddress(), this.__write_data("remove", key)));
+	}
 
-  /**
-   * Remove entry with their keys from the JSON
-   * @param {String[] | Number[]} keys The key from the entries to remove
-   * @returns {Promise<any>}
-   */
-  removeBulk(keys) {
-    return this.__extract_data(axios.post(writeAddress(), this.__write_data('removeBulk', keys)))
-  }
+	/**
+	 * Remove entry with their keys from the JSON
+	 * @param {String[] | Number[]} keys The key from the entries to remove
+	 * @returns {Promise<any>}
+	 */
+	removeBulk(keys) {
+		return this.__extract_data(axios.post(writeAddress(), this.__write_data("removeBulk", keys)));
+	}
 
-  /**
-   * Sets an entry in the JSON
-   * @param {String} key The key of the value you want to set
-   * @param {Object} value The value you want for this key
-   * @returns {Promise<any>}
-   */
-  set(key, value) {
-    const data = this.__write_data('set', value)
-    data['key'] = key
-    return this.__extract_data(axios.post(writeAddress(), data))
-  }
+	/**
+	 * Sets an entry in the JSON
+	 * @param {String} key The key of the value you want to set
+	 * @param {Object} value The value you want for this key
+	 * @returns {Promise<any>}
+	 */
+	set(key, value) {
+		const data = this.__write_data("set", value);
+		data["key"] = key;
+		return this.__extract_data(axios.post(writeAddress(), data));
+	}
 
-  /**
-   * Sets multiple entries in the JSON
-   * @param {String[]} keys The array of keys of the values you want to set
-   * @param {Object[]} values The values you want for these keys
-   * @returns {Promise<any>}
-   */
-  setBulk(keys, values) {
-    const data = this.__write_data('setBulk', values, true)
-    data['keys'] = keys
-    return this.__extract_data(axios.post(writeAddress(), data))
-  }
+	/**
+	 * Sets multiple entries in the JSON
+	 * @param {String[]} keys The array of keys of the values you want to set
+	 * @param {Object[]} values The values you want for these keys
+	 * @returns {Promise<any>}
+	 */
+	setBulk(keys, values) {
+		const data = this.__write_data("setBulk", values, true);
+		data["keys"] = keys;
+		return this.__extract_data(axios.post(writeAddress(), data));
+	}
 
-  /**
-   * Changes one field from an element in this collection
-   * @param {EditObject} obj The edit object
-   * @returns {Promise<any>}
-   */
-  editField(obj) {
-    const data = this.__write_data('editField', obj, null)
-    return this.__extract_data(axios.post(writeAddress(), data))
-  }
+	/**
+	 * Changes one field from an element in this collection
+	 * @param {EditObject} obj The edit object
+	 * @returns {Promise<any>}
+	 */
+	editField(obj) {
+		const data = this.__write_data("editField", obj, null);
+		return this.__extract_data(axios.post(writeAddress(), data));
+	}
 
-  /**
-   * Changes one field from an element in this collection
-   * @param {EditObject[]} objArray The edit object array with operations
-   * @returns {Promise<any>}
-   */
-  editFieldBulk(objArray) {
-    const data = this.__write_data('editFieldBulk', objArray, undefined)
-    return this.__extract_data(axios.post(writeAddress(), data))
-  }
+	/**
+	 * Changes one field from an element in this collection
+	 * @param {EditObject[]} objArray The edit object array with operations
+	 * @returns {Promise<any>}
+	 */
+	editFieldBulk(objArray) {
+		const data = this.__write_data("editFieldBulk", objArray, undefined);
+		return this.__extract_data(axios.post(writeAddress(), data));
+	}
 }
 
 /**
  * @namespace firestorm
  */
 const firestorm = {
-  /**
-   * @param {String} newValue The new address value
-   * @returns {String} The stored address value
-   * @memberof firestorm
-   */
-  address: function(newValue = undefined) {
-    if(newValue === undefined) return readAddress()
-    if(newValue) _address = newValue
+	/**
+	 * @param {String} newValue The new address value
+	 * @returns {String} The stored address value
+	 * @memberof firestorm
+	 */
+	address: function (newValue = undefined) {
+		if (newValue === undefined) return readAddress();
+		if (newValue) _address = newValue;
 
-    return _address
-  },
+		return _address;
+	},
 
-  /**
-   * @param {String} newValue The new write token
-   * @returns {String} The stored write token
-   */
-  token: function(newValue = undefined) {
-    if(newValue === undefined) return writeToken()
-    if(newValue) _token = newValue
+	/**
+	 * @param {String} newValue The new write token
+	 * @returns {String} The stored write token
+	 */
+	token: function (newValue = undefined) {
+		if (newValue === undefined) return writeToken();
+		if (newValue) _token = newValue;
 
-    return _token
-  },
-  /**
-   * @param {String} name Collection name to get
-   * @param {Function} addMethods Additional methods and data to add to the objects
-   * @returns {Collection}
-   */
-  collection: function(name, addMethods = el => el) {
-    return new Collection(name, addMethods)
-  },
+		return _token;
+	},
+	/**
+	 * @param {String} name Collection name to get
+	 * @param {Function} addMethods Additional methods and data to add to the objects
+	 * @returns {Collection}
+	 */
+	collection: function (name, addMethods = (el) => el) {
+		return new Collection(name, addMethods);
+	},
 
-  /**
-   * 
-   * @param {String} name Table name to get
-   */
-  table: function(name) {
-    return this.collection(name)
-  },
+	/**
+	 *
+	 * @param {String} name Table name to get
+	 */
+	table: function (name) {
+		return this.collection(name);
+	},
 
-  /**
-   * Value for the id field when researching content
-   */
-  ID_FIELD: ID_FIELD_NAME,
+	/**
+	 * Value for the id field when researching content
+	 */
+	ID_FIELD: ID_FIELD_NAME,
 
-  /**
-   * Test child object with child namespace
-   * @memberof firestorm
-   * @type {object}
-   * @namespace firestorm.files
-   */
-  files: {
-    /**
-     * gets file back
-     * @memberof firestorm.files
-     * @param {String} path File path wanted
-     */
-    get: function (path) {
-      return __extract_data(axios.get(fileAddress(), {
-        params: {
-          path: path
-        }
-      }))
-    },
-  
-    /**
-     * Uploads file
-     * @memberof firestorm.files
-     * @param {FormData} form formData with path, filename and file
-     * @returns {Promise} http response
-     */
-    upload: function(form) {
-      form.append('token', firestorm.token())
-      return axios.post(fileAddress(), form, {
-        headers: {
-          ...form.getHeaders()
-        }
-      })
-    },
-  
-    /**
-     * Deletes a file given its path
-     * @memberof firestorm.files
-     * @param {String} path File path to delete
-     * @returns {Promise} http response
-     */
-    delete: function(path) {
-      return axios.delete(fileAddress(), {
-        data: {
-          path: path,
-          token: firestorm.token()
-        }
-      })
-    }
-  }
-}
+	/**
+	 * Test child object with child namespace
+	 * @memberof firestorm
+	 * @type {object}
+	 * @namespace firestorm.files
+	 */
+	files: {
+		/**
+		 * gets file back
+		 * @memberof firestorm.files
+		 * @param {String} path File path wanted
+		 */
+		get: function (path) {
+			return __extract_data(
+				axios.get(fileAddress(), {
+					params: {
+						path: path,
+					},
+				}),
+			);
+		},
+
+		/**
+		 * Uploads file
+		 * @memberof firestorm.files
+		 * @param {FormData} form formData with path, filename and file
+		 * @returns {Promise} http response
+		 */
+		upload: function (form) {
+			form.append("token", firestorm.token());
+			return axios.post(fileAddress(), form, {
+				headers: {
+					...form.getHeaders(),
+				},
+			});
+		},
+
+		/**
+		 * Deletes a file given its path
+		 * @memberof firestorm.files
+		 * @param {String} path File path to delete
+		 * @returns {Promise} http response
+		 */
+		delete: function (path) {
+			return axios.delete(fileAddress(), {
+				data: {
+					path: path,
+					token: firestorm.token(),
+				},
+			});
+		},
+	},
+};
 
 try {
-  if(typeof process === 'object') {
-    module.exports = firestorm
-  }
+	if (typeof process === "object") {
+		module.exports = firestorm;
+	}
 } catch (_error) {
-  // normal browser
+	// normal browser
 }

@@ -2,7 +2,8 @@
   "name": "firestorm-db",
   "version": "1.10.2",
   "description": "Self hosted Firestore-like database with API endpoints based on micro bulk operations",
-  "main": "index.js",
+  "main": "src/index.js",
+  "types": "typings/index.d.ts",
   "scripts": {
     "php_start": "node tests/php_setup.js",
     "test": "./node_modules/.bin/mocha tests/**/*.spec.js",
@@ -12,6 +13,7 @@
     "jsdoc": "jsdoc -a all -c jsdoc.json -R README.md src/index.js -d docs/jsdoc",
     "nodemon_jsdoc": "nodemon -x npm run jsdoc --watch src/index.js --watch jsdoc.json",
     "types": "npx tsc",
+    "prettier": "prettier \"{,!(node_modules)/**/}*.js\" --config .prettierrc --write",
     "cov": "npm run php_stop ; npm run php_start && nyc --reporter=text mocha tests/**/*.spec.js; npm run php_stop"
   },
   "repository": {
@@ -31,30 +33,27 @@
   "bugs": {
     "url": "https://github.com/TheRolfFR/firestorm/issues"
   },
-  "homepage": "https://github.com/TheRolfFR/firestorm#readme",
+  "homepage": "https://therolffr.github.io/firestorm-db/",
   "files": [
     "src/index.js",
     "typings/index.d.ts"
   ],
   "dependencies": {
-    "axios": "^0.21.4",
-    "firestorm-db": "^1.10.1",
-    "type-fest": "^2.19.0"
+    "axios": "^1.6.0",
+    "firestorm-db": "^1.10.2",
+    "type-fest": "^4.6.0"
   },
   "devDependencies": {
-    "chai": "^4.3.7",
-    "docdash": "^1.2.0",
+    "chai": "^4.3.10",
+    "docdash": "^2.0.2",
     "form-data": "^4.0.0",
-    "fs": "0.0.1-security",
-    "fs-extra": "^10.1.0",
-    "glob": "^7.2.3",
-    "jsdoc": "^3.6.11",
-    "jsdoc-to-markdown": "^7.1.1",
-    "mocha": "^9.2.2",
+    "glob": "^10.3.10",
+    "jsdoc": "^4.0.2",
+    "jsdoc-to-markdown": "^8.0.0",
+    "mocha": "^10.2.0",
     "nyc": "^15.1.0",
-    "path": "^0.12.7",
+    "prettier": "^3.0.3",
     "recursive-copy": "^2.0.14",
-    "typescript": "^4.9.5"
-  },
-  "types": "typings/index.d.ts"
+    "typescript": "^5.2.2"
+  }
 }

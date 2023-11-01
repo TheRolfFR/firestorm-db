@@ -1,4 +1,4 @@
-export type number_criteria = 
+export type number_criteria =
   | "==" /** test if the value is equal to the provided value */
   | "!=" /** test if the value is not equal to the provided value */
   | "<"  /** test if the value is less than the provided value */
@@ -8,7 +8,7 @@ export type number_criteria =
   | "in" /** test if the value is in the given array */
 ;
 
-export type string_criteria = 
+export type string_criteria =
   | "==" /** test if the string value is equal to the provided value */
   | "!=" /** test if the string value is not equal to the provided value */
   | "<"  /** test if the string value length is less than the provided value */
@@ -33,40 +33,40 @@ export type array_criteria =
   | "array-length-le" /** test if the array length is less than or equal to the provided value */
 ;
 
-export type boolean_criteria = 
+export type boolean_criteria =
   | "!=" /** test if the value is not equal to the provided value */
   | "==" /** test if the value is equal to the provided value */
 ;
 
-export type all_criteria = 
+export type all_criteria =
   | string_criteria /** criteria applying to strings */
   | array_criteria /** criteria applying to arrays */
   | boolean_criteria /** criteria applying to boolean */
   | number_criteria /** criteria applying to numbers */
 ;
 
-export type Criteria<T> = 
+export type Criteria<T> =
   | T extends Function ? never : never /** methods are not allowed in the field (they are not saved in the collection JSON file) */
   | T extends Array<unknown> ? array_criteria : never
   | T extends string ? string_criteria : never
   | T extends number ? number_criteria : never
   | T extends boolean ? boolean_criteria : never
 
-export type any_operation = 
+export type any_operation =
   | "set"       /** @param {T} value - set the field to the given value */
   | "remove"    /** @param {null|undefined|any} value - remove the field */
 ;
 
-export type string_operation = 
+export type string_operation =
   | "append"    /** @param {string} value - append the given value to the field */
 ;
 
-export type number_operation = 
+export type number_operation =
   | "increment"  /** @param {number?} value - increment the field by the given value, or by one */
   | "decrement"  /** @param {number?} value - decrement the field by the given value, or by one */
 ;
 
-export type array_operation  = 
+export type array_operation  =
   | "array-push"   /** @param {any} value - push the given value to the field */
   | "array-delete" /** @param {number} index - delete the value at the given index @see https://www.php.net/manual/fr/function.array-splice */
   | "array-splice" /** @param {number[]} indexes - remove certains elements of the array field @see https://www.php.net/manual/fr/function.array-splice */
@@ -276,55 +276,53 @@ export class Collection<T> {
   public editFieldBulk(edits: EditField<T>[]): Promise<T[]>;
 }
 
-export namespace firestorm {
-  /** Value for the id field when searching content */
-  const ID_FIELD: string;
+/** Value for the id field when searching content */
+export const ID_FIELD: string;
+
+/**
+ * Change the current firestorm address
+ * @param {String} value - The new firestorm address
+ * @returns {String} The stored firestorm address
+ */
+export function address(value?: string): string;
+
+/**
+ * @param {String} value - The new firestorm write token
+ * @returns {String} The stored firestorm write token
+ */
+export function token(value: string): string;
+
+/**
+ * @param {String} value - The new firestorm read token
+ * @param {CollectionMethods<T>} addMethods - Additional methods you want to add to the collection
+ * @returns {Collection<T>} The collection
+ */
+export function collection<T>(value: string, addMethods?: CollectionMethods<T>): Collection<T>;
+
+/**
+ * @param {String} table - The table name to get
+ */
+export function table(table: string): Promise<any>;
+
+
+export interface files {
+  /**
+   * Get file back
+   * @param {String} path - The file path wanted
+   */
+  get: (path: string) => any;
 
   /**
-   * Change the current firestorm address
-   * @param {String} value - The new firestorm address
-   * @returns {String} The stored firestorm address
+   * Upload file
+   * @param {FormData} form - The form data with path, filename & file
+   * @returns {Promise<any>} http response
    */
-  function address(value?: string): string;
+  upload: (form: FormData) => Promise<any>;
 
   /**
-   * @param {String} value - The new firestorm write token
-   * @returns {String} The stored firestorm write token
+   * Deletes a file given its path
+   * @param {String} path - The file path to delete
+   * @returns {Promise<any>} http response
    */
-  function token(value: string): string;
-
-  /**
-   * @param {String} value - The new firestorm read token
-   * @param {CollectionMethods<T>} addMethods - Additional methods you want to add to the collection
-   * @returns {Collection<T>} The collection
-   */
-  function collection<T>(value: string, addMethods?: CollectionMethods<T>): Collection<T>;
-
-  /**
-   * @param {String} table - The table name to get
-   */
-  function table(table: string): Promise<any>;
-
-  
-  interface files {
-    /**
-     * Get file back
-     * @param {String} path - The file path wanted
-     */
-    get: (path: string) => any;
-
-    /**
-     * Upload file
-     * @param {FormData} form - The form data with path, filename & file
-     * @returns {Promise<any>} http response
-     */
-    upload: (form: FormData) => Promise<any>;
-
-    /**
-     * Deletes a file given its path
-     * @param {String} path - The file path to delete
-     * @returns {Promise<any>} http response
-     */
-    delete: (path: string) => Promise<any>;
-  }
+  delete: (path: string) => Promise<any>;
 }

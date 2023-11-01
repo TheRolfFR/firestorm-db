@@ -130,3 +130,4 @@ dist
 
 #jsdoc
 docs/
+.DS_Store
