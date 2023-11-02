@@ -90,9 +90,9 @@ class Collection {
 	 * @param {Function?} addMethods Additional methods and data to add to the objects
 	 */
 	constructor(name, addMethods = (el) => el) {
-		if (name === undefined) throw new Exception("Collection must have a name");
+		if (name === undefined) throw new SyntaxError("Collection must have a name");
 		if (typeof addMethods !== "function")
-			throw new Exception("Collection must have a addMethods of type function");
+			throw new TypeError("Collection must have an addMethods of type Function");
 		this.addMethods = addMethods;
 		this.collectionName = name;
 	}
