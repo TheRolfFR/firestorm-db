@@ -2,36 +2,12 @@ const fs = require("fs").promises;
 const { existsSync } = require("fs");
 const path = require("path");
 const os = require("os");
-const glob = require("glob");
+const { glob } = require("glob");
 const copy = require("recursive-copy");
 const child_process = require("child_process");
 
 const PHP_SERVER_START_DELAY = 2000;
 const PORT = 8000;
-
-const copyProm = (srcDir, destDir) => {
-	return fs.copyFile(srcDir, destDir);
-};
-
-const globProm = (pattern) => {
-	return new Promise((resolve, reject) => {
-		glob(pattern, (err, res) => {
-			if (err) reject(err);
-			else resolve(res);
-		});
-	});
-};
-
-function execProm(cmd) {
-	return new Promise((resolve) => {
-		child_process.exec(cmd, (error, stdout, stderr) => {
-			if (error) {
-				console.warn(error);
-			}
-			resolve(stdout ? stdout : stderr);
-		});
-	});
-}
 
 console.log("Setup of PHP files...");
 console.log("Creating tmp folder...");
@@ -51,9 +27,9 @@ async function setup_php() {
 				"Moving PHP folder + Checking test php files + Creating files folder + Checking test databases...",
 			);
 			return Promise.all([
-				globProm(path.join(process.cwd(), "src/php", "**/*.php")),
+				glob(path.join(process.cwd(), "src/php", "**/*.php")),
 				fs.mkdir(path.join(tmpFolder, "files")),
-				globProm(path.join(process.cwd(), "tests", "*.json")),
+				glob(path.join(process.cwd(), "tests", "*.json")),
 			]);
 		})
 		.then((results) => {
@@ -87,7 +63,7 @@ async function setup_php() {
 				});
 			});
 
-			const get_test_php_files = globProm(path.join(process.cwd(), "tests", "*.php"));
+			const get_test_php_files = glob(path.join(process.cwd(), "tests", "*.php"));
 
 			return Promise.all([get_test_php_files, ...php_symbolic_link, ...json_prom]);
 		})
@@ -114,7 +90,7 @@ async function setup_php() {
 			return Promise.all(php_prom);
 		})
 		.then(async () => {
-			// console.log(await (globProm(path.join(tmpFolder, '/**/*'))))
+			// console.log(await (glob(path.join(tmpFolder, '/**/*'))))
 			const php_server_command = `sh tests/php_server_start.sh ${tmpFolder} ${PORT}`;
 			console.log('Starting php server with command "' + php_server_command + '"');
 			const args = php_server_command.split(" ");
@@ -126,6 +102,7 @@ async function setup_php() {
 			return pause(PHP_SERVER_START_DELAY);
 		})
 		.catch((err) => {
+			console.error('Terrible error happened');
 			console.trace(err);
 			process.exit(1);
 		});
