@@ -1,5 +1,5 @@
 // VS-Code stress test for TypeScript types of Firestorm-db.
-import { firestorm, Collection } from "../typings/index";
+import * as firestorm from "../typings/index";
 
 /**
  ** I. CREATE A COLLECTION
@@ -26,10 +26,10 @@ firestorm.collection<UserWithMethods>("users", (col) => {
 });
 
 /**
- ** II. SEARCH TROUGH COLLECTIONS
+ ** II. SEARCH THROUGH COLLECTIONS
  **/
 
-// 1. search trough a collection
+// 1. search through a collection
 interface User {
 	name: string;
 	age: number;

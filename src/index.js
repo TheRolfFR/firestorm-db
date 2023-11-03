@@ -26,10 +26,6 @@ try {
  */
 
 /**
- * @import {AxiosPromise} from 'axios'
- */
-
-/**
  * @ignore
  */
 let _address = undefined;
@@ -66,7 +62,7 @@ const writeToken = () => {
 /**
  * Auto-extracts data from Axios request
  * @ignore
- * @param {Promise<T>} request The Axios concerned request
+ * @param {Promise<import("axios").AxiosPromise>} request The Axios concerned request
  */
 const __extract_data = (request) => {
 	return new Promise((resolve, reject) => {
@@ -83,6 +79,7 @@ const __extract_data = (request) => {
 
 /**
  * Class representing a collection
+ * @template T
  */
 class Collection {
 	/**
@@ -101,7 +98,7 @@ class Collection {
 	 * Add user methods to the returned data
 	 * @private
 	 * @ignore
-	 * @param {AxiosPromise} req Incoming request
+	 * @param {import("axios").AxiosPromise} req Incoming request
 	 * @returns {Object|Object[]}
 	 */
 	__add_methods(req) {

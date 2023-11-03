@@ -68,7 +68,7 @@ export type number_operation =
 export type array_operation =
 	| "array-push" /** @param {any} value - push the given value to the field */
 	| "array-delete" /** @param {number} index - delete the value at the given index @see https://www.php.net/manual/fr/function.array-splice */
-	| "array-splice" /** @param {number[]} indexes - remove certains elements of the array field @see https://www.php.net/manual/fr/function.array-splice */;
+	| "array-splice" /** @param {number[]} indexes - remove certain elements of the array field @see https://www.php.net/manual/fr/function.array-splice */;
 
 type _operation<T> = T extends string
 	? string_operation
@@ -155,12 +155,14 @@ export interface SelectOption<T> {
 
 export type CollectionMethods<T> = (
 	/** Makes sure you can properly inject methods */
-	collectionElement: Collection<T> & T & Partial<Record<any, any>>,
-) => Collection<T> & T & Partial<Record<any, any>>;
+	collectionElement: Addable<Collection<T> & T>,
+) => Addable<Collection<T> & T>;
 
 export interface Raw<T> {
 	[key: string]: T;
 }
+
+export type Addable<T> = T & Partial<Record<any, any>>;
 
 export type NoMethods<T> = {
 	[K in keyof T]: T[K] extends Function ? K : never;

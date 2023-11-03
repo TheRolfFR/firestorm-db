@@ -25,7 +25,7 @@ The JavaScript [index.js](./src/index.js) file is just an [Axios](https://www.np
 
 ## How to use it
 
-First, you need to configure the address of the API, and your token if needed:
+First, you need to configure your API address, and your token if needed:
 
 ```js
 require("dotenv").config(); // add some env variables
@@ -58,8 +58,8 @@ userCollection
 
 A collection takes one required argument and one optional argument:
 
--   The name of the collection as a `String`.
--   The method adder, which allows to inject methods to the get methods results. This would be a `Function` taking the element as an argument.
+- The name of the collection as a `String`.
+- The method adder, which allows to inject methods to the get methods results. This would be a `Function` taking the element as an argument.
 
 ```js
 const firestorm = require("firestorm-db");
@@ -92,9 +92,9 @@ Available methods for a collection:
 | select(selectOption)          | selectOption: `{ field: String[] }`                           | Improved read_raw with field selection                                                                                                          |
 | random(max, seed, offset)     | max?: `Integer >= -1` seed?: `Integer` offset?:`Integer >= 0` | Reads random entries of collection                                                                                                              |
 
-Search method can take one or more options to filter entries in a collection. A search option studies a `field` with a `criteria` and compares it to a `value`. On string values you can now use the boolean `ignoreCase` option.
+The search method can take one or more options to filter entries in a collection. A search option studies a `field` with a `criteria` and compares it to a `value`. You can also use the boolean `ignoreCase` option for string values.
 
-Not all criterias are available depending the field type. There are more options available than the firestore `where` command, allowing you to get better and faster search results.
+Not all criteria are available depending the field type. There are more options available than the firestore `where` command, allowing you to get better and faster search results.
 
 ### All search options available
 
@@ -203,12 +203,12 @@ $authorized_file_extension = array('.txt', '.png');
 $STORAGE_LOCATION = dirname($_SERVER['SCRIPT_FILENAME']) . '/uploads/';
 ```
 
-You can now use the wrapper functions in order to upload, get and delete a file.
+You can use the wrapper functions in order to upload, get and delete a file.
 If the folder is accessible from server url, you can directly type its address.
 
 ### File rights
 
-The PHP scripts creates folders and files. So if the PHP user doesn't have the rights to write, the script will fail.
+The PHP scripts create folders and files, so the script will fail if the PHP user doesn't have write permissions.
 You can give rights to a folder with the following command:
 
 ```
@@ -254,8 +254,8 @@ firestorm.address("ADDRESS_VALUE");
 const getPromise = firestorm.files.get("/quote.txt");
 
 getPromise
-    .then((filecontent) => {
-        console.log(filecontent); // 'but your kids are gonna love it.
+    .then((fileContent) => {
+        console.log(fileContent); // 'but your kids are gonna love it.
     })
     .catch((err) => {
         console.error(err);
@@ -299,7 +299,7 @@ memory_limit = 256M
 
 ## API endpoints
 
-All Firestorm methods correspond to an equivalent Axios request. Read requests are GET request and write requests are POST requests with a JSON data.
+All Firestorm methods correspond to an equivalent Axios request. Read requests are GET request and write requests are POST requests with provided JSON data.
 
 You always have the same first keys and the one key per method:
 
