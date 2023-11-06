@@ -138,7 +138,7 @@ export type EditField<T> = {
 export type SearchOption<T> = {
 	[K in keyof T]: {
 		/** the field to be searched for */
-		field: K;
+		field: Path<T>;
 		/** the criteria to be used to search for the field */
 		criteria: Criteria<T[K]>;
 		/** the value to be searched for */
@@ -322,24 +322,52 @@ export function collection<T>(value: string, addMethods?: CollectionMethods<T>):
  */
 export function table(table: string): Promise<any>;
 
-export interface files {
+// technically misleading since it's a constant object but it works
+export class files {
 	/**
 	 * Get file back
 	 * @param {String} path - The file path wanted
 	 */
-	get: (path: string) => any;
+	static get: (path: string) => any;
 
 	/**
 	 * Upload file
 	 * @param {FormData} form - The form data with path, filename & file
 	 * @returns {Promise<any>} http response
 	 */
-	upload: (form: FormData) => Promise<any>;
+	static upload: (form: FormData) => Promise<any>;
 
 	/**
 	 * Deletes a file given its path
 	 * @param {String} path - The file path to delete
 	 * @returns {Promise<any>} http response
 	 */
-	delete: (path: string) => Promise<any>;
+	static delete: (path: string) => Promise<any>;
 }
+
+/**
+ * taken from https://github.com/toonvanstrijp/nestjs-i18n/blob/3fc33c105a68b112ed7af6237c5f49902d0864b6/src/types.ts#L27
+ * allows for recursive keyof usage
+ */
+
+type IsAny<T> = unknown extends T ? ([keyof T] extends [never] ? false : true) : false;
+
+type PathImpl<T, Key extends keyof T> = Key extends string
+	? IsAny<T[Key]> extends true
+		? never
+		: T[Key] extends Record<string, any>
+		?
+				| `${Key}.${PathImpl<T[Key], Exclude<keyof T[Key], keyof any[]>> & string}`
+				| `${Key}.${Exclude<keyof T[Key], keyof any[]> & string}`
+		: never
+	: never;
+
+type PathImpl2<T> = PathImpl<T, keyof T> | keyof T;
+
+export type Path<T> = keyof T extends string
+	? PathImpl2<T> extends infer P
+		? P extends string | keyof T
+			? P
+			: keyof T
+		: keyof T
+	: never;
