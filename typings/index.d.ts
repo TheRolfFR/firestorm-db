@@ -323,7 +323,7 @@ export function collection<T>(value: string, addMethods?: CollectionMethods<T>):
 export function table(table: string): Promise<any>;
 
 // technically misleading since it's a constant object but it works
-export class files {
+export abstract class files {
 	/**
 	 * Get file back
 	 * @param {String} path - The file path wanted
