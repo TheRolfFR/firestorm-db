@@ -9,7 +9,8 @@ const path = require("path");
 const fs = require("fs");
 const { readFile } = require("fs").promises;
 
-const ADDRESS = "http://127.0.0.1:8000/";
+const PORT = process.argv.indexOf('--port') > -1 ? process.argv[process.argv.indexOf('--port')+1] : '8000'
+const ADDRESS = `http://127.0.0.1:${PORT}/`;
 const TOKEN = "NeverGonnaGiveYouUp";
 
 const HOUSE_DATABASE_NAME = "house";
@@ -231,7 +232,6 @@ describe("GET operations", () => {
 					done();
 				})
 				.catch((err) => {
-					console.trace(err.response);
 					done(err);
 				});
 		});
@@ -393,7 +393,6 @@ describe("GET operations", () => {
 						done();
 					})
 					.catch((err) => {
-						console.error(err.raw);
 						done(err);
 					});
 			});
@@ -489,7 +488,6 @@ describe("GET operations", () => {
 				)
 				.then((_) => done())
 				.catch((err) => {
-					console.error(err);
 					done("Should not reject with error " + JSON.stringify(err));
 				});
 		});
@@ -743,7 +741,6 @@ describe("PUT operations", () => {
 						done();
 					})
 					.catch((err) => {
-						console.trace(err);
 						done(err);
 					})
 					.finally(async () => {
@@ -919,7 +916,6 @@ describe("PUT operations", () => {
 						done();
 					})
 					.catch((err) => {
-						console.log(err);
 						done(err);
 					});
 			});
@@ -953,7 +949,6 @@ describe("PUT operations", () => {
 						done();
 					})
 					.catch((err) => {
-						console.error(err);
 						done(err);
 					});
 			});
