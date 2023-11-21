@@ -47,7 +47,6 @@ class JSONDatabase {
         // content must be objects
         foreach ($content as $key => $item) {
             // item must not be primitive
-            echo $item;
 
             // we don't accept primitive keys as value
             $item_type = gettype($item);
@@ -479,6 +478,9 @@ class JSONDatabase {
     // MANDATORY REFERENCE to edit directly: PHP 5+
     private function __edit(&$obj, $editObj) {
         
+        if(!is_object($editObj))
+            return false;
+
         // id required
         if(!check($editObj['id']))
             return false;
