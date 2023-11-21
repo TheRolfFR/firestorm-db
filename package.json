@@ -14,6 +14,7 @@
     "nodemon_jsdoc": "nodemon -x npm run jsdoc --watch src/index.js --watch jsdoc.json --watch README.md",
     "types": "npx tsc",
     "prettier": "prettier \"{,!(node_modules)/**/}*.{js,ts}\" --config .prettierrc --write",
+    "test_docker": "bash docker/docker_image_build.bash && bash docker/docker_image_test.bash",
     "cov": "npm run php_stop ; npm run php_start && nyc --reporter=text mocha tests/**/*.spec.js; npm run php_stop"
   },
   "repository": {
