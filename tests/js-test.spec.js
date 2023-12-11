@@ -1264,7 +1264,7 @@ describe("PUT operations", () => {
 			const incorrect_values = [undefined, null, false, 16, 0.5, "", "gg", [], {}];
 
 			incorrect_values.forEach((unco) => {
-				it(`${JSON.stringify(unco)} value rejects`, (done) => {
+				it(`'${JSON.stringify(unco)}' value rejects`, (done) => {
 					base
 						.editField(unco)
 						.then((res) => {
