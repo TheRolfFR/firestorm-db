@@ -6,23 +6,23 @@ try {
 
 /**
  * @typedef {Object} SearchOption
- * @property {String} field The field you want to search in
+ * @property {string} field The field you want to search in
  * @property {"!=" | "==" | ">=" | "<=" | "<" | ">" | "in" | "includes" | "startsWith" | "endsWith" | "array-contains" | "array-contains-any" | "array-length-(eq|df|gt|lt|ge|le)" } criteria filter criteria
- * @property {String | Number | Boolean | Array } value the value you want to compare
- * @property {Boolean} ignoreCase Ignore case on search string
+ * @property {string | number | boolean | Array } value the value you want to compare
+ * @property {boolean} ignoreCase Ignore case on search string
  */
 
 /**
  * @typedef {Object} EditObject
- * @property {String | Number } id the affected element
- * @property {String} field The field you want to edit
+ * @property {string | number } id the affected element
+ * @property {string} field The field you want to edit
  * @property {"set" | "remove" | "append" | "increment" | "decrement" | "array-push" | "array-delete" | "array-splice"} operation Wanted operation on field
- * @property {String | Number | Boolean | Array } [value] // the value you want to compare
+ * @property {string | number | boolean | Array } [value] // the value you want to compare
  */
 
 /**
  * @typedef {Object} SelectOption
- * @property {Array<String>} fields Chosen fields to eventually return
+ * @property {Array<string>} fields Chosen fields to eventually return
  */
 
 /**
@@ -83,7 +83,7 @@ const __extract_data = (request) => {
  */
 class Collection {
 	/**
-	 * @param {String} name The name of the Collection
+	 * @param {string} name The name of the Collection
 	 * @param {Function?} addMethods Additional methods and data to add to the objects
 	 */
 	constructor(name, addMethods = (el) => el) {
@@ -148,7 +148,7 @@ class Collection {
 
 	/**
 	 * Get an element from the collection
-	 * @param {String|Number} id The entry ID
+	 * @param {string | number} id The entry ID
 	 * @returns {Promise<T>} Result entry you may be looking for
 	 */
 	get(id) {
@@ -162,7 +162,7 @@ class Collection {
 	}
 
 	/**
-	 * @returns {String} returns sha1 hash of the file. can be used to see if same file content without downloading the file for example
+	 * @returns {string} returns sha1 hash of the file. can be used to see if same file content without downloading the file for example
 	 */
 	sha1() {
 		return this.__get_request({
@@ -174,7 +174,7 @@ class Collection {
 	/**
 	 * Search through collection
 	 * @param {SearchOption[]} searchOptions Array of search options
-	 * @param {(Number|false|true)?} random Random result seed, disabled by default, but can activated with true or a given seed
+	 * @param {(number | false | true)?} random Random result seed, disabled by default, but can activated with true or a given seed
 	 * @returns {Promise<T[]>}
 	 */
 	search(searchOptions, random = false) {
@@ -245,7 +245,7 @@ class Collection {
 
 	/**
 	 * Search specific keys through collection
-	 * @param {String[]|Number[]} keys Wanted keys
+	 * @param {string[] | number[]} keys Wanted keys
 	 * @returns {Promise<T[]>} Search results
 	 */
 	searchKeys(keys) {
@@ -319,9 +319,9 @@ class Collection {
 
 	/**
 	 * Returns random max entries offsets with a given seed
-	 * @param {Integer} max
-	 * @param {Integer} seed
-	 * @param {Integer} offset
+	 * @param {number} max integer
+	 * @param {number} seed integer
+	 * @param {number} offset integer
 	 * @returns {Promise} entries
 	 */
 	random(max, seed, offset) {
@@ -367,9 +367,9 @@ class Collection {
 	 * creates write requests with given value
 	 * @private
 	 * @ignore
-	 * @param {String} command The write command you want
+	 * @param {string} command The write command you want
 	 * @param {Object?} value The value for this command
-	 * @param {Boolean | undefined} multiple if I need to delete multiple
+	 * @param {boolean | undefined} multiple if I need to delete multiple
 	 * @returns {Object} Write data object
 	 */
 	__write_data(command, value = undefined, multiple = false) {
@@ -455,7 +455,7 @@ class Collection {
 
 	/**
 	 * Remove entry with its key from the JSON
-	 * @param {String | Number} key The key from the entry to remove
+	 * @param {string | number} key The key from the entry to remove
 	 * @returns {Promise<any>}
 	 */
 	remove(key) {
@@ -464,7 +464,7 @@ class Collection {
 
 	/**
 	 * Remove entry with their keys from the JSON
-	 * @param {String[] | Number[]} keys The key from the entries to remove
+	 * @param {string[] | number[]} keys The key from the entries to remove
 	 * @returns {Promise<any>}
 	 */
 	removeBulk(keys) {
@@ -473,7 +473,7 @@ class Collection {
 
 	/**
 	 * Sets an entry in the JSON
-	 * @param {String} key The key of the value you want to set
+	 * @param {string} key The key of the value you want to set
 	 * @param {Object} value The value you want for this key
 	 * @returns {Promise<any>}
 	 */
@@ -485,7 +485,7 @@ class Collection {
 
 	/**
 	 * Sets multiple entries in the JSON
-	 * @param {String[]} keys The array of keys of the values you want to set
+	 * @param {string[]} keys The array of keys of the values you want to set
 	 * @param {Object[]} values The values you want for these keys
 	 * @returns {Promise<any>}
 	 */
@@ -521,8 +521,8 @@ class Collection {
  */
 const firestorm = {
 	/**
-	 * @param {String} newValue The new address value
-	 * @returns {String} The stored address value
+	 * @param {string} newValue The new address value
+	 * @returns {string} The stored address value
 	 * @memberof firestorm
 	 */
 	address: function (newValue = undefined) {
@@ -533,8 +533,8 @@ const firestorm = {
 	},
 
 	/**
-	 * @param {String} newValue The new write token
-	 * @returns {String} The stored write token
+	 * @param {string} newValue The new write token
+	 * @returns {string} The stored write token
 	 */
 	token: function (newValue = undefined) {
 		if (newValue === undefined) return writeToken();
@@ -543,7 +543,7 @@ const firestorm = {
 		return _token;
 	},
 	/**
-	 * @param {String} name Collection name to get
+	 * @param {string} name Collection name to get
 	 * @param {Function} addMethods Additional methods and data to add to the objects
 	 * @returns {Collection}
 	 */
@@ -553,7 +553,7 @@ const firestorm = {
 
 	/**
 	 *
-	 * @param {String} name Table name to get
+	 * @param {string} name Table name to get
 	 */
 	table: function (name) {
 		return this.collection(name);
@@ -574,7 +574,7 @@ const firestorm = {
 		/**
 		 * gets file back
 		 * @memberof firestorm.files
-		 * @param {String} path File path wanted
+		 * @param {string} path File path wanted
 		 */
 		get: function (path) {
 			return __extract_data(
@@ -604,7 +604,7 @@ const firestorm = {
 		/**
 		 * Deletes a file given its path
 		 * @memberof firestorm.files
-		 * @param {String} path File path to delete
+		 * @param {string} path File path to delete
 		 * @returns {Promise} http response
 		 */
 		delete: function (path) {
