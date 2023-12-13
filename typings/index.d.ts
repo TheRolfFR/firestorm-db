@@ -43,23 +43,22 @@ export type AllCriteria =
 export type Criteria<T> = T extends Function
 	? never
 	:
-			| never /** methods are not allowed in the field (they are not saved in the collection JSON file) */
-			| T extends Array<unknown>
-	? ArrayCriteria
-	: never | T extends string
-	? StringCriteria
-	: never | T extends number
-	? NumberCriteria
-	: never | T extends boolean
-	? BooleanCriteria
-	: never;
+				| never /** methods are not allowed in the field (they are not saved in the collection JSON file) */
+				| T extends Array<unknown>
+		? ArrayCriteria
+		: never | T extends string
+			? StringCriteria
+			: never | T extends number
+				? NumberCriteria
+				: never | T extends boolean
+					? BooleanCriteria
+					: never;
 
 export type AnyOperation =
 	| "set" /** @param value - set the field to the given value */
 	| "remove" /** @param value - remove the field */;
 
-export type StringOperation =
-	"append" /** @param value - append the given value to the field */;
+export type StringOperation = "append" /** @param value - append the given value to the field */;
 
 export type NumberOperation =
 	| "increment" /** @param value - increment the field by the given value, or by one */
@@ -73,12 +72,12 @@ export type ArrayOperation =
 type _Operation<T> = T extends string
 	? StringOperation
 	: never | T extends number
-	? NumberOperation
-	: never | T extends Array<unknown>
-	? ArrayOperation
-	: never | T extends object | Function
-	? never
-	: never;
+		? NumberOperation
+		: never | T extends Array<unknown>
+			? ArrayOperation
+			: never | T extends object | Function
+				? never
+				: never;
 
 export type Operation<T> =
 	| {
@@ -352,10 +351,10 @@ type PathImpl<T, Key extends keyof T> = Key extends string
 	? IsAny<T[Key]> extends true
 		? never
 		: T[Key] extends Record<string, any>
-		?
-				| `${Key}.${PathImpl<T[Key], Exclude<keyof T[Key], keyof any[]>> & string}`
-				| `${Key}.${Exclude<keyof T[Key], keyof any[]> & string}`
-		: never
+			?
+					| `${Key}.${PathImpl<T[Key], Exclude<keyof T[Key], keyof any[]>> & string}`
+					| `${Key}.${Exclude<keyof T[Key], keyof any[]> & string}`
+			: never
 	: never;
 
 type PathImpl2<T> = PathImpl<T, keyof T> | keyof T;

@@ -141,7 +141,7 @@ class Collection {
 			typeof process === "object"
 				? axios.get(readAddress(), {
 						data: data,
-				  })
+					})
 				: axios.post(readAddress(), data);
 		return this.__extract_data(request);
 	}
