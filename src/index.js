@@ -1,7 +1,5 @@
 try {
-	if (typeof process === "object") {
-		var axios = require("axios").default;
-	}
+	if (typeof process === "object") var axios = require("axios").default;
 } catch (_error) {}
 
 /**
@@ -84,7 +82,7 @@ const __extract_data = (request) => {
 class Collection {
 	/**
 	 * @param {string} name The name of the Collection
-	 * @param {Function?} addMethods Additional methods and data to add to the objects
+	 * @param {Function} [addMethods] Additional methods and data to add to the objects
 	 */
 	constructor(name, addMethods = (el) => el) {
 		if (name === undefined) throw new SyntaxError("Collection must have a name");
@@ -174,7 +172,7 @@ class Collection {
 	/**
 	 * Search through collection
 	 * @param {SearchOption[]} searchOptions Array of search options
-	 * @param {(number | false | true)?} random Random result seed, disabled by default, but can activated with true or a given seed
+	 * @param {(number | false | true)} [random] Random result seed, disabled by default, but can activated with true or a given seed
 	 * @returns {Promise<T[]>}
 	 */
 	search(searchOptions, random = false) {
@@ -364,11 +362,11 @@ class Collection {
 	}
 
 	/**
-	 * creates write requests with given value
+	 * Creates write requests with given value
 	 * @private
 	 * @ignore
 	 * @param {string} command The write command you want
-	 * @param {Object?} value The value for this command
+	 * @param {Object} [value] The value for this command
 	 * @param {boolean | undefined} multiple if I need to delete multiple
 	 * @returns {Object} Write data object
 	 */
@@ -525,7 +523,7 @@ const firestorm = {
 	 * @returns {string} The stored address value
 	 * @memberof firestorm
 	 */
-	address: function (newValue = undefined) {
+	address(newValue = undefined) {
 		if (newValue === undefined) return readAddress();
 		if (newValue) _address = newValue;
 
@@ -536,7 +534,7 @@ const firestorm = {
 	 * @param {string} newValue The new write token
 	 * @returns {string} The stored write token
 	 */
-	token: function (newValue = undefined) {
+	token(newValue = undefined) {
 		if (newValue === undefined) return writeToken();
 		if (newValue) _token = newValue;
 
@@ -547,7 +545,7 @@ const firestorm = {
 	 * @param {Function} addMethods Additional methods and data to add to the objects
 	 * @returns {Collection}
 	 */
-	collection: function (name, addMethods = (el) => el) {
+	collection(name, addMethods = (el) => el) {
 		return new Collection(name, addMethods);
 	},
 
@@ -555,7 +553,7 @@ const firestorm = {
 	 *
 	 * @param {string} name Table name to get
 	 */
-	table: function (name) {
+	table(name) {
 		return this.collection(name);
 	},
 
@@ -567,7 +565,7 @@ const firestorm = {
 	/**
 	 * Test child object with child namespace
 	 * @memberof firestorm
-	 * @type {object}
+	 * @type {Object}
 	 * @namespace firestorm.files
 	 */
 	files: {
@@ -576,11 +574,11 @@ const firestorm = {
 		 * @memberof firestorm.files
 		 * @param {string} path File path wanted
 		 */
-		get: function (path) {
+		get(path) {
 			return __extract_data(
 				axios.get(fileAddress(), {
 					params: {
-						path: path,
+						path,
 					},
 				}),
 			);
@@ -592,7 +590,7 @@ const firestorm = {
 		 * @param {FormData} form formData with path, filename and file
 		 * @returns {Promise} http response
 		 */
-		upload: function (form) {
+		upload(form) {
 			form.append("token", firestorm.token());
 			return axios.post(fileAddress(), form, {
 				headers: {
@@ -607,10 +605,10 @@ const firestorm = {
 		 * @param {string} path File path to delete
 		 * @returns {Promise} http response
 		 */
-		delete: function (path) {
+		delete(path) {
 			return axios.delete(fileAddress(), {
 				data: {
-					path: path,
+					path,
 					token: firestorm.token(),
 				},
 			});
@@ -619,9 +617,7 @@ const firestorm = {
 };
 
 try {
-	if (typeof process === "object") {
-		module.exports = firestorm;
-	}
+	if (typeof process === "object") module.exports = firestorm;
 } catch (_error) {
 	// normal browser
 }
