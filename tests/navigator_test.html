@@ -14,19 +14,19 @@
 
   </pre>
 </body>
-  
+
 <script>
   const ADDRESS = 'http://127.0.0.1:8000/'
   const TOKEN = 'NeverGonnaGiveYouUp'
 
   const DATABASE_NAME = 'base'
   const base = firestorm.collection(DATABASE_NAME)
-  
+
   firestorm.address(ADDRESS)
   firestorm.token(TOKEN)
 
   document.addEventListener('DOMContentLoaded', () => {
-    base.read_raw().then(res => {
+    base.readRaw().then(res => {
       const result = document.getElementById('result')
       result.innerText = JSON.stringify(res, null, 2)
     }).catch(err => {

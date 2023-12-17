@@ -53,11 +53,11 @@ let tmp;
 
 const resetDatabaseContent = async () => {
 	// reset the content of the database
-	await base.write_raw(content).catch((err) => console.error(err));
+	await base.writeRaw(content).catch((err) => console.error(err));
 
 	houseCollection = firestorm.collection(HOUSE_DATABASE_NAME);
 	const raw_house = JSON.parse(fs.readFileSync(HOUSE_DATABASE_FILE).toString());
-	await houseCollection.write_raw(raw_house);
+	await houseCollection.writeRaw(raw_house);
 };
 
 describe("File upload, download and delete", () => {
@@ -196,11 +196,11 @@ describe("GET operations", () => {
 		await resetDatabaseContent();
 	});
 
-	describe("read_raw()", () => {
+	describe("readRaw()", () => {
 		it("fails if table not found", (done) => {
 			firestorm
 				.collection("unknown")
-				.read_raw()
+				.readRaw()
 				.then(() => done(new Error("Request should not full-fill")))
 				.catch((err) => {
 					if ("response" in err && err.response.status == 404) {
@@ -213,7 +213,7 @@ describe("GET operations", () => {
 
 		it("returns the exact content of the file", (done) => {
 			base
-				.read_raw()
+				.readRaw()
 				.then((res) => {
 					Object.keys(res).forEach((key) => delete res[key][firestorm.ID_FIELD]);
 					expect(res).deep.equals(content, "Content different");
@@ -579,7 +579,7 @@ describe("GET operations", () => {
 
 		it("Gives correct value", (done) => {
 			const fields_chosen = ["name", "age"];
-			Promise.all([base.read_raw(), base.select({ fields: fields_chosen })])
+			Promise.all([base.readRaw(), base.select({ fields: fields_chosen })])
 				.then((results) => {
 					let raw = results[0];
 					Object.keys(raw).forEach((k) => {
@@ -674,12 +674,12 @@ describe("GET operations", () => {
 });
 
 describe("PUT operations", () => {
-	describe("write_raw operations", () => {
+	describe("writeRaw operations", () => {
 		it("Rejects when incorrect token", (done) => {
 			firestorm.token("LetsGoToTheMall");
 
 			base
-				.write_raw({})
+				.writeRaw({})
 				.then((res) => {
 					done(res);
 				})
@@ -711,7 +711,7 @@ describe("PUT operations", () => {
 			incorrect_bodies.forEach((body, index) => {
 				it(`${JSON.stringify(body)} value rejects`, (done) => {
 					base
-						.write_raw(body)
+						.writeRaw(body)
 						.then((res) => {
 							done(new Error(`Should not full-fill returning ${JSON.stringify(res)}`));
 						})
@@ -738,7 +738,7 @@ describe("PUT operations", () => {
 
 			it("but it can write an empty content : {}", (done) => {
 				base
-					.write_raw({})
+					.writeRaw({})
 					.then(() => {
 						done();
 					})
@@ -747,7 +747,7 @@ describe("PUT operations", () => {
 						done(err);
 					})
 					.finally(async () => {
-						await base.write_raw(content);
+						await base.writeRaw(content);
 					});
 			});
 		});
@@ -1002,14 +1002,14 @@ describe("PUT operations", () => {
 		it("Succeeds if wanted element is actually deleted", (done) => {
 			const ELEMENT_KEY_DELETED = "2";
 			base
-				.read_raw()
+				.readRaw()
 				.then((raw) => {
 					delete raw[ELEMENT_KEY_DELETED];
 
 					return Promise.all([raw, base.remove(ELEMENT_KEY_DELETED)]);
 				})
 				.then((results) => {
-					return Promise.all([results[0], base.read_raw()]);
+					return Promise.all([results[0], base.readRaw()]);
 				})
 				.then((results) => {
 					const expected = results[0];
@@ -1051,14 +1051,14 @@ describe("PUT operations", () => {
 		it("Succeeds if wanted elements are actually deleted", (done) => {
 			const ELEMENT_KEY_DELETED = ["0", "2"];
 			base
-				.read_raw()
+				.readRaw()
 				.then((raw) => {
 					ELEMENT_KEY_DELETED.forEach((k) => delete raw[k]);
 
 					return Promise.all([raw, base.removeBulk(ELEMENT_KEY_DELETED)]);
 				})
 				.then((results) => {
-					return Promise.all([results[0], base.read_raw()]);
+					return Promise.all([results[0], base.readRaw()]);
 				})
 				.then((results) => {
 					const expected = results[0];
@@ -1183,13 +1183,13 @@ describe("PUT operations", () => {
 		});
 		it("full-fills with two empty arrays", (done) => {
 			base
-				.read_raw()
+				.readRaw()
 				.then((before) => {
 					return Promise.all([before, base.setBulk([], [])]);
 				})
 				.then((results) => {
 					const before = results[0];
-					return Promise.all([before, base.read_raw()]);
+					return Promise.all([before, base.readRaw()]);
 				})
 				.then((results) => {
 					const expected = results[0];

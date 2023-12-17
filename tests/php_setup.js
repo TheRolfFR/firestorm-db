@@ -102,7 +102,7 @@ async function setup_php() {
 			return pause(PHP_SERVER_START_DELAY);
 		})
 		.catch((err) => {
-			console.error('Terrible error happened');
+			console.error("Terrible error happened");
 			console.trace(err);
 			process.exit(1);
 		});

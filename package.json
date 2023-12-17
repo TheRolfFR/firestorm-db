@@ -13,7 +13,7 @@
     "jsdoc": "jsdoc -a all -c jsdoc.json -R README.md src/index.js -d docs/jsdoc",
     "nodemon_jsdoc": "nodemon -x npm run jsdoc --watch src/index.js --watch jsdoc.json",
     "types": "npx tsc",
-    "prettier": "prettier \"{,!(node_modules)/**/}*.js\" --config .prettierrc --write",
+    "prettier": "prettier \"{,!(node_modules)/**/}*.{js,ts}\" --config .prettierrc --write",
     "cov": "npm run php_stop ; npm run php_start && nyc --reporter=text mocha tests/**/*.spec.js; npm run php_stop"
   },
   "repository": {
@@ -39,9 +39,7 @@
     "typings/index.d.ts"
   ],
   "dependencies": {
-    "axios": "^1.6.0",
-    "firestorm-db": "^1.10.2",
-    "type-fest": "^4.6.0"
+    "axios": "^1.6.2"
   },
   "devDependencies": {
     "chai": "^4.3.10",
@@ -52,8 +50,9 @@
     "jsdoc-to-markdown": "^8.0.0",
     "mocha": "^10.2.0",
     "nyc": "^15.1.0",
-    "prettier": "^3.0.3",
+    "prettier": "^3.1.1",
     "recursive-copy": "^2.0.14",
-    "typescript": "^5.2.2"
+    "type-fest": "^4.8.3",
+    "typescript": "^5.3.3"
   }
 }
