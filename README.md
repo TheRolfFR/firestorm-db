@@ -49,7 +49,7 @@ const userCollection = firestorm.collection("users");
 
 // all methods return promises
 userCollection
-    .read_raw()
+    .readRaw()
     .then((res) => console.log(res))
     .catch((err) => console.error(err));
 ```

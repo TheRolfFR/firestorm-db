@@ -202,6 +202,13 @@ export class Collection<T> {
 	 * Returns the whole content of the file
 	 * @returns The entire collection
 	 */
+	public readRaw(): Promise<Record<string, T>>;
+
+	/**
+	 * Returns the whole content of the file
+	 * @deprecated Use readRaw instead
+	 * @returns The entire collection
+	 */
 	public read_raw(): Promise<Record<string, T>>;
 
 	/**
@@ -223,6 +230,14 @@ export class Collection<T> {
 	/**
 	 * Write the whole content in the JSON file
 	 * @param value - The value to write
+	 * @returns The written elements
+	 */
+	public writeRaw(value: Record<string, T>): Promise<string>;
+
+	/**
+	 * Write the whole content in the JSON file
+	 * @param value - The value to write
+	 * @deprecated Use writeRaw instead
 	 * @returns The written elements
 	 */
 	public write_raw(value: Record<string, T>): Promise<string>;

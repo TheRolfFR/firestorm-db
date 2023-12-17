@@ -270,10 +270,17 @@ class Collection {
 	}
 
 	/**
+	 * @deprecated use readRaw instead
+	 */
+	read_raw() {
+		return this.readRaw();
+	}
+
+	/**
 	 * Returns the whole content of the file
 	 * @returns {Promise} // the get promise of the collection raw file content
 	 */
-	read_raw() {
+	readRaw() {
 		return new Promise((resolve, reject) => {
 			this.__get_request({
 				collection: this.collectionName,
@@ -406,11 +413,21 @@ class Collection {
 	 * @param {Object} value The whole JSON to write
 	 * @returns {Promise<any>}
 	 */
-	write_raw(value) {
+	writeRaw(value) {
 		if (value === undefined || value === null) {
-			return Promise.reject(new Error("write_raw value must not be undefined or null"));
+			return Promise.reject(new Error("writeRaw value must not be undefined or null"));
 		}
 		return this.__extract_data(axios.post(writeAddress(), this.__write_data("write_raw", value)));
+	}
+
+	/**
+	 * Writes the raw JSON file
+	 * @param {Object} value
+	 * @deprecated use writeRaw instead
+	 * @returns {Promise<any>}
+	 */
+	write_raw(value) {
+		return this.writeRaw(value);
 	}
 
 	/**
