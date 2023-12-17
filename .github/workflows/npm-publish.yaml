@@ -1,0 +1,22 @@
+name: Publish to NPM
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build_doc:
+    name: "Build documentation"
+    runs-on: "ubuntu-latest"
+    steps:
+      - name: Check out repository code
+        uses: actions/checkout@v2
+      - name: Use Node.js 18
+        uses: actions/setup-node@v3
+        with:
+          node-version: lts/Hydrogen
+          cache: 'pnpm'
+      - name: Publish package to NPM
+        run:
+          npm publish
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}

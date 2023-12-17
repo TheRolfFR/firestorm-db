@@ -10,7 +10,7 @@
     "php_stop": "sh tests/php_server_kill.sh",
     "full": "npm run php_stop ; npm run php_start && npm run test ; npm run php_stop",
     "local_tests": "sudo act -P ubuntu-latest=shivammathur/node:latest -j js-wrapper-test",
-    "jsdoc": "jsdoc -a all -c jsdoc.json -R README.md src/index.js -d docs/jsdoc",
+    "jsdoc": "jsdoc src/index.js -c jsdoc.json -R README.md -t ./node_modules/docdash -d out",
     "nodemon_jsdoc": "nodemon -x npm run jsdoc --watch src/index.js --watch jsdoc.json",
     "types": "npx tsc",
     "prettier": "prettier \"{,!(node_modules)/**/}*.{js,ts}\" --config .prettierrc --write",

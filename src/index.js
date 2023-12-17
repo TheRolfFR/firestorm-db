@@ -58,9 +58,15 @@ const writeToken = () => {
 };
 
 /**
+ * Axios Promise typedef to avoid documentation generation problems
+ * @ignore
+ * @typedef {require("axios").AxiosPromise} AxiosPromise
+ */
+
+/**
  * Auto-extracts data from Axios request
  * @ignore
- * @param {Promise<import("axios").AxiosPromise>} request The Axios concerned request
+ * @param {Promise<AxiosPromise>} request The Axios concerned request
  */
 const __extract_data = (request) => {
 	return new Promise((resolve, reject) => {
@@ -96,7 +102,7 @@ class Collection {
 	 * Add user methods to the returned data
 	 * @private
 	 * @ignore
-	 * @param {import("axios").AxiosPromise} req Incoming request
+	 * @param {AxiosPromise} req Incoming request
 	 * @returns {Object|Object[]}
 	 */
 	__add_methods(req) {

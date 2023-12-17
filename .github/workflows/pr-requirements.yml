@@ -1,0 +1,25 @@
+name: Pull requests Tests
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  build_doc:
+    name: "Build documentation"
+    runs-on: "ubuntu-latest"
+    steps:
+      - name: Check out repository code
+        uses: actions/checkout@v2
+      - uses: pnpm/action-setup@v2
+        with:
+          version: 8
+      - name: Use Node.js 18
+        uses: actions/setup-node@v3
+        with:
+          node-version: lts/Hydrogen
+          cache: 'pnpm'
+      - name: Install only developer dependencies
+        run: pnpm install -D
+      - name: Build the goddamn documentation
+        run: pnpm run jsdoc
