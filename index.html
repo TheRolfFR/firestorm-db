@@ -43,7 +43,7 @@
     <input type="text" id="nav-search" placeholder="Search" />
     
     
-    <h2><a href="index.html">Home</a></h2><h2><a href="https://github.com/TheRolfFR/firestorm" target="_blank" class="menu-item" id="repository" >Github repo</a></h2><h2><a href="https://www.npmjs.com/package/firestorm-db" target="_blank" class="menu-item" id="npm" >npm</a></h2><h3>Classes</h3><ul><li><a href="Collection.html">Collection</a><ul class='methods'><li data-type='method'><a href="Collection.html#add">add</a></li><li data-type='method'><a href="Collection.html#addBulk">addBulk</a></li><li data-type='method'><a href="Collection.html#editField">editField</a></li><li data-type='method'><a href="Collection.html#editFieldBulk">editFieldBulk</a></li><li data-type='method'><a href="Collection.html#get">get</a></li><li data-type='method'><a href="Collection.html#random">random</a></li><li data-type='method'><a href="Collection.html#read_raw">read_raw</a></li><li data-type='method'><a href="Collection.html#remove">remove</a></li><li data-type='method'><a href="Collection.html#removeBulk">removeBulk</a></li><li data-type='method'><a href="Collection.html#search">search</a></li><li data-type='method'><a href="Collection.html#searchKeys">searchKeys</a></li><li data-type='method'><a href="Collection.html#select">select</a></li><li data-type='method'><a href="Collection.html#set">set</a></li><li data-type='method'><a href="Collection.html#setBulk">setBulk</a></li><li data-type='method'><a href="Collection.html#sha1">sha1</a></li><li data-type='method'><a href="Collection.html#write_raw">write_raw</a></li></ul></li></ul><h3>Namespaces</h3><ul><li><a href="firestorm.html">firestorm</a><ul class='members'><li data-type='member'><a href="firestorm.html#.ID_FIELD">ID_FIELD</a></li></ul><ul class='methods'><li data-type='method'><a href="firestorm.html#.address">address</a></li><li data-type='method'><a href="firestorm.html#.collection">collection</a></li><li data-type='method'><a href="firestorm.html#.table">table</a></li><li data-type='method'><a href="firestorm.html#.token">token</a></li></ul></li><li><a href="firestorm.files.html">firestorm.files</a><ul class='methods'><li data-type='method'><a href="firestorm.files.html#.delete">delete</a></li><li data-type='method'><a href="firestorm.files.html#.get">get</a></li><li data-type='method'><a href="firestorm.files.html#.upload">upload</a></li></ul></li></ul><h3><a href="global.html">Global</a></h3>
+    <h2><a href="index.html">Home</a></h2><h2><a href="https://github.com/TheRolfFR/firestorm" target="_blank" class="menu-item" id="repository" >Github repo</a></h2><h2><a href="https://www.npmjs.com/package/firestorm-db" target="_blank" class="menu-item" id="npm" >npm</a></h2><h3>Classes</h3><ul><li><a href="Collection.html">Collection</a><ul class='methods'><li data-type='method'><a href="Collection.html#add">add</a></li><li data-type='method'><a href="Collection.html#addBulk">addBulk</a></li><li data-type='method'><a href="Collection.html#editField">editField</a></li><li data-type='method'><a href="Collection.html#editFieldBulk">editFieldBulk</a></li><li data-type='method'><a href="Collection.html#get">get</a></li><li data-type='method'><a href="Collection.html#random">random</a></li><li data-type='method'><a href="Collection.html#read_raw">read_raw</a></li><li data-type='method'><a href="Collection.html#readRaw">readRaw</a></li><li data-type='method'><a href="Collection.html#remove">remove</a></li><li data-type='method'><a href="Collection.html#removeBulk">removeBulk</a></li><li data-type='method'><a href="Collection.html#search">search</a></li><li data-type='method'><a href="Collection.html#searchKeys">searchKeys</a></li><li data-type='method'><a href="Collection.html#select">select</a></li><li data-type='method'><a href="Collection.html#set">set</a></li><li data-type='method'><a href="Collection.html#setBulk">setBulk</a></li><li data-type='method'><a href="Collection.html#sha1">sha1</a></li><li data-type='method'><a href="Collection.html#write_raw">write_raw</a></li><li data-type='method'><a href="Collection.html#writeRaw">writeRaw</a></li></ul></li></ul><h3>Namespaces</h3><ul><li><a href="firestorm.html">firestorm</a><ul class='members'><li data-type='member'><a href="firestorm.html#.ID_FIELD">ID_FIELD</a></li></ul><ul class='methods'><li data-type='method'><a href="firestorm.html#.address">address</a></li><li data-type='method'><a href="firestorm.html#.collection">collection</a></li><li data-type='method'><a href="firestorm.html#.table">table</a></li><li data-type='method'><a href="firestorm.html#.token">token</a></li></ul></li><li><a href="firestorm.files.html">firestorm.files</a><ul class='methods'><li data-type='method'><a href="firestorm.files.html#.delete">delete</a></li><li data-type='method'><a href="firestorm.files.html#.get">get</a></li><li data-type='method'><a href="firestorm.files.html#.upload">upload</a></li></ul></li></ul><h3><a href="global.html">Global</a></h3>
     
 </nav>
 
@@ -90,7 +90,7 @@
 <h2>JavaScript Part</h2>
 <p>The JavaScript <a href="./src/index.js">index.js</a> file is just an <a href="https://www.npmjs.com/package/axios">Axios</a> wrapper of the library.</p>
 <h2>How to use it</h2>
-<p>First, you need to configure the address of the API, and your token if needed:</p>
+<p>First, you need to configure your API address, and your token if needed:</p>
 <pre class="prettyprint source lang-js"><code>require(&quot;dotenv&quot;).config(); // add some env variables
 const firestorm = require(&quot;firestorm-db&quot;);
 
@@ -109,7 +109,7 @@ const userCollection = firestorm.collection(&quot;users&quot;);
 
 // all methods return promises
 userCollection
-    .read_raw()
+    .readRaw()
     .then((res) => console.log(res))
     .catch((err) => console.error(err));
 </code></pre>
@@ -182,8 +182,8 @@ johnDoe.hello(); // prints out &quot;John Doe says hello!&quot;
 </tr>
 </tbody>
 </table>
-<p>Search method can take one or more options to filter entries in a collection. A search option studies a <code>field</code> with a <code>criteria</code> and compares it to a <code>value</code>. On string values you can now use the boolean <code>ignoreCase</code> option.</p>
-<p>Not all criterias are available depending the field type. There are more options available than the firestore <code>where</code> command, allowing you to get better and faster search results.</p>
+<p>The search method can take one or more options to filter entries in a collection. A search option studies a <code>field</code> with a <code>criteria</code> and compares it to a <code>value</code>. You can also use the boolean <code>ignoreCase</code> option for string values.</p>
+<p>Not all criteria are available depending the field type. There are more options available than the firestore <code>where</code> command, allowing you to get better and faster search results.</p>
 <h3>All search options available</h3>
 <table>
 <thead>
@@ -450,10 +450,10 @@ $authorized_file_extension = array('.txt', '.png');
 // to force a subfolder of firestorm installation
 $STORAGE_LOCATION = dirname($_SERVER['SCRIPT_FILENAME']) . '/uploads/';
 </code></pre>
-<p>You can now use the wrapper functions in order to upload, get and delete a file.
+<p>You can use the wrapper functions in order to upload, get and delete a file.
 If the folder is accessible from server url, you can directly type its address.</p>
 <h3>File rights</h3>
-<p>The PHP scripts creates folders and files. So if the PHP user doesn't have the rights to write, the script will fail.
+<p>The PHP scripts create folders and files, so the script will fail if the PHP user doesn't have write permissions.
 You can give rights to a folder with the following command:</p>
 <pre class="prettyprint source"><code>sudo chown -R www-data &quot;/path/to/uploads/&quot;
 </code></pre>
@@ -487,8 +487,8 @@ firestorm.address(&quot;ADDRESS_VALUE&quot;);
 const getPromise = firestorm.files.get(&quot;/quote.txt&quot;);
 
 getPromise
-    .then((filecontent) => {
-        console.log(filecontent); // 'but your kids are gonna love it.
+    .then((fileContent) => {
+        console.log(fileContent); // 'but your kids are gonna love it.
     })
     .catch((err) => {
         console.error(err);
@@ -519,7 +519,7 @@ Allowed memory size of 134217728 bytes exhausted (tried to allocate 32360168 byt
 <pre class="prettyprint source"><code>memory_limit = 256M
 </code></pre>
 <h2>API endpoints</h2>
-<p>All Firestorm methods correspond to an equivalent Axios request. Read requests are GET request and write requests are POST requests with a JSON data.</p>
+<p>All Firestorm methods correspond to an equivalent Axios request. Read requests are GET request and write requests are POST requests with provided JSON data.</p>
 <p>You always have the same first keys and the one key per method:</p>
 <pre class="prettyprint source lang-json"><code>{
   &quot;collection&quot;: &quot;&lt;collectionName>&quot;,
@@ -542,7 +542,7 @@ Allowed memory size of 134217728 bytes exhausted (tried to allocate 32360168 byt
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.6.7</a> on Tue Nov 21 2023 18:06:35 GMT+0000 (Coordinated Universal Time) using the <a href="https://github.com/clenemt/docdash">docdash</a> theme.
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.6.7</a> on Sun Dec 17 2023 14:07:04 GMT+0000 (Coordinated Universal Time) using the <a href="https://github.com/clenemt/docdash">docdash</a> theme.
 </footer>
 
 <script>prettyPrint();</script>
