@@ -94,7 +94,7 @@ class Collection {
 	/**
 	 * Create a new Firestorm collection instance
 	 * @param {string} name - The name of the collection
-	 * @param {(Collection<T> & T) => Collection<T> & T} [addMethods] - Additional methods and data to add to the objects
+	 * @param {Function} [addMethods] - Additional methods and data to add to the objects
 	 */
 	constructor(name, addMethods = (el) => el) {
 		if (name === undefined) throw new SyntaxError("Collection must have a name");
@@ -581,7 +581,7 @@ const firestorm = {
 	 * Create a new Firestorm collection instance
 	 * @template T
 	 * @param {string} name - The name of the collection
-	 * @param {(Collection<T> & T) => Collection<T> & T} [addMethods] - Additional methods and data to add to the objects
+	 * @param {Function} [addMethods] - Additional methods and data to add to the objects
 	 * @returns {Collection<T>} The collection
 	 */
 	collection(name, addMethods = (el) => el) {
