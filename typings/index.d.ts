@@ -164,8 +164,9 @@ export type NoMethods<T> = {
 
 export class Collection<T> {
 	/**
+	 * Create a new Firestorm collection instance
 	 * @param name - The name of the collection
-	 * @param addMethods - The methods you want to add to the collection
+	 * @param addMethods - Additional methods and data to add to the objects
 	 */
 	public constructor(name: string, addMethods?: CollectionMethods<T>);
 
@@ -216,6 +217,7 @@ export class Collection<T> {
 
 	/**
 	 * Get only selected fields from the collection
+	 * - Essentially an upgraded version of readRaw
 	 * @param option - The option you want to select
 	 * @returns Selected fields
 	 */
@@ -311,30 +313,33 @@ export const ID_FIELD: string;
 type Writable<T> = Omit<Omit<T, NoMethods<T>>, "id">;
 
 /**
- * Change the current firestorm address
- * @param value - The new firestorm address
- * @returns The stored firestorm address
+ * Change the current Firestorm address
+ * @param value - The new Firestorm address
+ * @returns The stored Firestorm address
  */
 export function address(value?: string): string;
 
 /**
- * @param value - The new firestorm write token
- * @returns The stored firestorm write token
+ * Change the current Firestorm token
+ * @param value - The new Firestorm write token
+ * @returns The stored Firestorm write token
  */
-export function token(value: string): string;
+export function token(value?: string): string;
 
 /**
  * Create a new Firestorm collection instance
- * @param value - Firestorm collection name
- * @param addMethods - Additional methods you want to add to the collection
+ * @param value - The name of the collection
+ * @param addMethods - Additional methods and data to add to the objects
  * @returns The collection
  */
 export function collection<T>(value: string, addMethods?: CollectionMethods<T>): Collection<T>;
 
 /**
+ * Create a temporary Firestorm collection with no methods
  * @param table - The table name to get
+ * @returns The collection
  */
-export function table(table: string): Promise<any>;
+export function table<T>(table: string): Promise<Collection<T>>;
 
 /**
  * Firestorm file handler
@@ -348,15 +353,15 @@ export declare const files: {
 
 	/**
 	 * Upload file
-	 * @param form - The form data with path, filename & file
-	 * @returns http response
+	 * @param form - The form data with path, filename, and file
+	 * @returns HTTP response
 	 */
 	upload(form: FormData): Promise<any>;
 
 	/**
 	 * Deletes a file given its path
 	 * @param path - The file path to delete
-	 * @returns http response
+	 * @returns HTTP response
 	 */
 	delete(path: string): Promise<any>;
 };
