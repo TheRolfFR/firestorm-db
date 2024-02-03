@@ -4,38 +4,34 @@ try {
 
 /**
  * @typedef {Object} SearchOption
- * @property {string} field The field you want to search in
- * @property {"!=" | "==" | ">=" | "<=" | "<" | ">" | "in" | "includes" | "startsWith" | "endsWith" | "array-contains" | "array-contains-any" | "array-length-(eq|df|gt|lt|ge|le)" } criteria filter criteria
- * @property {string | number | boolean | Array } value the value you want to compare
- * @property {boolean} ignoreCase Ignore case on search string
+ * @property {string} field - The field you want to search in
+ * @property {"!=" | "==" | ">=" | "<=" | "<" | ">" | "in" | "includes" | "startsWith" | "endsWith" | "array-contains" | "array-contains-any" | "array-length-(eq|df|gt|lt|ge|le)" } criteria - Filter criteria
+ * @property {string | number | boolean | Array } value - The value you want to compare
+ * @property {boolean} ignoreCase - Ignore case on search string
  */
 
 /**
  * @typedef {Object} EditObject
- * @property {string | number } id the affected element
- * @property {string} field The field you want to edit
- * @property {"set" | "remove" | "append" | "increment" | "decrement" | "array-push" | "array-delete" | "array-splice"} operation Wanted operation on field
- * @property {string | number | boolean | Array } [value] // the value you want to compare
+ * @property {string | number } id - The affected element
+ * @property {string} field - The field you want to edit
+ * @property {"set" | "remove" | "append" | "increment" | "decrement" | "array-push" | "array-delete" | "array-splice"} operation - Wanted operation on field
+ * @property {string | number | boolean | Array} [value] - The value you want to compare
  */
 
 /**
  * @typedef {Object} SelectOption
- * @property {Array<string>} fields Chosen fields to eventually return
+ * @property {Array<string>} fields - Chosen fields to eventually return
  */
 
 /**
  * @typedef {Confirmation}
- * @property {string} message
+ * @property {string} message - Confirmation that a write occurred
  */
 
-/**
- * @ignore
- */
+/** @ignore */
 let _address = undefined;
 
-/**
- * @ignore
- */
+/** @ignore */
 let _token = undefined;
 
 const ID_FIELD_NAME = "id";
@@ -307,7 +303,7 @@ class Collection {
 
 	/**
 	 * Returns the whole content of the JSON
-	 * @deprecated use readRaw instead
+	 * @deprecated Use readRaw instead
 	 * @returns {Promise<Record<string, T>>} The entire collection
 	 */
 	read_raw() {

@@ -134,6 +134,7 @@ export type EditField<T> = {
 		);
 }[keyof T];
 
+/** Confirmation that a write occurred */
 export type Confirmation = { message: string };
 
 export type SearchOption<T> = {
@@ -144,7 +145,7 @@ export type SearchOption<T> = {
 		criteria: Criteria<T[K]>;
 		/** the value to be searched for */
 		value?: any;
-		/** is it case sensitive? (default: true) */
+		/** is it case sensitive? (default true) */
 		ignoreCase?: boolean;
 	};
 }[keyof T];
