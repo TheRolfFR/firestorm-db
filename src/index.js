@@ -284,7 +284,7 @@ class Collection {
 	}
 
 	/**
-	 * Returns the whole content of the file
+	 * Returns the whole content of the JSON
 	 * @returns {Promise<Record<string, T>>} The entire collection
 	 */
 	readRaw() {
@@ -306,7 +306,7 @@ class Collection {
 	}
 
 	/**
-	 * Returns the whole content of the file
+	 * Returns the whole content of the JSON
 	 * @deprecated use readRaw instead
 	 * @returns {Promise<Record<string, T>>} The entire collection
 	 */
@@ -589,7 +589,7 @@ const firestorm = {
 	},
 
 	/**
-     * Create a temporary Firestorm collection with no methods
+	 * Create a temporary Firestorm collection with no methods
 	 * @template T
 	 * @param {string} name - The table name to get
 	 * @returns {Collection<T>} The collection

@@ -203,13 +203,13 @@ export class Collection<T> {
 	public searchKeys(keys: string[] | number[]): Promise<T[]>;
 
 	/**
-	 * Returns the whole content of the file
+	 * Returns the whole content of the JSON
 	 * @returns The entire collection
 	 */
 	public readRaw(): Promise<Record<string, T>>;
 
 	/**
-	 * Returns the whole content of the file
+	 * Returns the whole content of the JSON
 	 * @deprecated Use readRaw instead
 	 * @returns The entire collection
 	 */

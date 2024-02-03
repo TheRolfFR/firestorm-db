@@ -81,72 +81,72 @@ Available methods for a collection:
 
 ### Read operations
 
-| Name                          | Parameters                                                    | Description                                                                                                                                     |
-| ----------------------------- | ------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------- |
-| sha1()                        | none                                                          | Returns the file sha1 hash. May vary from read_raw because read_raw adds ID fields to the entries. Compare with stringify version of your file. |
-| read_raw()                    | none                                                          | Reads the entire collection                                                                                                                     |
-| get(id)                       | id: `String\|Name`                                            | Tries to get one element by its key                                                                                                             |
-| search(searchOptions, random) | searchOptions: `SearchOption[]` random?:`false\|true\|Number` | Searches collections and returns matching results. <br>You can randomize the output order with random as true or a given seed.                  |
-| searchKeys(keys)              | keys: `String[] \| Number[]`                                  | Searches collections with given keys and returns matching results                                                                               |
-| select(selectOption)          | selectOption: `{ field: String[] }`                           | Improved read_raw with field selection                                                                                                          |
-| random(max, seed, offset)     | max?: `Integer >= -1` seed?: `Integer` offset?:`Integer >= 0` | Reads random entries of collection                                                                                                              |
+| Name                          | Parameters                                                    | Description                                                                                                             |
+| ----------------------------- | ------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------- |
+| sha1()                        | none                                                          | Get the sha1 hash of the file. Can be used to see if same file content without downloading the file.                    |
+| readRaw()                     | none                                                          | Returns the whole content of the JSON. ID values are injected for easier iteration, so this may be different to sha1(). |
+| get(id)                       | id: `string \| number`                                        | Get an element from the collection.                                                                                     |
+| search(searchOptions, random) | searchOptions: `SearchOption[]` random?:`boolean \| number`   | Search through the collection You can randomize the output order with random as true or a given seed.                   |
+| searchKeys(keys)              | keys: `string[] \| number[]`                                  | Search specific keys through the collection.                                                                            |
+| select(selectOption)          | selectOption: `{ field: string[] }`                           | Get only selected fields from the collection Essentially an upgraded version of readRaw.                                |
+| random(max, seed, offset)     | max?: `integer >= -1` seed?: `integer` offset?:`integer >= 0` | Reads random entries of collection.                                                                                     |
 
-The search method can take one or more options to filter entries in a collection. A search option studies a `field` with a `criteria` and compares it to a `value`. You can also use the boolean `ignoreCase` option for string values.
+The search method can take one or more options to filter entries in a collection. A search option takes a `field` with a `criteria` and compares it to a `value`. You can also use the boolean `ignoreCase` option for string values.
 
 Not all criteria are available depending the field type. There are more options available than the firestore `where` command, allowing you to get better and faster search results.
 
 ### All search options available
 
-| Criteria               | Types allowed           | Description                                                                                       |
-| ---------------------- | ----------------------- | ------------------------------------------------------------------------------------------------- |
-| `'!='`                 | Boolean, Number, String | Searches if the entry field's value is different from yours                                       |
-| `'=='`                 | Boolean, Number, String | Searches if the entry field's value is equal to yours                                             |
-| `'>='`                 | Number, String          | Searches if the entry field's value is greater or equal than yours                                |
-| `'<='`                 | Number, String          | Searches if the entry field's value is equal to than yours                                        |
-| `'>'`                  | Number, String          | Searches if the entry field's value is greater than yours                                         |
-| `'<'`                  | Number, String          | Searches if the entry field's value is lower than yours                                           |
-| `'in'`                 | Number, String          | Searches if the entry field's value is in the array of values you gave                            |
-| `'includes'`           | String                  | Searches if the entry field's value includes your substring                                       |
-| `'startsWith'`         | String                  | Searches if the entry field's value starts with your substring                                    |
-| `'endsWith'`           | String                  | Searches if the entry field's value ends with your substring                                      |
-| `'array-contains'`     | Array                   | Searches if the entry field's array contains your value                                           |
-| `'array-contains-any'` | Array                   | Searches if the entry field's array ends contains your one value of more inside your values array |
-| `'array-length-eq'`    | Number                  | Searches if the entry field's array size is equal to your value                                   |
-| `'array-length-df'`    | Number                  | Searches if the entry field's array size is different from your value                             |
-| `'array-length-lt'`    | Number                  | Searches if the entry field's array size is lower than your value                                 |
-| `'array-length-gt'`    | Number                  | Searches if the entry field's array size is lower greater than your value                         |
-| `'array-length-le'`    | Number                  | Searches if the entry field's array size is lower or equal to your value                          |
-| `'array-length-ge'`    | Number                  | Searches if the entry field's array size is greater or equal to your value                        |
+| Criteria               | Types allowed                 | Description                                                                                       |
+| ---------------------- | ----------------------------- | ------------------------------------------------------------------------------------------------- |
+| `'!='`                 | `boolean`, `number`, `string` | Searches if the entry field's value is different from yours                                       |
+| `'=='`                 | `boolean`, `number`, `string` | Searches if the entry field's value is equal to yours                                             |
+| `'>='`                 | `number`, `string`            | Searches if the entry field's value is greater or equal than yours                                |
+| `'<='`                 | `number`, `string`            | Searches if the entry field's value is equal to than yours                                        |
+| `'>'`                  | `number`, `string`            | Searches if the entry field's value is greater than yours                                         |
+| `'<'`                  | `number`, `string`            | Searches if the entry field's value is lower than yours                                           |
+| `'in'`                 | `number`, `string`            | Searches if the entry field's value is in the array of values you gave                            |
+| `'includes'`           | `string`                      | Searches if the entry field's value includes your substring                                       |
+| `'startsWith'`         | `string`                      | Searches if the entry field's value starts with your substring                                    |
+| `'endsWith'`           | `string`                      | Searches if the entry field's value ends with your substring                                      |
+| `'array-contains'`     | `Array`                       | Searches if the entry field's array contains your value                                           |
+| `'array-contains-any'` | `Array`                       | Searches if the entry field's array ends contains your one value of more inside your values array |
+| `'array-length-eq'`    | `number`                      | Searches if the entry field's array size is equal to your value                                   |
+| `'array-length-df'`    | `number`                      | Searches if the entry field's array size is different from your value                             |
+| `'array-length-lt'`    | `number`                      | Searches if the entry field's array size is lower than your value                                 |
+| `'array-length-gt'`    | `number`                      | Searches if the entry field's array size is lower greater than your value                         |
+| `'array-length-le'`    | `number`                      | Searches if the entry field's array size is lower or equal to your value                          |
+| `'array-length-ge'`    | `number`                      | Searches if the entry field's array size is greater or equal to your value                        |
 
 ### Write operations
 
-| Name                    | Parameters                                   | Description                                                                         |
-| ----------------------- | -------------------------------------------- | ----------------------------------------------------------------------------------- |
-| writes_raw()            | none                                         | Writes the entire collection **/!\\ Very dangerous /!\\**                           |
-| add(value)              | value: `Object`                              | Adds one element with autoKey into the collection                                   |
-| addBulk(values)         | value: `Object[]`                            | Adds multiple elements with autoKey into the collection                             |
-| remove(key)             | key: `String\|Name`                          | Remove one element from the collection with the corresponding key                   |
-| removeBulk(keys)        | keys: `String[]\|Name[]`                     | Remove multiple elements from the collection with the corresponding keys            |
-| set(key, value)         | key: `String\|Name`, value: `Object`         | Sets one element with its key and value into the collection                         |
-| setBulk(keys, values)   | keys: `String[]\|Name[]`, values: `Object[]` | Sets multiple elements with their corresponding keys and values into the collection |
-| editField(obj)          | obj: `EditObject`                            | Changes one field of a given element in a collection                                |
-| editFieldBulk(objArray) | objArray: `EditObject[]`                     | Changes one field per element in a collection                                       |
+| Name                    | Parameters                                       | Description                                                                         |
+| ----------------------- | ------------------------------------------------ | ----------------------------------------------------------------------------------- |
+| writeRaw()              | none                                             | Set the entire JSON file contents **/!\\ Very dangerous /!\\**                      |
+| add(value)              | value: `Object`                                  | Adds one element with autoKey into the collection                                   |
+| addBulk(values)         | value: `Object[]`                                | Adds multiple elements with autoKey into the collection                             |
+| remove(key)             | key: `string \| number`                          | Remove one element from the collection with the corresponding key                   |
+| removeBulk(keys)        | keys: `string[] \| number[]`                     | Remove multiple elements from the collection with the corresponding keys            |
+| set(key, value)         | key: `string \| number`, value: `Object`         | Sets one element with its key and value into the collection                         |
+| setBulk(keys, values)   | keys: `string[] \| number[]`, values: `Object[]` | Sets multiple elements with their corresponding keys and values into the collection |
+| editField(obj)          | obj: `EditObject`                                | Changes one field of a given element in a collection                                |
+| editFieldBulk(objArray) | objArray: `EditObject[]`                         | Changes one field per element in a collection                                       |
 
 ### Edit field operations
 
 Edit objects have an `id` to get the wanted element, a `field` they want to edit, an `operation` with what to do to this field, and a possible `value`. Here is a list of operations:
 
-| Operation      | Value required | Types allowed      | Description                                                                                                                                                          |
-| -------------- | -------------- | ------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `set`          | Yes            | any                | Sets a field to a given value                                                                                                                                        |
-| `remove`       | No             | any                | Removes a field from the element                                                                                                                                     |
-| `append`       | Yes            | String             | Appends string at the end of the string field                                                                                                                        |
-| `invert`       | No             | any                | Inverts tate of boolean field                                                                                                                                        |
-| `increment`    | No             | Number             | Adds a number to the field, default is 1                                                                                                                             |
-| `decrement`    | No             | Number             | Retrieves a number to the field, default is -1                                                                                                                       |
-| `array-push `  | Yes            | any                | Push an element to the end of an array field                                                                                                                         |
-| `array-delete` | Yes            | Integer            | Removes and element at a certain index in an array field, check [array_splice documentation](https://www.php.net/manual/function.array-splice) offset for more infos |
-| `array-splice` | Yes            | [Integer, Integer] | Removes certain elements, check [array_splice documentation](https://www.php.net/manual/function.array-splice) offset and length for more infos                      |
+| Operation      | Value required | Types allowed        | Description                                                                                                                                                          |
+| -------------- | -------------- | -------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `set`          | Yes            | `any`                | Sets a field to a given value                                                                                                                                        |
+| `remove`       | No             | `any`                | Removes a field from the element                                                                                                                                     |
+| `append`       | Yes            | `string`             | Appends string at the end of the string field                                                                                                                        |
+| `invert`       | No             | `any`                | Inverts tate of boolean field                                                                                                                                        |
+| `increment`    | No             | `number`             | Adds a number to the field, default is 1                                                                                                                             |
+| `decrement`    | No             | `number`             | Retrieves a number to the field, default is -1                                                                                                                       |
+| `array-push `  | Yes            | `any`                | Push an element to the end of an array field                                                                                                                         |
+| `array-delete` | Yes            | `integer`            | Removes and element at a certain index in an array field, check [array_splice documentation](https://www.php.net/manual/function.array-splice) offset for more infos |
+| `array-splice` | Yes            | `[integer, integer]` | Removes certain elements, check [array_splice documentation](https://www.php.net/manual/function.array-splice) offset and length for more infos                      |
 
 <br>
 
@@ -156,7 +156,7 @@ The PHP files are the ones handling files, read and writes. They also handle GET
 
 ## PHP setup
 
-The developer has to create 2 files at the root of this folder: `tokens.php` and `config.php`
+The developer has to create two main files at the root of their Firestorm setup: `tokens.php` and `config.php`.
 
 `tokens.php` will contain the tokens inside a `$db_tokens` value array with the tokens to use. You will use these tokens to write data or read private tables.
 
@@ -298,7 +298,7 @@ memory_limit = 256M
 
 ## API endpoints
 
-All Firestorm methods correspond to an equivalent Axios request. Read requests are GET request and write requests are POST requests with provided JSON data.
+All Firestorm methods correspond to an equivalent Axios request to the relevant PHP file. Read requests are GET requests and write requests are POST requests with provided JSON data.
 
 You always have the same first keys and the one key per method:
 
