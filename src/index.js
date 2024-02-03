@@ -24,8 +24,8 @@ try {
  */
 
 /**
- * @typedef {Confirmation}
- * @property {string} message - Confirmation that a write occurred
+ * @typedef {WriteConfirmation}
+ * @property {string} message - Write status
  */
 
 /** @ignore */
@@ -425,7 +425,7 @@ class Collection {
 	/**
 	 * Set the entire JSON file contents
 	 * @param {Record<string, T>} value - The value to write
-	 * @returns {Promise<Confirmation>} Write confirmation
+	 * @returns {Promise<WriteConfirmation>} Write confirmation
 	 */
 	writeRaw(value) {
 		if (value === undefined || value === null) {
@@ -438,7 +438,7 @@ class Collection {
 	 * Set the entire JSON file contents
 	 * @param {Record<string, T>} value - The value to write
 	 * @deprecated Use writeRaw instead
-	 * @returns {Promise<Confirmation>} Write confirmation
+	 * @returns {Promise<WriteConfirmation>} Write confirmation
 	 */
 	write_raw(value) {
 		return this.writeRaw(value);
@@ -485,7 +485,7 @@ class Collection {
 	/**
 	 * Remove an element from the collection by its ID
 	 * @param {string | number} key The key from the entry to remove
-	 * @returns {Promise<Confirmation>} Write confirmation
+	 * @returns {Promise<WriteConfirmation>} Write confirmation
 	 */
 	remove(key) {
 		return this.__extract_data(axios.post(writeAddress(), this.__write_data("remove", key)));
@@ -494,7 +494,7 @@ class Collection {
 	/**
 	 * Remove multiple elements from the collection by their IDs
 	 * @param {string[] | number[]} keys The key from the entries to remove
-	 * @returns {Promise<Confirmation>} Write confirmation
+	 * @returns {Promise<WriteConfirmation>} Write confirmation
 	 */
 	removeBulk(keys) {
 		return this.__extract_data(axios.post(writeAddress(), this.__write_data("removeBulk", keys)));
@@ -504,7 +504,7 @@ class Collection {
 	 * Set a value in the collection by ID
 	 * @param {string} key - The ID of the element you want to edit
 	 * @param {T} value - The value (without methods) you want to edit
-	 * @returns {Promise<Confirmation>} Write confirmation
+	 * @returns {Promise<WriteConfirmation>} Write confirmation
 	 */
 	set(key, value) {
 		const data = this.__write_data("set", value);
@@ -516,7 +516,7 @@ class Collection {
 	 * Set multiple values in the collection by their IDs
 	 * @param {string[]} keys - The IDs of the elements you want to edit
 	 * @param {T[]} values - The values (without methods) you want to edit
-	 * @returns {Promise<Confirmation>} Write confirmation
+	 * @returns {Promise<WriteConfirmation>} Write confirmation
 	 */
 	setBulk(keys, values) {
 		const data = this.__write_data("setBulk", values, true);

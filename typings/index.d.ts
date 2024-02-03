@@ -134,8 +134,8 @@ export type EditField<T> = {
 		);
 }[keyof T];
 
-/** Confirmation that a write occurred */
-export type Confirmation = { message: string };
+/** Write status */
+export type WriteConfirmation = { message: string };
 
 export type SearchOption<T> = {
 	[K in keyof T]: {
@@ -238,7 +238,7 @@ export class Collection<T> {
 	 * @param value - The value to write
 	 * @returns Write confirmation
 	 */
-	public writeRaw(value: Record<string, T>): Promise<Confirmation>;
+	public writeRaw(value: Record<string, T>): Promise<WriteConfirmation>;
 
 	/**
 	 * Set the entire JSON file contents
@@ -246,7 +246,7 @@ export class Collection<T> {
 	 * @param value - The value to write
 	 * @returns Write confirmation
 	 */
-	public write_raw(value: Record<string, T>): Promise<Confirmation>;
+	public write_raw(value: Record<string, T>): Promise<WriteConfirmation>;
 
 	/**
 	 * Automatically add a value to the JSON file
@@ -267,14 +267,14 @@ export class Collection<T> {
 	 * @param id - The ID of the element you want to remove
 	 * @returns Write confirmation
 	 */
-	public remove(id: string | number): Promise<Confirmation>;
+	public remove(id: string | number): Promise<WriteConfirmation>;
 
 	/**
 	 * Remove multiple elements from the collection by their IDs
 	 * @param ids - The IDs of the elements you want to remove
 	 * @returns Write confirmation
 	 */
-	public removeBulk(ids: string[] | number[]): Promise<Confirmation>;
+	public removeBulk(ids: string[] | number[]): Promise<WriteConfirmation>;
 
 	/**
 	 * Set a value in the collection by ID
@@ -282,7 +282,7 @@ export class Collection<T> {
 	 * @param value - The value (without methods) you want to edit
 	 * @returns Write confirmation
 	 */
-	public set(id: string | number, value: Writable<T>): Promise<Confirmation>;
+	public set(id: string | number, value: Writable<T>): Promise<WriteConfirmation>;
 
 	/**
 	 * Set multiple values in the collection by their IDs
@@ -290,7 +290,7 @@ export class Collection<T> {
 	 * @param values - The values (without methods) you want to edit
 	 * @returns Write confirmation
 	 */
-	public setBulk(ids: string[] | number[], values: Writable<T>[]): Promise<Confirmation>;
+	public setBulk(ids: string[] | number[], values: Writable<T>[]): Promise<WriteConfirmation>;
 
 	/**
 	 * Edit one field of the collection
