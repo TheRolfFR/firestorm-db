@@ -91,11 +91,14 @@
 
 <dl class="details">
     
+    <dt class="tag-description">Description:</dt>
+    <dd class="tag-description"><ul class="dummy"><li><p>Create a new Firestorm collection instance</p></li></ul></dd>
+    
 
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="index.js.html">index.js</a>, <a href="index.js.html#line88">line 88</a>
+        <a href="index.js.html">index.js</a>, <a href="index.js.html#line89">line 89</a>
     </li></ul></dd>
     
 
@@ -194,7 +197,7 @@
 
             
 
-            <td class="description last"><p>The name of the Collection</p></td>
+            <td class="description last"><p>The name of the collection</p></td>
         </tr>
 
     
@@ -279,7 +282,7 @@
 
     
 
-    <h4 class="name" id="add"><span class="type-signature"></span>add<span class="signature">(value)</span><span class="type-signature"> &rarr; {Promise.&lt;any>}</span></h4>
+    <h4 class="name" id="add"><span class="type-signature"></span>add<span class="signature">(value)</span><span class="type-signature"> &rarr; {Promise.&lt;string>}</span></h4>
 
     
 
@@ -289,13 +292,13 @@
 <dl class="details">
     
     <dt class="tag-description">Description:</dt>
-    <dd class="tag-description"><ul class="dummy"><li><p>Add automatically a value to the JSON</p></li></ul></dd>
+    <dd class="tag-description"><ul class="dummy"><li><p>Automatically add a value to the JSON file</p></li></ul></dd>
     
 
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="index.js.html">index.js</a>, <a href="index.js.html#line444">line 444</a>
+        <a href="index.js.html">index.js</a>, <a href="index.js.html#line452">line 452</a>
     </li></ul></dd>
     
 
@@ -373,7 +376,7 @@
             <td class="type">
             
                 
-<span class="param-type">Object</span>
+<span class="param-type">T</span>
 
 
 
@@ -384,7 +387,7 @@
 
             
 
-            <td class="description last"><p>The value to add</p></td>
+            <td class="description last"><p>The value (without methods) to add</p></td>
         </tr>
 
     
@@ -409,6 +412,10 @@
 <h5 class="h5-returns">Returns:</h5>
 
         
+<div class="param-desc">
+    <p>The generated ID of the added element</p>
+</div>
+
 
 
 <dl class="param-type">
@@ -417,7 +424,7 @@
     </dt>
     <dd>
         
-<span class="param-type">Promise.&lt;any></span>
+<span class="param-type">Promise.&lt;string></span>
 
 
 
@@ -433,7 +440,7 @@
 
     
 
-    <h4 class="name" id="addBulk"><span class="type-signature"></span>addBulk<span class="signature">(values)</span><span class="type-signature"> &rarr; {Promise.&lt;any>}</span></h4>
+    <h4 class="name" id="addBulk"><span class="type-signature"></span>addBulk<span class="signature">(values)</span><span class="type-signature"> &rarr; {Promise.&lt;Array.&lt;string>>}</span></h4>
 
     
 
@@ -443,13 +450,13 @@
 <dl class="details">
     
     <dt class="tag-description">Description:</dt>
-    <dd class="tag-description"><ul class="dummy"><li><p>Add automatically multiple values to the JSON</p></li></ul></dd>
+    <dd class="tag-description"><ul class="dummy"><li><p>Automatically add multiple values to the JSON file</p></li></ul></dd>
     
 
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="index.js.html">index.js</a>, <a href="index.js.html#line467">line 467</a>
+        <a href="index.js.html">index.js</a>, <a href="index.js.html#line475">line 475</a>
     </li></ul></dd>
     
 
@@ -538,7 +545,7 @@
 
             
 
-            <td class="description last"><p>The values to add</p></td>
+            <td class="description last"><p>The values (without methods) to add</p></td>
         </tr>
 
     
@@ -563,6 +570,10 @@
 <h5 class="h5-returns">Returns:</h5>
 
         
+<div class="param-desc">
+    <p>The generated IDs of the added elements</p>
+</div>
+
 
 
 <dl class="param-type">
@@ -571,7 +582,7 @@
     </dt>
     <dd>
         
-<span class="param-type">Promise.&lt;any></span>
+<span class="param-type">Promise.&lt;Array.&lt;string>></span>
 
 
 
@@ -587,7 +598,7 @@
 
     
 
-    <h4 class="name" id="editField"><span class="type-signature"></span>editField<span class="signature">(obj)</span><span class="type-signature"> &rarr; {Promise.&lt;any>}</span></h4>
+    <h4 class="name" id="editField"><span class="type-signature"></span>editField<span class="signature">(obj)</span><span class="type-signature"> &rarr; {Promise.&lt;T>}</span></h4>
 
     
 
@@ -597,13 +608,13 @@
 <dl class="details">
     
     <dt class="tag-description">Description:</dt>
-    <dd class="tag-description"><ul class="dummy"><li><p>Changes one field from an element in this collection</p></li></ul></dd>
+    <dd class="tag-description"><ul class="dummy"><li><p>Edit one field of the collection</p></li></ul></dd>
     
 
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="index.js.html">index.js</a>, <a href="index.js.html#line524">line 524</a>
+        <a href="index.js.html">index.js</a>, <a href="index.js.html#line532">line 532</a>
     </li></ul></dd>
     
 
@@ -717,6 +728,10 @@
 <h5 class="h5-returns">Returns:</h5>
 
         
+<div class="param-desc">
+    <p>The edited element</p>
+</div>
+
 
 
 <dl class="param-type">
@@ -725,7 +740,7 @@
     </dt>
     <dd>
         
-<span class="param-type">Promise.&lt;any></span>
+<span class="param-type">Promise.&lt;T></span>
 
 
 
@@ -741,7 +756,7 @@
 
     
 
-    <h4 class="name" id="editFieldBulk"><span class="type-signature"></span>editFieldBulk<span class="signature">(objArray)</span><span class="type-signature"> &rarr; {Promise.&lt;any>}</span></h4>
+    <h4 class="name" id="editFieldBulk"><span class="type-signature"></span>editFieldBulk<span class="signature">(objArray)</span><span class="type-signature"> &rarr; {Promise.&lt;Array.&lt;T>>}</span></h4>
 
     
 
@@ -757,7 +772,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="index.js.html">index.js</a>, <a href="index.js.html#line534">line 534</a>
+        <a href="index.js.html">index.js</a>, <a href="index.js.html#line542">line 542</a>
     </li></ul></dd>
     
 
@@ -871,6 +886,10 @@
 <h5 class="h5-returns">Returns:</h5>
 
         
+<div class="param-desc">
+    <p>The edited elements</p>
+</div>
+
 
 
 <dl class="param-type">
@@ -879,7 +898,7 @@
     </dt>
     <dd>
         
-<span class="param-type">Promise.&lt;any></span>
+<span class="param-type">Promise.&lt;Array.&lt;T>></span>
 
 
 
@@ -911,7 +930,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="index.js.html">index.js</a>, <a href="index.js.html#line158">line 158</a>
+        <a href="index.js.html">index.js</a>, <a href="index.js.html#line160">line 160</a>
     </li></ul></dd>
     
 
@@ -1003,7 +1022,7 @@
 
             
 
-            <td class="description last"><p>The entry ID</p></td>
+            <td class="description last"><p>The ID of the element you want to get</p></td>
         </tr>
 
     
@@ -1029,7 +1048,7 @@
 
         
 <div class="param-desc">
-    <p>Result entry you may be looking for</p>
+    <p>Corresponding value</p>
 </div>
 
 
@@ -1056,7 +1075,7 @@
 
     
 
-    <h4 class="name" id="random"><span class="type-signature"></span>random<span class="signature">(max, seed, offset)</span><span class="type-signature"> &rarr; {Promise}</span></h4>
+    <h4 class="name" id="random"><span class="type-signature"></span>random<span class="signature">(max, seed, offset)</span><span class="type-signature"> &rarr; {Promise.&lt;Array.&lt;T>>}</span></h4>
 
     
 
@@ -1072,7 +1091,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="index.js.html">index.js</a>, <a href="index.js.html#line338">line 338</a>
+        <a href="index.js.html">index.js</a>, <a href="index.js.html#line346">line 346</a>
     </li></ul></dd>
     
 
@@ -1161,7 +1180,7 @@
 
             
 
-            <td class="description last"><p>integer</p></td>
+            <td class="description last"><p>The maximum number of entries</p></td>
         </tr>
 
     
@@ -1185,7 +1204,7 @@
 
             
 
-            <td class="description last"><p>integer</p></td>
+            <td class="description last"><p>The seed to use</p></td>
         </tr>
 
     
@@ -1209,7 +1228,7 @@
 
             
 
-            <td class="description last"><p>integer</p></td>
+            <td class="description last"><p>The offset to use</p></td>
         </tr>
 
     
@@ -1235,7 +1254,7 @@
 
         
 <div class="param-desc">
-    <p>entries</p>
+    <p>The found elements</p>
 </div>
 
 
@@ -1246,7 +1265,7 @@
     </dt>
     <dd>
         
-<span class="param-type">Promise</span>
+<span class="param-type">Promise.&lt;Array.&lt;T>></span>
 
 
 
@@ -1262,7 +1281,7 @@
 
     
 
-    <h4 class="name" id="read_raw"><span class="type-signature"></span>read_raw<span class="signature">()</span><span class="type-signature"></span></h4>
+    <h4 class="name" id="read_raw"><span class="type-signature"></span>read_raw<span class="signature">()</span><span class="type-signature"> &rarr; {Promise.&lt;Record.&lt;string, T>>}</span></h4>
 
     
 
@@ -1271,11 +1290,14 @@
 
 <dl class="details">
     
+    <dt class="tag-description">Description:</dt>
+    <dd class="tag-description"><ul class="dummy"><li><p>Returns the whole content of the JSON</p></li></ul></dd>
+    
 
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="index.js.html">index.js</a>, <a href="index.js.html#line281">line 281</a>
+        <a href="index.js.html">index.js</a>, <a href="index.js.html#line309">line 309</a>
     </li></ul></dd>
     
 
@@ -1294,7 +1316,7 @@
     
 
     
-        <dt class="important tag-deprecated">Deprecated:</dt><dd><ul class="dummy"><li>use readRaw instead</li></ul></dd>
+        <dt class="important tag-deprecated">Deprecated:</dt><dd><ul class="dummy"><li>Use readRaw instead</li></ul></dd>
     
 
     
@@ -1338,6 +1360,29 @@
 
 
 
+<h5 class="h5-returns">Returns:</h5>
+
+        
+<div class="param-desc">
+    <p>The entire collection</p>
+</div>
+
+
+
+<dl class="param-type">
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">Promise.&lt;Record.&lt;string, T>></span>
+
+
+
+    </dd>
+</dl>
+
+    
 
 
 
@@ -1346,7 +1391,7 @@
 
     
 
-    <h4 class="name" id="readRaw"><span class="type-signature"></span>readRaw<span class="signature">()</span><span class="type-signature"> &rarr; {Promise}</span></h4>
+    <h4 class="name" id="readRaw"><span class="type-signature"></span>readRaw<span class="signature">()</span><span class="type-signature"> &rarr; {Promise.&lt;Record.&lt;string, T>>}</span></h4>
 
     
 
@@ -1356,13 +1401,13 @@
 <dl class="details">
     
     <dt class="tag-description">Description:</dt>
-    <dd class="tag-description"><ul class="dummy"><li><p>Returns the whole content of the file</p></li></ul></dd>
+    <dd class="tag-description"><ul class="dummy"><li><p>Returns the whole content of the JSON</p></li></ul></dd>
     
 
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="index.js.html">index.js</a>, <a href="index.js.html#line289">line 289</a>
+        <a href="index.js.html">index.js</a>, <a href="index.js.html#line286">line 286</a>
     </li></ul></dd>
     
 
@@ -1427,7 +1472,7 @@
 
         
 <div class="param-desc">
-    <p>// the get promise of the collection raw file content</p>
+    <p>The entire collection</p>
 </div>
 
 
@@ -1438,7 +1483,7 @@
     </dt>
     <dd>
         
-<span class="param-type">Promise</span>
+<span class="param-type">Promise.&lt;Record.&lt;string, T>></span>
 
 
 
@@ -1454,7 +1499,7 @@
 
     
 
-    <h4 class="name" id="remove"><span class="type-signature"></span>remove<span class="signature">(key)</span><span class="type-signature"> &rarr; {Promise.&lt;any>}</span></h4>
+    <h4 class="name" id="remove"><span class="type-signature"></span>remove<span class="signature">(key)</span><span class="type-signature"> &rarr; {Promise.&lt;WriteConfirmation>}</span></h4>
 
     
 
@@ -1464,13 +1509,13 @@
 <dl class="details">
     
     <dt class="tag-description">Description:</dt>
-    <dd class="tag-description"><ul class="dummy"><li><p>Remove entry with its key from the JSON</p></li></ul></dd>
+    <dd class="tag-description"><ul class="dummy"><li><p>Remove an element from the collection by its ID</p></li></ul></dd>
     
 
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="index.js.html">index.js</a>, <a href="index.js.html#line482">line 482</a>
+        <a href="index.js.html">index.js</a>, <a href="index.js.html#line490">line 490</a>
     </li></ul></dd>
     
 
@@ -1587,6 +1632,10 @@
 <h5 class="h5-returns">Returns:</h5>
 
         
+<div class="param-desc">
+    <p>Write confirmation</p>
+</div>
+
 
 
 <dl class="param-type">
@@ -1595,7 +1644,7 @@
     </dt>
     <dd>
         
-<span class="param-type">Promise.&lt;any></span>
+<span class="param-type">Promise.&lt;WriteConfirmation></span>
 
 
 
@@ -1611,7 +1660,7 @@
 
     
 
-    <h4 class="name" id="removeBulk"><span class="type-signature"></span>removeBulk<span class="signature">(keys)</span><span class="type-signature"> &rarr; {Promise.&lt;any>}</span></h4>
+    <h4 class="name" id="removeBulk"><span class="type-signature"></span>removeBulk<span class="signature">(keys)</span><span class="type-signature"> &rarr; {Promise.&lt;WriteConfirmation>}</span></h4>
 
     
 
@@ -1621,13 +1670,13 @@
 <dl class="details">
     
     <dt class="tag-description">Description:</dt>
-    <dd class="tag-description"><ul class="dummy"><li><p>Remove entry with their keys from the JSON</p></li></ul></dd>
+    <dd class="tag-description"><ul class="dummy"><li><p>Remove multiple elements from the collection by their IDs</p></li></ul></dd>
     
 
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="index.js.html">index.js</a>, <a href="index.js.html#line491">line 491</a>
+        <a href="index.js.html">index.js</a>, <a href="index.js.html#line499">line 499</a>
     </li></ul></dd>
     
 
@@ -1744,6 +1793,10 @@
 <h5 class="h5-returns">Returns:</h5>
 
         
+<div class="param-desc">
+    <p>Write confirmation</p>
+</div>
+
 
 
 <dl class="param-type">
@@ -1752,7 +1805,7 @@
     </dt>
     <dd>
         
-<span class="param-type">Promise.&lt;any></span>
+<span class="param-type">Promise.&lt;WriteConfirmation></span>
 
 
 
@@ -1784,7 +1837,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="index.js.html">index.js</a>, <a href="index.js.html#line184">line 184</a>
+        <a href="index.js.html">index.js</a>, <a href="index.js.html#line188">line 188</a>
     </li></ul></dd>
     
 
@@ -1902,13 +1955,10 @@
             <td class="type">
             
                 
+<span class="param-type">boolean</span>
+|
+
 <span class="param-type">number</span>
-|
-
-<span class="param-type">false</span>
-|
-
-<span class="param-type">true</span>
 
 
 
@@ -1960,6 +2010,10 @@
 <h5 class="h5-returns">Returns:</h5>
 
         
+<div class="param-desc">
+    <p>The found elements</p>
+</div>
+
 
 
 <dl class="param-type">
@@ -2000,7 +2054,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="index.js.html">index.js</a>, <a href="index.js.html#line255">line 255</a>
+        <a href="index.js.html">index.js</a>, <a href="index.js.html#line259">line 259</a>
     </li></ul></dd>
     
 
@@ -2092,7 +2146,7 @@
 
             
 
-            <td class="description last"><p>Wanted keys</p></td>
+            <td class="description last"><p>Array of keys to search</p></td>
         </tr>
 
     
@@ -2118,7 +2172,7 @@
 
         
 <div class="param-desc">
-    <p>Search results</p>
+    <p>The found elements</p>
 </div>
 
 
@@ -2145,7 +2199,7 @@
 
     
 
-    <h4 class="name" id="select"><span class="type-signature"></span>select<span class="signature">(selectOption)</span><span class="type-signature"></span></h4>
+    <h4 class="name" id="select"><span class="type-signature"></span>select<span class="signature">(selectOption)</span><span class="type-signature"> &rarr; {Promise.&lt;Record.&lt;string, Partial.&lt;T>>>}</span></h4>
 
     
 
@@ -2155,13 +2209,16 @@
 <dl class="details">
     
     <dt class="tag-description">Description:</dt>
-    <dd class="tag-description"><ul class="dummy"><li><p>Upgraded read raw with field selection</p></li></ul></dd>
+    <dd class="tag-description"><ul class="dummy"><li><p>Get only selected fields from the collection</p>
+<ul>
+<li>Essentially an upgraded version of readRaw</li>
+</ul></li></ul></dd>
     
 
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="index.js.html">index.js</a>, <a href="index.js.html#line311">line 311</a>
+        <a href="index.js.html">index.js</a>, <a href="index.js.html#line319">line 319</a>
     </li></ul></dd>
     
 
@@ -2272,6 +2329,29 @@
 
 
 
+<h5 class="h5-returns">Returns:</h5>
+
+        
+<div class="param-desc">
+    <p>Selected fields</p>
+</div>
+
+
+
+<dl class="param-type">
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">Promise.&lt;Record.&lt;string, Partial.&lt;T>>></span>
+
+
+
+    </dd>
+</dl>
+
+    
 
 
 
@@ -2280,7 +2360,7 @@
 
     
 
-    <h4 class="name" id="set"><span class="type-signature"></span>set<span class="signature">(key, value)</span><span class="type-signature"> &rarr; {Promise.&lt;any>}</span></h4>
+    <h4 class="name" id="set"><span class="type-signature"></span>set<span class="signature">(key, value)</span><span class="type-signature"> &rarr; {Promise.&lt;WriteConfirmation>}</span></h4>
 
     
 
@@ -2290,13 +2370,13 @@
 <dl class="details">
     
     <dt class="tag-description">Description:</dt>
-    <dd class="tag-description"><ul class="dummy"><li><p>Sets an entry in the JSON</p></li></ul></dd>
+    <dd class="tag-description"><ul class="dummy"><li><p>Set a value in the collection by ID</p></li></ul></dd>
     
 
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="index.js.html">index.js</a>, <a href="index.js.html#line501">line 501</a>
+        <a href="index.js.html">index.js</a>, <a href="index.js.html#line509">line 509</a>
     </li></ul></dd>
     
 
@@ -2385,7 +2465,7 @@
 
             
 
-            <td class="description last"><p>The key of the value you want to set</p></td>
+            <td class="description last"><p>The ID of the element you want to edit</p></td>
         </tr>
 
     
@@ -2398,7 +2478,7 @@
             <td class="type">
             
                 
-<span class="param-type">Object</span>
+<span class="param-type">T</span>
 
 
 
@@ -2409,7 +2489,7 @@
 
             
 
-            <td class="description last"><p>The value you want for this key</p></td>
+            <td class="description last"><p>The value (without methods) you want to edit</p></td>
         </tr>
 
     
@@ -2434,6 +2514,10 @@
 <h5 class="h5-returns">Returns:</h5>
 
         
+<div class="param-desc">
+    <p>Write confirmation</p>
+</div>
+
 
 
 <dl class="param-type">
@@ -2442,7 +2526,7 @@
     </dt>
     <dd>
         
-<span class="param-type">Promise.&lt;any></span>
+<span class="param-type">Promise.&lt;WriteConfirmation></span>
 
 
 
@@ -2458,7 +2542,7 @@
 
     
 
-    <h4 class="name" id="setBulk"><span class="type-signature"></span>setBulk<span class="signature">(keys, values)</span><span class="type-signature"> &rarr; {Promise.&lt;any>}</span></h4>
+    <h4 class="name" id="setBulk"><span class="type-signature"></span>setBulk<span class="signature">(keys, values)</span><span class="type-signature"> &rarr; {Promise.&lt;WriteConfirmation>}</span></h4>
 
     
 
@@ -2468,13 +2552,13 @@
 <dl class="details">
     
     <dt class="tag-description">Description:</dt>
-    <dd class="tag-description"><ul class="dummy"><li><p>Sets multiple entries in the JSON</p></li></ul></dd>
+    <dd class="tag-description"><ul class="dummy"><li><p>Set multiple values in the collection by their IDs</p></li></ul></dd>
     
 
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="index.js.html">index.js</a>, <a href="index.js.html#line513">line 513</a>
+        <a href="index.js.html">index.js</a>, <a href="index.js.html#line521">line 521</a>
     </li></ul></dd>
     
 
@@ -2563,7 +2647,7 @@
 
             
 
-            <td class="description last"><p>The array of keys of the values you want to set</p></td>
+            <td class="description last"><p>The IDs of the elements you want to edit</p></td>
         </tr>
 
     
@@ -2576,7 +2660,7 @@
             <td class="type">
             
                 
-<span class="param-type">Array.&lt;Object></span>
+<span class="param-type">Array.&lt;T></span>
 
 
 
@@ -2587,7 +2671,7 @@
 
             
 
-            <td class="description last"><p>The values you want for these keys</p></td>
+            <td class="description last"><p>The values (without methods) you want to edit</p></td>
         </tr>
 
     
@@ -2612,6 +2696,10 @@
 <h5 class="h5-returns">Returns:</h5>
 
         
+<div class="param-desc">
+    <p>Write confirmation</p>
+</div>
+
 
 
 <dl class="param-type">
@@ -2620,7 +2708,7 @@
     </dt>
     <dd>
         
-<span class="param-type">Promise.&lt;any></span>
+<span class="param-type">Promise.&lt;WriteConfirmation></span>
 
 
 
@@ -2645,11 +2733,17 @@
 
 <dl class="details">
     
+    <dt class="tag-description">Description:</dt>
+    <dd class="tag-description"><ul class="dummy"><li><p>Get the sha1 hash of the file</p>
+<ul>
+<li>Can be used to see if same file content without downloading the file</li>
+</ul></li></ul></dd>
+    
 
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="index.js.html">index.js</a>, <a href="index.js.html#line171">line 171</a>
+        <a href="index.js.html">index.js</a>, <a href="index.js.html#line175">line 175</a>
     </li></ul></dd>
     
 
@@ -2714,7 +2808,7 @@
 
         
 <div class="param-desc">
-    <p>returns sha1 hash of the file. can be used to see if same file content without downloading the file for example</p>
+    <p>The sha1 hash of the file</p>
 </div>
 
 
@@ -2741,7 +2835,7 @@
 
     
 
-    <h4 class="name" id="write_raw"><span class="type-signature"></span>write_raw<span class="signature">(value)</span><span class="type-signature"> &rarr; {Promise.&lt;any>}</span></h4>
+    <h4 class="name" id="write_raw"><span class="type-signature"></span>write_raw<span class="signature">(value)</span><span class="type-signature"> &rarr; {Promise.&lt;WriteConfirmation>}</span></h4>
 
     
 
@@ -2751,13 +2845,13 @@
 <dl class="details">
     
     <dt class="tag-description">Description:</dt>
-    <dd class="tag-description"><ul class="dummy"><li><p>Writes the raw JSON file</p></li></ul></dd>
+    <dd class="tag-description"><ul class="dummy"><li><p>Set the entire JSON file contents</p></li></ul></dd>
     
 
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="index.js.html">index.js</a>, <a href="index.js.html#line435">line 435</a>
+        <a href="index.js.html">index.js</a>, <a href="index.js.html#line443">line 443</a>
     </li></ul></dd>
     
 
@@ -2776,7 +2870,7 @@
     
 
     
-        <dt class="important tag-deprecated">Deprecated:</dt><dd><ul class="dummy"><li>use writeRaw instead</li></ul></dd>
+        <dt class="important tag-deprecated">Deprecated:</dt><dd><ul class="dummy"><li>Use writeRaw instead</li></ul></dd>
     
 
     
@@ -2837,7 +2931,7 @@
             <td class="type">
             
                 
-<span class="param-type">Object</span>
+<span class="param-type">Record.&lt;string, T></span>
 
 
 
@@ -2848,7 +2942,7 @@
 
             
 
-            <td class="description last"></td>
+            <td class="description last"><p>The value to write</p></td>
         </tr>
 
     
@@ -2873,6 +2967,10 @@
 <h5 class="h5-returns">Returns:</h5>
 
         
+<div class="param-desc">
+    <p>Write confirmation</p>
+</div>
+
 
 
 <dl class="param-type">
@@ -2881,7 +2979,7 @@
     </dt>
     <dd>
         
-<span class="param-type">Promise.&lt;any></span>
+<span class="param-type">Promise.&lt;WriteConfirmation></span>
 
 
 
@@ -2897,7 +2995,7 @@
 
     
 
-    <h4 class="name" id="writeRaw"><span class="type-signature"></span>writeRaw<span class="signature">(value)</span><span class="type-signature"> &rarr; {Promise.&lt;any>}</span></h4>
+    <h4 class="name" id="writeRaw"><span class="type-signature"></span>writeRaw<span class="signature">(value)</span><span class="type-signature"> &rarr; {Promise.&lt;WriteConfirmation>}</span></h4>
 
     
 
@@ -2907,13 +3005,13 @@
 <dl class="details">
     
     <dt class="tag-description">Description:</dt>
-    <dd class="tag-description"><ul class="dummy"><li><p>Writes the raw JSON file</p></li></ul></dd>
+    <dd class="tag-description"><ul class="dummy"><li><p>Set the entire JSON file contents</p></li></ul></dd>
     
 
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="index.js.html">index.js</a>, <a href="index.js.html#line422">line 422</a>
+        <a href="index.js.html">index.js</a>, <a href="index.js.html#line430">line 430</a>
     </li></ul></dd>
     
 
@@ -2991,7 +3089,7 @@
             <td class="type">
             
                 
-<span class="param-type">Object</span>
+<span class="param-type">Record.&lt;string, T></span>
 
 
 
@@ -3002,7 +3100,7 @@
 
             
 
-            <td class="description last"><p>The whole JSON to write</p></td>
+            <td class="description last"><p>The value to write</p></td>
         </tr>
 
     
@@ -3027,6 +3125,10 @@
 <h5 class="h5-returns">Returns:</h5>
 
         
+<div class="param-desc">
+    <p>Write confirmation</p>
+</div>
+
 
 
 <dl class="param-type">
@@ -3035,7 +3137,7 @@
     </dt>
     <dd>
         
-<span class="param-type">Promise.&lt;any></span>
+<span class="param-type">Promise.&lt;WriteConfirmation></span>
 
 
 
@@ -3066,7 +3168,7 @@
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.6.7</a> on Sun Dec 17 2023 14:14:02 GMT+0000 (Coordinated Universal Time) using the <a href="https://github.com/clenemt/docdash">docdash</a> theme.
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.6.7</a> on Mon Feb 12 2024 17:29:04 GMT+0000 (Coordinated Universal Time) using the <a href="https://github.com/clenemt/docdash">docdash</a> theme.
 </footer>
 
 <script>prettyPrint();</script>

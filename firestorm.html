@@ -92,7 +92,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="index.js.html">index.js</a>, <a href="index.js.html#line540">line 540</a>
+        <a href="index.js.html">index.js</a>, <a href="index.js.html#line548">line 548</a>
     </li></ul></dd>
     
 
@@ -199,7 +199,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="index.js.html">index.js</a>, <a href="index.js.html#line586">line 586</a>
+        <a href="index.js.html">index.js</a>, <a href="index.js.html#line598">line 598</a>
     </li></ul></dd>
     
 
@@ -260,7 +260,7 @@
 
     
 
-    <h4 class="name" id=".address"><span class="type-signature type-signature-static">(static) </span>address<span class="signature">(newValue)</span><span class="type-signature"> &rarr; {string}</span></h4>
+    <h4 class="name" id=".address"><span class="type-signature type-signature-static">(static) </span>address<span class="signature">(newValue<span class="signature-attributes">opt</span>)</span><span class="type-signature"> &rarr; {string}</span></h4>
 
     
 
@@ -269,11 +269,14 @@
 
 <dl class="details">
     
+    <dt class="tag-description">Description:</dt>
+    <dd class="tag-description"><ul class="dummy"><li><p>Change the current Firestorm address</p></li></ul></dd>
+    
 
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="index.js.html">index.js</a>, <a href="index.js.html#line549">line 549</a>
+        <a href="index.js.html">index.js</a>, <a href="index.js.html#line557">line 557</a>
     </li></ul></dd>
     
 
@@ -332,6 +335,8 @@
 
         <th>Type</th>
 
+        
+        <th>Attributes</th>
         
 
         
@@ -359,10 +364,20 @@
             </td>
 
             
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
+            
 
             
 
-            <td class="description last"><p>The new address value</p></td>
+            <td class="description last"><p>The new Firestorm address</p></td>
         </tr>
 
     
@@ -388,7 +403,7 @@
 
         
 <div class="param-desc">
-    <p>The stored address value</p>
+    <p>The stored Firestorm address</p>
 </div>
 
 
@@ -415,7 +430,7 @@
 
     
 
-    <h4 class="name" id=".collection"><span class="type-signature type-signature-static">(static) </span>collection<span class="signature">(name, addMethods)</span><span class="type-signature"> &rarr; {<a href="Collection.html">Collection</a>}</span></h4>
+    <h4 class="name" id=".collection"><span class="type-signature type-signature-static">(static) </span>collection<span class="signature">(name, addMethods<span class="signature-attributes">opt</span>)</span><span class="type-signature"> &rarr; {<a href="Collection.html">Collection</a>.&lt;T>}</span></h4>
 
     
 
@@ -424,11 +439,14 @@
 
 <dl class="details">
     
+    <dt class="tag-description">Description:</dt>
+    <dd class="tag-description"><ul class="dummy"><li><p>Create a new Firestorm collection instance</p></li></ul></dd>
+    
 
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="index.js.html">index.js</a>, <a href="index.js.html#line571">line 571</a>
+        <a href="index.js.html">index.js</a>, <a href="index.js.html#line583">line 583</a>
     </li></ul></dd>
     
 
@@ -488,6 +506,8 @@
         <th>Type</th>
 
         
+        <th>Attributes</th>
+        
 
         
 
@@ -514,10 +534,18 @@
             </td>
 
             
+                <td class="attributes">
+                
+
+                
+
+                
+                </td>
+            
 
             
 
-            <td class="description last"><p>Collection name to get</p></td>
+            <td class="description last"><p>The name of the collection</p></td>
         </tr>
 
     
@@ -537,6 +565,16 @@
             
             </td>
 
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
             
 
             
@@ -566,6 +604,10 @@
 <h5 class="h5-returns">Returns:</h5>
 
         
+<div class="param-desc">
+    <p>The collection</p>
+</div>
+
 
 
 <dl class="param-type">
@@ -574,7 +616,7 @@
     </dt>
     <dd>
         
-<span class="param-type"><a href="Collection.html">Collection</a></span>
+<span class="param-type"><a href="Collection.html">Collection</a>.&lt;T></span>
 
 
 
@@ -590,7 +632,7 @@
 
     
 
-    <h4 class="name" id=".table"><span class="type-signature type-signature-static">(static) </span>table<span class="signature">(name)</span><span class="type-signature"></span></h4>
+    <h4 class="name" id=".table"><span class="type-signature type-signature-static">(static) </span>table<span class="signature">(name)</span><span class="type-signature"> &rarr; {<a href="Collection.html">Collection</a>.&lt;T>}</span></h4>
 
     
 
@@ -599,11 +641,14 @@
 
 <dl class="details">
     
+    <dt class="tag-description">Description:</dt>
+    <dd class="tag-description"><ul class="dummy"><li><p>Create a temporary Firestorm collection with no methods</p></li></ul></dd>
+    
 
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="index.js.html">index.js</a>, <a href="index.js.html#line579">line 579</a>
+        <a href="index.js.html">index.js</a>, <a href="index.js.html#line593">line 593</a>
     </li></ul></dd>
     
 
@@ -692,7 +737,7 @@
 
             
 
-            <td class="description last"><p>Table name to get</p></td>
+            <td class="description last"><p>The table name to get</p></td>
         </tr>
 
     
@@ -714,6 +759,29 @@
 
 
 
+<h5 class="h5-returns">Returns:</h5>
+
+        
+<div class="param-desc">
+    <p>The collection</p>
+</div>
+
+
+
+<dl class="param-type">
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type"><a href="Collection.html">Collection</a>.&lt;T></span>
+
+
+
+    </dd>
+</dl>
+
+    
 
 
 
@@ -722,7 +790,7 @@
 
     
 
-    <h4 class="name" id=".token"><span class="type-signature type-signature-static">(static) </span>token<span class="signature">(newValue)</span><span class="type-signature"> &rarr; {string}</span></h4>
+    <h4 class="name" id=".token"><span class="type-signature type-signature-static">(static) </span>token<span class="signature">(newValue<span class="signature-attributes">opt</span>)</span><span class="type-signature"> &rarr; {string}</span></h4>
 
     
 
@@ -731,11 +799,14 @@
 
 <dl class="details">
     
+    <dt class="tag-description">Description:</dt>
+    <dd class="tag-description"><ul class="dummy"><li><p>Change the current Firestorm token</p></li></ul></dd>
+    
 
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="index.js.html">index.js</a>, <a href="index.js.html#line560">line 560</a>
+        <a href="index.js.html">index.js</a>, <a href="index.js.html#line569">line 569</a>
     </li></ul></dd>
     
 
@@ -795,6 +866,8 @@
         <th>Type</th>
 
         
+        <th>Attributes</th>
+        
 
         
 
@@ -821,10 +894,20 @@
             </td>
 
             
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
+            
 
             
 
-            <td class="description last"><p>The new write token</p></td>
+            <td class="description last"><p>The new Firestorm write token</p></td>
         </tr>
 
     
@@ -850,7 +933,7 @@
 
         
 <div class="param-desc">
-    <p>The stored write token</p>
+    <p>The stored Firestorm write token</p>
 </div>
 
 
@@ -892,7 +975,7 @@
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.6.7</a> on Sun Dec 17 2023 14:14:02 GMT+0000 (Coordinated Universal Time) using the <a href="https://github.com/clenemt/docdash">docdash</a> theme.
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.6.7</a> on Mon Feb 12 2024 17:29:04 GMT+0000 (Coordinated Universal Time) using the <a href="https://github.com/clenemt/docdash">docdash</a> theme.
 </footer>
 
 <script>prettyPrint();</script>
