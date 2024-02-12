@@ -134,6 +134,9 @@ export type EditField<T> = {
 		);
 }[keyof T];
 
+/** Write status */
+export type WriteConfirmation = { message: string };
+
 export type SearchOption<T> = {
 	[K in keyof T]: {
 		/** the field to be searched for */
@@ -142,7 +145,7 @@ export type SearchOption<T> = {
 		criteria: Criteria<T[K]>;
 		/** the value to be searched for */
 		value?: any;
-		/** is it case sensitive? (default: true) */
+		/** is it case sensitive? (default true) */
 		ignoreCase?: boolean;
 	};
 }[keyof T];
@@ -162,20 +165,22 @@ export type NoMethods<T> = {
 
 export class Collection<T> {
 	/**
+	 * Create a new Firestorm collection instance
 	 * @param name - The name of the collection
-	 * @param addMethods - The methods you want to add to the collection
+	 * @param addMethods - Additional methods and data to add to the objects
 	 */
 	public constructor(name: string, addMethods?: CollectionMethods<T>);
 
 	/**
 	 * Get an element from the collection
-	 * @param id - The id of the element you want to get
+	 * @param id - The ID of the element you want to get
+	 * @returns Corresponding value
 	 */
 	public get(id: string | number): Promise<T>;
 
 	/**
-	 * Get the sha1 hash of the file.
-	 * - Can be used to see if same file content without downloading the file for example
+	 * Get the sha1 hash of the file
+	 * - Can be used to see if same file content without downloading the file
 	 * @returns The sha1 hash of the file
 	 */
 	public sha1(): string;
@@ -199,24 +204,25 @@ export class Collection<T> {
 	public searchKeys(keys: string[] | number[]): Promise<T[]>;
 
 	/**
-	 * Returns the whole content of the file
+	 * Returns the whole content of the JSON
 	 * @returns The entire collection
 	 */
 	public readRaw(): Promise<Record<string, T>>;
 
 	/**
-	 * Returns the whole content of the file
+	 * Returns the whole content of the JSON
 	 * @deprecated Use readRaw instead
 	 * @returns The entire collection
 	 */
 	public read_raw(): Promise<Record<string, T>>;
 
 	/**
-	 * Get only selected elements from the collection
+	 * Get only selected fields from the collection
+	 * - Essentially an upgraded version of readRaw
 	 * @param option - The option you want to select
-	 * @returns Only selected elements from T
+	 * @returns Selected fields
 	 */
-	public select(option: SelectOption<T>): Promise<any[]>;
+	public select(option: SelectOption<T>): Promise<Record<string, Partial<T>>>;
 
 	/**
 	 * Get random max entries offset with a given seed
@@ -228,63 +234,63 @@ export class Collection<T> {
 	public random(max: number, seed: number, offset: number): Promise<T[]>;
 
 	/**
-	 * Write the whole content in the JSON file
+	 * Set the entire JSON file contents
 	 * @param value - The value to write
-	 * @returns The written elements
+	 * @returns Write confirmation
 	 */
-	public writeRaw(value: Record<string, T>): Promise<string>;
+	public writeRaw(value: Record<string, T>): Promise<WriteConfirmation>;
 
 	/**
-	 * Write the whole content in the JSON file
-	 * @param value - The value to write
+	 * Set the entire JSON file contents
 	 * @deprecated Use writeRaw instead
-	 * @returns The written elements
+	 * @param value - The value to write
+	 * @returns Write confirmation
 	 */
-	public write_raw(value: Record<string, T>): Promise<string>;
+	public write_raw(value: Record<string, T>): Promise<WriteConfirmation>;
 
 	/**
-	 * Add automatically a value to the JSON file
-	 * @param value - The value, without methods, to add
-	 * @returns The id of the added element
+	 * Automatically add a value to the JSON file
+	 * @param value - The value (without methods) to add
+	 * @returns The generated ID of the added element
 	 */
 	public add(value: Writable<T>): Promise<string>;
 
 	/**
-	 * Add automatically multiple values to the JSON file
-	 * @param values - The values, without methods, to add
-	 * @returns The ids of the added elements
+	 * Automatically add multiple values to the JSON file
+	 * @param values - The values (without methods) to add
+	 * @returns The generated IDs of the added elements
 	 */
 	public addBulk(values: Writable<T>[]): Promise<string[]>;
 
 	/**
-	 * Remove an element from the collection by its id
-	 * @param id - The id of the element you want to remove
-	 * @returns The id of the removed element
+	 * Remove an element from the collection by its ID
+	 * @param id - The ID of the element you want to remove
+	 * @returns Write confirmation
 	 */
-	public remove(id: string | number): Promise<string>;
+	public remove(id: string | number): Promise<WriteConfirmation>;
 
 	/**
-	 * Remove multiple elements from the collection by their ids
-	 * @param ids - The ids of the elements you want to remove
-	 * @returns The ids of the removed elements
+	 * Remove multiple elements from the collection by their IDs
+	 * @param ids - The IDs of the elements you want to remove
+	 * @returns Write confirmation
 	 */
-	public removeBulk(ids: string[] | number[]): Promise<string>;
+	public removeBulk(ids: string[] | number[]): Promise<WriteConfirmation>;
 
 	/**
-	 * Set a value in the collection by its id
-	 * @param id - The id of the element you want to edit
-	 * @param value - The value, without methods, you want to edit
-	 * @returns The edited element
+	 * Set a value in the collection by ID
+	 * @param id - The ID of the element you want to edit
+	 * @param value - The value (without methods) you want to edit
+	 * @returns Write confirmation
 	 */
-	public set(id: string | number, value: Writable<T>): Promise<string>;
+	public set(id: string | number, value: Writable<T>): Promise<WriteConfirmation>;
 
 	/**
-	 * Set multiple values in the collection by their ids
-	 * @param ids - The ids of the elements you want to edit
-	 * @param values - The values, without methods, you want to edit
-	 * @returns The edited elements
+	 * Set multiple values in the collection by their IDs
+	 * @param ids - The IDs of the elements you want to edit
+	 * @param values - The values (without methods) you want to edit
+	 * @returns Write confirmation
 	 */
-	public setBulk(ids: string[] | number[], values: Writable<T>[]): Promise<string>;
+	public setBulk(ids: string[] | number[], values: Writable<T>[]): Promise<WriteConfirmation>;
 
 	/**
 	 * Edit one field of the collection
@@ -304,56 +310,62 @@ export class Collection<T> {
 /** Value for the id field when searching content */
 export const ID_FIELD: string;
 
-// don't need ID field when adding keys, and settings keys has a separate id argument
+// don't need ID field when adding keys, and setting keys has a separate ID argument
 type Writable<T> = Omit<Omit<T, NoMethods<T>>, "id">;
 
 /**
- * Change the current firestorm address
- * @param value - The new firestorm address
- * @returns The stored firestorm address
+ * Change the current Firestorm address
+ * @param value - The new Firestorm address
+ * @returns The stored Firestorm address
  */
 export function address(value?: string): string;
 
 /**
- * @param value - The new firestorm write token
- * @returns The stored firestorm write token
+ * Change the current Firestorm token
+ * @param value - The new Firestorm write token
+ * @returns The stored Firestorm write token
  */
-export function token(value: string): string;
+export function token(value?: string): string;
 
 /**
- * @param value - The new firestorm read token
- * @param addMethods - Additional methods you want to add to the collection
+ * Create a new Firestorm collection instance
+ * @param value - The name of the collection
+ * @param addMethods - Additional methods and data to add to the objects
  * @returns The collection
  */
 export function collection<T>(value: string, addMethods?: CollectionMethods<T>): Collection<T>;
 
 /**
+ * Create a temporary Firestorm collection with no methods
  * @param table - The table name to get
+ * @returns The collection
  */
-export function table(table: string): Promise<any>;
+export function table<T>(table: string): Promise<Collection<T>>;
 
-/** we need to use an abstract class here because `delete` is reserved otherwise */
-export abstract class files {
+/**
+ * Firestorm file handler
+ */
+export declare const files: {
 	/**
 	 * Get file back
 	 * @param path - The file path wanted
 	 */
-	static get: (path: string) => any;
+	get(path: string): Promise<any>;
 
 	/**
 	 * Upload file
-	 * @param form - The form data with path, filename & file
-	 * @returns http response
+	 * @param form - The form data with path, filename, and file
+	 * @returns HTTP response
 	 */
-	static upload: (form: FormData) => Promise<any>;
+	upload(form: FormData): Promise<any>;
 
 	/**
 	 * Deletes a file given its path
 	 * @param path - The file path to delete
-	 * @returns http response
+	 * @returns HTTP response
 	 */
-	static delete: (path: string) => Promise<any>;
-}
+	delete(path: string): Promise<any>;
+};
 
 /**
  * taken from https://github.com/toonvanstrijp/nestjs-i18n/blob/3fc33c105a68b112ed7af6237c5f49902d0864b6/src/types.ts#L27

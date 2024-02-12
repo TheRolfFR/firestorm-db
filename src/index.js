@@ -4,33 +4,34 @@ try {
 
 /**
  * @typedef {Object} SearchOption
- * @property {string} field The field you want to search in
- * @property {"!=" | "==" | ">=" | "<=" | "<" | ">" | "in" | "includes" | "startsWith" | "endsWith" | "array-contains" | "array-contains-any" | "array-length-(eq|df|gt|lt|ge|le)" } criteria filter criteria
- * @property {string | number | boolean | Array } value the value you want to compare
- * @property {boolean} ignoreCase Ignore case on search string
+ * @property {string} field - The field you want to search in
+ * @property {"!=" | "==" | ">=" | "<=" | "<" | ">" | "in" | "includes" | "startsWith" | "endsWith" | "array-contains" | "array-contains-any" | "array-length-(eq|df|gt|lt|ge|le)" } criteria - Filter criteria
+ * @property {string | number | boolean | Array } value - The value you want to compare
+ * @property {boolean} ignoreCase - Ignore case on search string
  */
 
 /**
  * @typedef {Object} EditObject
- * @property {string | number } id the affected element
- * @property {string} field The field you want to edit
- * @property {"set" | "remove" | "append" | "increment" | "decrement" | "array-push" | "array-delete" | "array-splice"} operation Wanted operation on field
- * @property {string | number | boolean | Array } [value] // the value you want to compare
+ * @property {string | number } id - The affected element
+ * @property {string} field - The field you want to edit
+ * @property {"set" | "remove" | "append" | "increment" | "decrement" | "array-push" | "array-delete" | "array-splice"} operation - Wanted operation on field
+ * @property {string | number | boolean | Array} [value] - The value you want to compare
  */
 
 /**
  * @typedef {Object} SelectOption
- * @property {Array<string>} fields Chosen fields to eventually return
+ * @property {Array<string>} fields - Chosen fields to eventually return
  */
 
 /**
- * @ignore
+ * @typedef {WriteConfirmation}
+ * @property {string} message - Write status
  */
+
+/** @ignore */
 let _address = undefined;
 
-/**
- * @ignore
- */
+/** @ignore */
 let _token = undefined;
 
 const ID_FIELD_NAME = "id";
@@ -87,8 +88,9 @@ const __extract_data = (request) => {
  */
 class Collection {
 	/**
-	 * @param {string} name The name of the Collection
-	 * @param {Function} [addMethods] Additional methods and data to add to the objects
+	 * Create a new Firestorm collection instance
+	 * @param {string} name - The name of the collection
+	 * @param {Function} [addMethods] - Additional methods and data to add to the objects
 	 */
 	constructor(name, addMethods = (el) => el) {
 		if (name === undefined) throw new SyntaxError("Collection must have a name");
@@ -102,8 +104,8 @@ class Collection {
 	 * Add user methods to the returned data
 	 * @private
 	 * @ignore
-	 * @param {AxiosPromise} req Incoming request
-	 * @returns {Object|Object[]}
+	 * @param {AxiosPromise} req - Incoming request
+	 * @returns {Object | Object[]}
 	 */
 	__add_methods(req) {
 		return new Promise((resolve, reject) => {
@@ -127,7 +129,7 @@ class Collection {
 	 * Auto-extracts data from Axios request
 	 * @private
 	 * @ignore
-	 * @param {AxiosPromise} request The Axios concerned request
+	 * @param {AxiosPromise} request - The Axios concerned request
 	 */
 	__extract_data(request) {
 		return __extract_data(request);
@@ -137,7 +139,7 @@ class Collection {
 	 * Send get request and extract data from response
 	 * @private
 	 * @ignore
-	 * @param {Object} data Body data
+	 * @param {Object} data - Body data
 	 * @returns {Promise<Object|Object[]>} data out
 	 */
 	__get_request(data) {
@@ -152,8 +154,8 @@ class Collection {
 
 	/**
 	 * Get an element from the collection
-	 * @param {string | number} id The entry ID
-	 * @returns {Promise<T>} Result entry you may be looking for
+	 * @param {string | number} id - The ID of the element you want to get
+	 * @returns {Promise<T>} Corresponding value
 	 */
 	get(id) {
 		return this.__add_methods(
@@ -166,7 +168,9 @@ class Collection {
 	}
 
 	/**
-	 * @returns {string} returns sha1 hash of the file. can be used to see if same file content without downloading the file for example
+	 * Get the sha1 hash of the file
+	 * - Can be used to see if same file content without downloading the file
+	 * @returns {string} The sha1 hash of the file
 	 */
 	sha1() {
 		return this.__get_request({
@@ -177,9 +181,9 @@ class Collection {
 
 	/**
 	 * Search through collection
-	 * @param {SearchOption[]} searchOptions Array of search options
-	 * @param {(number | false | true)} [random] Random result seed, disabled by default, but can activated with true or a given seed
-	 * @returns {Promise<T[]>}
+	 * @param {SearchOption[]} searchOptions - Array of search options
+	 * @param {boolean | number} [random] - Random result seed, disabled by default, but can activated with true or a given seed
+	 * @returns {Promise<T[]>} The found elements
 	 */
 	search(searchOptions, random = false) {
 		if (!Array.isArray(searchOptions))
@@ -249,8 +253,8 @@ class Collection {
 
 	/**
 	 * Search specific keys through collection
-	 * @param {string[] | number[]} keys Wanted keys
-	 * @returns {Promise<T[]>} Search results
+	 * @param {string[] | number[]} keys - Array of keys to search
+	 * @returns {Promise<T[]>} The found elements
 	 */
 	searchKeys(keys) {
 		if (!Array.isArray(keys)) return Promise.reject("Incorrect keys");
@@ -276,15 +280,8 @@ class Collection {
 	}
 
 	/**
-	 * @deprecated use readRaw instead
-	 */
-	read_raw() {
-		return this.readRaw();
-	}
-
-	/**
-	 * Returns the whole content of the file
-	 * @returns {Promise} // the get promise of the collection raw file content
+	 * Returns the whole content of the JSON
+	 * @returns {Promise<Record<string, T>>} The entire collection
 	 */
 	readRaw() {
 		return new Promise((resolve, reject) => {
@@ -305,8 +302,19 @@ class Collection {
 	}
 
 	/**
-	 * Upgraded read raw with field selection
-	 * @param {SelectOption} selectOption Select options
+	 * Returns the whole content of the JSON
+	 * @deprecated Use readRaw instead
+	 * @returns {Promise<Record<string, T>>} The entire collection
+	 */
+	read_raw() {
+		return this.readRaw();
+	}
+
+	/**
+	 * Get only selected fields from the collection
+	 * - Essentially an upgraded version of readRaw
+	 * @param {SelectOption} selectOption - Select options
+	 * @returns {Promise<Record<string, Partial<T>>>} Selected fields
 	 */
 	select(selectOption) {
 		if (!selectOption) selectOption = {};
@@ -330,10 +338,10 @@ class Collection {
 
 	/**
 	 * Returns random max entries offsets with a given seed
-	 * @param {number} max integer
-	 * @param {number} seed integer
-	 * @param {number} offset integer
-	 * @returns {Promise} entries
+	 * @param {number} max - The maximum number of entries
+	 * @param {number} seed - The seed to use
+	 * @param {number} offset - The offset to use
+	 * @returns {Promise<T[]>} The found elements
 	 */
 	random(max, seed, offset) {
 		const params = {};
@@ -415,9 +423,9 @@ class Collection {
 	}
 
 	/**
-	 * Writes the raw JSON file
-	 * @param {Object} value The whole JSON to write
-	 * @returns {Promise<any>}
+	 * Set the entire JSON file contents
+	 * @param {Record<string, T>} value - The value to write
+	 * @returns {Promise<WriteConfirmation>} Write confirmation
 	 */
 	writeRaw(value) {
 		if (value === undefined || value === null) {
@@ -427,19 +435,19 @@ class Collection {
 	}
 
 	/**
-	 * Writes the raw JSON file
-	 * @param {Object} value
-	 * @deprecated use writeRaw instead
-	 * @returns {Promise<any>}
+	 * Set the entire JSON file contents
+	 * @param {Record<string, T>} value - The value to write
+	 * @deprecated Use writeRaw instead
+	 * @returns {Promise<WriteConfirmation>} Write confirmation
 	 */
 	write_raw(value) {
 		return this.writeRaw(value);
 	}
 
 	/**
-	 * Add automatically a value to the JSON
-	 * @param {Object} value The value to add
-	 * @returns {Promise<any>}
+	 * Automatically add a value to the JSON file
+	 * @param {T} value - The value (without methods) to add
+	 * @returns {Promise<string>} The generated ID of the added element
 	 */
 	add(value) {
 		return new Promise((resolve, reject) => {
@@ -460,9 +468,9 @@ class Collection {
 	}
 
 	/**
-	 * Add automatically multiple values to the JSON
-	 * @param {Object[]} values The values to add
-	 * @returns {Promise<any>}
+	 * Automatically add multiple values to the JSON file
+	 * @param {Object[]} values - The values (without methods) to add
+	 * @returns {Promise<string[]>} The generated IDs of the added elements
 	 */
 	addBulk(values) {
 		return new Promise((resolve, reject) => {
@@ -475,28 +483,28 @@ class Collection {
 	}
 
 	/**
-	 * Remove entry with its key from the JSON
+	 * Remove an element from the collection by its ID
 	 * @param {string | number} key The key from the entry to remove
-	 * @returns {Promise<any>}
+	 * @returns {Promise<WriteConfirmation>} Write confirmation
 	 */
 	remove(key) {
 		return this.__extract_data(axios.post(writeAddress(), this.__write_data("remove", key)));
 	}
 
 	/**
-	 * Remove entry with their keys from the JSON
+	 * Remove multiple elements from the collection by their IDs
 	 * @param {string[] | number[]} keys The key from the entries to remove
-	 * @returns {Promise<any>}
+	 * @returns {Promise<WriteConfirmation>} Write confirmation
 	 */
 	removeBulk(keys) {
 		return this.__extract_data(axios.post(writeAddress(), this.__write_data("removeBulk", keys)));
 	}
 
 	/**
-	 * Sets an entry in the JSON
-	 * @param {string} key The key of the value you want to set
-	 * @param {Object} value The value you want for this key
-	 * @returns {Promise<any>}
+	 * Set a value in the collection by ID
+	 * @param {string} key - The ID of the element you want to edit
+	 * @param {T} value - The value (without methods) you want to edit
+	 * @returns {Promise<WriteConfirmation>} Write confirmation
 	 */
 	set(key, value) {
 		const data = this.__write_data("set", value);
@@ -505,10 +513,10 @@ class Collection {
 	}
 
 	/**
-	 * Sets multiple entries in the JSON
-	 * @param {string[]} keys The array of keys of the values you want to set
-	 * @param {Object[]} values The values you want for these keys
-	 * @returns {Promise<any>}
+	 * Set multiple values in the collection by their IDs
+	 * @param {string[]} keys - The IDs of the elements you want to edit
+	 * @param {T[]} values - The values (without methods) you want to edit
+	 * @returns {Promise<WriteConfirmation>} Write confirmation
 	 */
 	setBulk(keys, values) {
 		const data = this.__write_data("setBulk", values, true);
@@ -517,9 +525,9 @@ class Collection {
 	}
 
 	/**
-	 * Changes one field from an element in this collection
-	 * @param {EditObject} obj The edit object
-	 * @returns {Promise<any>}
+	 * Edit one field of the collection
+	 * @param {EditObject} obj - The edit object
+	 * @returns {Promise<T>} The edited element
 	 */
 	editField(obj) {
 		const data = this.__write_data("editField", obj, null);
@@ -529,7 +537,7 @@ class Collection {
 	/**
 	 * Changes one field from an element in this collection
 	 * @param {EditObject[]} objArray The edit object array with operations
-	 * @returns {Promise<any>}
+	 * @returns {Promise<T[]>} The edited elements
 	 */
 	editFieldBulk(objArray) {
 		const data = this.__write_data("editFieldBulk", objArray, undefined);
@@ -542,9 +550,9 @@ class Collection {
  */
 const firestorm = {
 	/**
-	 * @param {string} newValue The new address value
-	 * @returns {string} The stored address value
-	 * @memberof firestorm
+	 * Change the current Firestorm address
+	 * @param {string} [newValue] - The new Firestorm address
+	 * @returns {string} The stored Firestorm address
 	 */
 	address(newValue = undefined) {
 		if (newValue === undefined) return readAddress();
@@ -554,8 +562,9 @@ const firestorm = {
 	},
 
 	/**
-	 * @param {string} newValue The new write token
-	 * @returns {string} The stored write token
+	 * Change the current Firestorm token
+	 * @param {string} [newValue] - The new Firestorm write token
+	 * @returns {string} The stored Firestorm write token
 	 */
 	token(newValue = undefined) {
 		if (newValue === undefined) return writeToken();
@@ -563,26 +572,29 @@ const firestorm = {
 
 		return _token;
 	},
+
 	/**
-	 * @param {string} name Collection name to get
-	 * @param {Function} addMethods Additional methods and data to add to the objects
-	 * @returns {Collection}
+	 * Create a new Firestorm collection instance
+	 * @template T
+	 * @param {string} name - The name of the collection
+	 * @param {Function} [addMethods] - Additional methods and data to add to the objects
+	 * @returns {Collection<T>} The collection
 	 */
 	collection(name, addMethods = (el) => el) {
 		return new Collection(name, addMethods);
 	},
 
 	/**
-	 *
-	 * @param {string} name Table name to get
+	 * Create a temporary Firestorm collection with no methods
+	 * @template T
+	 * @param {string} name - The table name to get
+	 * @returns {Collection<T>} The collection
 	 */
 	table(name) {
 		return this.collection(name);
 	},
 
-	/**
-	 * Value for the id field when researching content
-	 */
+	/** Value for the id field when researching content */
 	ID_FIELD: ID_FIELD_NAME,
 
 	/**
@@ -593,9 +605,9 @@ const firestorm = {
 	 */
 	files: {
 		/**
-		 * gets file back
+		 * Get file back
 		 * @memberof firestorm.files
-		 * @param {string} path File path wanted
+		 * @param {string} path - The file path wanted
 		 */
 		get(path) {
 			return __extract_data(
@@ -610,8 +622,8 @@ const firestorm = {
 		/**
 		 * Uploads file
 		 * @memberof firestorm.files
-		 * @param {FormData} form formData with path, filename and file
-		 * @returns {Promise} http response
+		 * @param {FormData} form - The form data with path, filename, and file
+		 * @returns {Promise<any>} HTTP response
 		 */
 		upload(form) {
 			form.append("token", firestorm.token());
@@ -625,8 +637,8 @@ const firestorm = {
 		/**
 		 * Deletes a file given its path
 		 * @memberof firestorm.files
-		 * @param {string} path File path to delete
-		 * @returns {Promise} http response
+		 * @param {string} path - The file path to delete
+		 * @returns {Promise<any>} HTTP response
 		 */
 		delete(path) {
 			return axios.delete(fileAddress(), {
