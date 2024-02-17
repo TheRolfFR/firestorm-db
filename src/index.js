@@ -352,10 +352,12 @@ class Collection {
 		if (typeof valueOption.field !== "string") return Promise.reject("Field must be a string");
 		if (valueOption.flatten !== undefined && typeof valueOption.flatten !== "boolean")
 			return Promise.reject("Flatten must be a boolean");
+
 		return this.select({ fields: [valueOption.field] })
 			.then((res) => Object.values(res).map((el) => el[valueOption.field]))
 			.then((values) => (valueOption.flatten ? values.flat() : values))
-			.then((values) => values.filter((e, i, a) => a.indexOf(e) === i));
+			// remove null items (if key doesn't exist) and remove duplicates
+			.then((values) => values.filter((e, i, a) => e != null && a.indexOf(e) === i));
 	}
 
 	/**
