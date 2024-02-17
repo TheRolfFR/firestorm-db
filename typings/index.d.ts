@@ -158,7 +158,7 @@ export interface SelectOption<T> {
 export interface ValueOption<K, F extends boolean> {
 	/** field to search */
 	field: K | "id";
-	/** whether to flatten arrays (default false) */
+	/** flatten array fields (default false) */
 	flatten?: F;
 }
 

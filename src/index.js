@@ -356,8 +356,16 @@ class Collection {
 		return this.select({ fields: [valueOption.field] })
 			.then((res) => Object.values(res).map((el) => el[valueOption.field]))
 			.then((values) => (valueOption.flatten ? values.flat() : values))
-			// remove null items (if key doesn't exist) and remove duplicates
-			.then((values) => values.filter((e, i, a) => e != null && a.indexOf(e) === i));
+			.then((values) => {
+				if (values.some((val) => typeof val === "object"))
+					// deep compare if items aren't primitive
+					return values.filter(
+						(el, i) => i === values.findIndex((obj) => JSON.stringify(obj) === JSON.stringify(el)),
+					);
+
+				// faster shallow compare if all primitives
+				return [...new Set(values)];
+			});
 	}
 
 	/**
