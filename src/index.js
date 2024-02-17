@@ -19,6 +19,12 @@ try {
  */
 
 /**
+ * @typedef {Object} ValueObject
+ * @property {string} field - Field to get values of
+ * @property {boolean} flatten - Flatten array for array options
+ */
+
+/**
  * @typedef {Object} SelectOption
  * @property {Array<string>} fields - Chosen fields to eventually return
  */
@@ -337,6 +343,22 @@ class Collection {
 	}
 
 	/**
+	 * Get all existing values for a given key across a collection
+	 * @param {ValueObject} valueOption - Value options
+	 * @returns {Promise<T[]>} Array of unique values
+	 */
+	values(valueOption) {
+		if (!valueOption) return Promise.reject("Value option must be provided");
+		if (typeof valueOption.field !== "string") return Promise.reject("Field must be a string");
+		if (valueOption.flatten !== undefined && typeof valueOption.flatten !== "boolean")
+			return Promise.reject("Flatten must be a boolean");
+		return this.select({ fields: [valueOption.field] })
+			.then((res) => Object.values(res).map((el) => el[valueOption.field]))
+			.then((values) => (valueOption.flatten ? values.flat() : values))
+			.then((values) => values.filter((e, i, a) => a.indexOf(e) === i));
+	}
+
+	/**
 	 * Returns random max entries offsets with a given seed
 	 * @param {number} max - The maximum number of entries
 	 * @param {number} seed - The seed to use
@@ -527,7 +549,7 @@ class Collection {
 	/**
 	 * Edit one field of the collection
 	 * @param {EditObject} obj - The edit object
-	 * @returns {Promise<T>} The edited element
+	 * @returns {Promise<{ success: boolean }>} Edit confirmation
 	 */
 	editField(obj) {
 		const data = this.__write_data("editField", obj, null);
@@ -537,7 +559,7 @@ class Collection {
 	/**
 	 * Changes one field from an element in this collection
 	 * @param {EditObject[]} objArray The edit object array with operations
-	 * @returns {Promise<T[]>} The edited elements
+	 * @returns {Promise<{ success: boolean[] }>} Edit confirmation
 	 */
 	editFieldBulk(objArray) {
 		const data = this.__write_data("editFieldBulk", objArray, undefined);

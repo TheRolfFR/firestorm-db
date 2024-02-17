@@ -24,7 +24,7 @@ describe("Wrapper informations", () => {
 	it("throws if no address yet", () => {
 		expect(firestorm.address).to.throw(Error, "Firestorm address was not configured");
 	});
-	it("binds good address", function () {
+	it("binds usable address", function () {
 		firestorm.address(ADDRESS);
 
 		const actual = firestorm.address();
@@ -38,7 +38,7 @@ describe("Wrapper informations", () => {
 			done();
 		}
 	});
-	it("binds good token", function () {
+	it("binds usable token", function () {
 		firestorm.token(TOKEN);
 
 		const actual = firestorm.token();
@@ -601,8 +601,37 @@ describe("GET operations", () => {
 		});
 	});
 
+	describe("values(valueOptions)", () => {
+		it("requires a field", (done) => {
+			base
+				.values()
+				.then((res) => {
+					done("Did not expect it to succeed");
+				})
+				.catch(() => done());
+		});
+
+		it("doesn't require a flatten field", (done) => {
+			base
+				.values({ field: "name" })
+				.then((res) => {
+					done();
+				})
+				.catch(() => done("Did not expect it to fail"));
+		});
+
+		it("needs a boolean flatten field if provided", (done) => {
+			base
+				.values({ field: "name", flatten: "this is not a boolean" })
+				.then((res) => {
+					done("Did not expect it to succeed");
+				})
+				.catch(() => done());
+		});
+	});
+
 	describe("random(max, seed, offset)", () => {
-		it("requires no parameters", (done) => {
+		it("doesn't require parameters", (done) => {
 			base
 				.random()
 				.then((res) => {
@@ -695,7 +724,7 @@ describe("PUT operations", () => {
 				});
 		});
 
-		describe("You must give him a correct value", () => {
+		describe("You must give a correct value", () => {
 			const incorrect_bodies = [
 				undefined,
 				null,

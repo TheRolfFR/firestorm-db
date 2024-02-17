@@ -88,7 +88,8 @@ Available methods for a collection:
 | get(id)                       | id: `string \| number`                                        | Get an element from the collection.                                                                                     |
 | search(searchOptions, random) | searchOptions: `SearchOption[]` random?:`boolean \| number`   | Search through the collection You can randomize the output order with random as true or a given seed.                   |
 | searchKeys(keys)              | keys: `string[] \| number[]`                                  | Search specific keys through the collection.                                                                            |
-| select(selectOption)          | selectOption: `{ field: string[] }`                           | Get only selected fields from the collection Essentially an upgraded version of readRaw.                                |
+| select(selectOption)          | selectOption: `{ fields: string[] }`                          | Get only selected fields from the collection Essentially an upgraded version of readRaw.                                |
+| values(valueOption)           | valueOption: `{ field: string, flatten?: boolean }`           | Get all existing values for a given key across a collection.                                                            |
 | random(max, seed, offset)     | max?: `integer >= -1` seed?: `integer` offset?:`integer >= 0` | Reads random entries of collection.                                                                                     |
 
 The search method can take one or more options to filter entries in a collection. A search option takes a `field` with a `criteria` and compares it to a `value`. You can also use the boolean `ignoreCase` option for string values.

@@ -155,6 +155,13 @@ export interface SelectOption<T> {
 	fields: Array<keyof T | "id">;
 }
 
+export interface ValueOption<K, F extends boolean> {
+	/** field to search */
+	field: K | "id";
+	/** whether to flatten arrays (default false) */
+	flatten?: F;
+}
+
 export interface CollectionMethods<T> {
 	(collectionElement: Collection<T> & T): Collection<T> & T;
 }
@@ -223,6 +230,15 @@ export class Collection<T> {
 	 * @returns Selected fields
 	 */
 	public select(option: SelectOption<T>): Promise<Record<string, Partial<T>>>;
+
+	/**
+	 * Get all existing values for a given key across a collection
+	 * @param option - Value options
+	 * @returns Array of unique values
+	 */
+	public values<K extends keyof T, F extends boolean = false>(
+		option: ValueOption<K, F>,
+	): Promise<F extends true ? T[K] : T[K][]>;
 
 	/**
 	 * Get random max entries offset with a given seed
@@ -295,16 +311,16 @@ export class Collection<T> {
 	/**
 	 * Edit one field of the collection
 	 * @param edit - The edit object
-	 * @returns The edited element
+	 * @returns Edit confirmation
 	 */
-	public editField(edit: EditField<T>): Promise<T>;
+	public editField(edit: EditField<T>): Promise<{ success: boolean }>;
 
 	/**
 	 * Change one field from multiple elements of the collection
 	 * @param edits - The edit objects
-	 * @returns The edited elements
+	 * @returns Edit confirmation
 	 */
-	public editFieldBulk(edits: EditField<T>[]): Promise<T[]>;
+	public editFieldBulk(edits: EditField<T>[]): Promise<{ success: boolean[] }>;
 }
 
 /** Value for the id field when searching content */

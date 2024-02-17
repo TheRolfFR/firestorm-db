@@ -1,5 +1,5 @@
 // VS-Code stress test for TypeScript types of Firestorm-db.
-import * as firestorm from "../typings/index";
+import firestorm from "..";
 
 /**
  ** I. CREATE A COLLECTION
