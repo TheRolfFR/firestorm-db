@@ -21,7 +21,7 @@ try {
 /**
  * @typedef {Object} ValueObject
  * @property {string} field - Field to get values of
- * @property {boolean} flatten - Flatten array for array options
+ * @property {boolean} [flatten] - Flatten array for array options
  */
 
 /**
