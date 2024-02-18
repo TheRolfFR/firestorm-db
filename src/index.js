@@ -309,7 +309,7 @@ class Collection {
 
 	/**
 	 * Returns the whole content of the JSON
-	 * @deprecated Use readRaw instead
+	 * @deprecated Use {@link readRaw} instead
 	 * @returns {Promise<Record<string, T>>} The entire collection
 	 */
 	read_raw() {
@@ -468,8 +468,8 @@ class Collection {
 
 	/**
 	 * Set the entire JSON file contents
+	 * @deprecated Use {@link writeRaw} instead
 	 * @param {Record<string, T>} value - The value to write
-	 * @deprecated Use writeRaw instead
 	 * @returns {Promise<WriteConfirmation>} Write confirmation
 	 */
 	write_raw(value) {
@@ -630,16 +630,17 @@ const firestorm = {
 	ID_FIELD: ID_FIELD_NAME,
 
 	/**
-	 * Test child object with child namespace
+	 * Firestorm file handler
 	 * @memberof firestorm
 	 * @type {Object}
 	 * @namespace firestorm.files
 	 */
 	files: {
 		/**
-		 * Get file back
+		 * Get a file by its path
 		 * @memberof firestorm.files
 		 * @param {string} path - The file path wanted
+		 * @returns {Promise<any>} File contents
 		 */
 		get(path) {
 			return __extract_data(
@@ -652,33 +653,37 @@ const firestorm = {
 		},
 
 		/**
-		 * Uploads file
+		 * Upload a file
 		 * @memberof firestorm.files
 		 * @param {FormData} form - The form data with path, filename, and file
-		 * @returns {Promise<any>} HTTP response
+		 * @returns {Promise<WriteConfirmation>} Write confirmation
 		 */
 		upload(form) {
 			form.append("token", firestorm.token());
-			return axios.post(fileAddress(), form, {
-				headers: {
-					...form.getHeaders(),
-				},
-			});
+			return __extract_data(
+				axios.post(fileAddress(), form, {
+					headers: {
+						...form.getHeaders(),
+					},
+				}),
+			);
 		},
 
 		/**
-		 * Deletes a file given its path
+		 * Deletes a file by path
 		 * @memberof firestorm.files
 		 * @param {string} path - The file path to delete
-		 * @returns {Promise<any>} HTTP response
+		 * @returns {Promise<WriteConfirmation>} Write confirmation
 		 */
 		delete(path) {
-			return axios.delete(fileAddress(), {
-				data: {
-					path,
-					token: firestorm.token(),
-				},
-			});
+			return __extract_data(
+				axios.delete(fileAddress(), {
+					data: {
+						path,
+						token: firestorm.token(),
+					},
+				}),
+			);
 		},
 	},
 };

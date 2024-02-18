@@ -2,7 +2,7 @@ const chai = require("chai");
 const FormData = require("form-data");
 const { expect } = chai;
 
-const firestorm = require("../src/index");
+const firestorm = require("..");
 
 const crypto = require("crypto");
 const path = require("path");
@@ -79,13 +79,7 @@ describe("File upload, download and delete", () => {
 			});
 	});
 	it("finds an uploaded file and get it with same content", (done) => {
-		const timeoutPromise = function (timeout) {
-			return new Promise((resolve) => {
-				setTimeout(() => {
-					resolve();
-				}, timeout);
-			});
-		};
+		const timeoutPromise = (timeout) => new Promise((resolve) => setTimeout(resolve, timeout));
 		let uploaded;
 		const formData = new FormData();
 		formData.append("path", "/lyrics.txt");
@@ -98,13 +92,14 @@ describe("File upload, download and delete", () => {
 			})
 			.then((res) => {
 				expect(res).not.to.be.undefined;
-				expect(res.status).to.equals(200, "Upload failed");
+				expect(res).to.deep.equal(
+					{ message: "Written file successfully to /lyrics.txt" },
+					"Message returned should match",
+				);
 
 				return timeoutPromise(200);
 			})
-			.then(() => {
-				return firestorm.files.get("/lyrics.txt");
-			})
+			.then(() => firestorm.files.get("/lyrics.txt"))
 			.then((fileResult) => {
 				const downloaded = Buffer.from(fileResult);
 				expect(downloaded).to.deep.equal(uploaded);

@@ -157,7 +157,7 @@ export interface SelectOption<T> {
 
 export interface ValueOption<K, F extends boolean> {
 	/** field to search */
-	field: K | "id";
+	field: RemoveMethods<K> | "id";
 	/** flatten array fields (default false) */
 	flatten?: F;
 }
@@ -166,9 +166,12 @@ export interface CollectionMethods<T> {
 	(collectionElement: Collection<T> & T): Collection<T> & T;
 }
 
-export type NoMethods<T> = {
-	[K in keyof T]: T[K] extends Function ? K : never;
-}[keyof T];
+export type RemoveMethods<T> = {
+	[K in keyof T as T[K] extends Function ? never : K]: any;
+};
+
+// don't need ID field when adding keys, and setting keys has a separate ID argument
+type Writable<T> = Pick<T, keyof RemoveMethods<T>>;
 
 export class Collection<T> {
 	/**
@@ -199,7 +202,7 @@ export class Collection<T> {
 	 * @returns The found elements
 	 */
 	public search(
-		options: SearchOption<T & { id: string | number }>[],
+		options: SearchOption<RemoveMethods<T> & { id: string | number }>[],
 		random?: boolean | number,
 	): Promise<T[]>;
 
@@ -218,7 +221,7 @@ export class Collection<T> {
 
 	/**
 	 * Returns the whole content of the JSON
-	 * @deprecated Use readRaw instead
+	 * @deprecated Use {@link readRaw} instead
 	 * @returns The entire collection
 	 */
 	public read_raw(): Promise<Record<string, T>>;
@@ -229,14 +232,14 @@ export class Collection<T> {
 	 * @param option - The option you want to select
 	 * @returns Selected fields
 	 */
-	public select(option: SelectOption<T>): Promise<Record<string, Partial<T>>>;
+	public select(option: SelectOption<RemoveMethods<T>>): Promise<Record<string, Partial<T>>>;
 
 	/**
 	 * Get all existing values for a given key across a collection
 	 * @param option - Value options
 	 * @returns Array of unique values
 	 */
-	public values<K extends keyof T, F extends boolean = false>(
+	public values<K extends keyof RemoveMethods<T>, F extends boolean = false>(
 		option: ValueOption<K, F>,
 	): Promise<F extends true ? T[K] : T[K][]>;
 
@@ -258,7 +261,7 @@ export class Collection<T> {
 
 	/**
 	 * Set the entire JSON file contents
-	 * @deprecated Use writeRaw instead
+	 * @deprecated Use {@link writeRaw} instead
 	 * @param value - The value to write
 	 * @returns Write confirmation
 	 */
@@ -326,9 +329,6 @@ export class Collection<T> {
 /** Value for the id field when searching content */
 export const ID_FIELD: string;
 
-// don't need ID field when adding keys, and setting keys has a separate ID argument
-type Writable<T> = Omit<Omit<T, NoMethods<T>>, "id">;
-
 /**
  * Change the current Firestorm address
  * @param value - The new Firestorm address
@@ -363,24 +363,25 @@ export function table<T>(table: string): Promise<Collection<T>>;
  */
 export declare const files: {
 	/**
-	 * Get file back
+	 * Get a file by its path
 	 * @param path - The file path wanted
+	 * @returns File contents
 	 */
 	get(path: string): Promise<any>;
 
 	/**
-	 * Upload file
+	 * Upload a file
 	 * @param form - The form data with path, filename, and file
-	 * @returns HTTP response
+	 * @returns Write confirmation
 	 */
-	upload(form: FormData): Promise<any>;
+	upload(form: FormData): Promise<WriteConfirmation>;
 
 	/**
-	 * Deletes a file given its path
+	 * Deletes a file by path
 	 * @param path - The file path to delete
-	 * @returns HTTP response
+	 * @returns Write confirmation
 	 */
-	delete(path: string): Promise<any>;
+	delete(path: string): Promise<WriteConfirmation>;
 };
 
 /**
