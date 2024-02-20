@@ -170,8 +170,12 @@ export type RemoveMethods<T> = {
 	[K in keyof T as T[K] extends Function ? never : K]: any;
 };
 
-// don't need ID field when adding keys, and setting keys has a separate ID argument
-type Writable<T> = Pick<T, keyof RemoveMethods<T>>;
+/** ID field not known at add time */
+export type Addable<T> = Pick<T, keyof RemoveMethods<T>>;
+/** ID field can be provided in request */
+export type Settable<T> = Addable<T> & {
+	id?: number | string;
+};
 
 export class Collection<T> {
 	/**
@@ -272,14 +276,14 @@ export class Collection<T> {
 	 * @param value - The value (without methods) to add
 	 * @returns The generated ID of the added element
 	 */
-	public add(value: Writable<T>): Promise<string>;
+	public add(value: Addable<T>): Promise<string>;
 
 	/**
 	 * Automatically add multiple values to the JSON file
 	 * @param values - The values (without methods) to add
 	 * @returns The generated IDs of the added elements
 	 */
-	public addBulk(values: Writable<T>[]): Promise<string[]>;
+	public addBulk(values: Addable<T>[]): Promise<string[]>;
 
 	/**
 	 * Remove an element from the collection by its ID
@@ -301,7 +305,7 @@ export class Collection<T> {
 	 * @param value - The value (without methods) you want to edit
 	 * @returns Write confirmation
 	 */
-	public set(id: string | number, value: Writable<T>): Promise<WriteConfirmation>;
+	public set(id: string | number, value: Settable<T>): Promise<WriteConfirmation>;
 
 	/**
 	 * Set multiple values in the collection by their IDs
@@ -309,7 +313,7 @@ export class Collection<T> {
 	 * @param values - The values (without methods) you want to edit
 	 * @returns Write confirmation
 	 */
-	public setBulk(ids: string[] | number[], values: Writable<T>[]): Promise<WriteConfirmation>;
+	public setBulk(ids: string[] | number[], values: Settable<T>[]): Promise<WriteConfirmation>;
 
 	/**
 	 * Edit one field of the collection
