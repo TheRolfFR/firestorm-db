@@ -18,7 +18,7 @@ _Self hosted Firestore-like database with API endpoints based on micro bulk oper
 npm install --save firestorm-db
 ```
 
-## JavaScript Part
+# JavaScript Part
 
 The JavaScript [index.js](./src/index.js) file is just an [Axios](https://www.npmjs.com/package/axios) wrapper of the library.
 
@@ -58,16 +58,15 @@ userCollection
 A collection takes one required argument and one optional argument:
 
 - The name of the collection as a `String`.
-- The method adder, which allows to inject methods to the get methods results. This would be a `Function` taking the element as an argument.
+- The method adder, which lets you inject methods to query results. It's implemented similarly to [`Array.prototype.map`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/map), taking an outputted element as an argument, modifying the element with methods and data inside a callback, and returning the modified element at the end.
 
 ```js
 const firestorm = require("firestorm-db");
 
-// returns a Collection instance
 const userCollection = firestorm.collection("users", (el) => {
-    el.hello = function () {
-        console.log(`${el.name} says hello!`);
-    };
+    el.hello = () => console.log(`${el.name} says hello!`);
+    // return the modified element back with the injected method
+    return el;
 });
 
 // if you have a 'users' table with a printable field named name
@@ -81,16 +80,16 @@ Available methods for a collection:
 
 ### Read operations
 
-| Name                          | Parameters                                                    | Description                                                                                                             |
-| ----------------------------- | ------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------- |
-| sha1()                        | none                                                          | Get the sha1 hash of the file. Can be used to see if same file content without downloading the file.                    |
-| readRaw()                     | none                                                          | Returns the whole content of the JSON. ID values are injected for easier iteration, so this may be different to sha1(). |
-| get(id)                       | id: `string \| number`                                        | Get an element from the collection.                                                                                     |
-| search(searchOptions, random) | searchOptions: `SearchOption[]` random?:`boolean \| number`   | Search through the collection You can randomize the output order with random as true or a given seed.                   |
-| searchKeys(keys)              | keys: `string[] \| number[]`                                  | Search specific keys through the collection.                                                                            |
-| select(selectOption)          | selectOption: `{ fields: string[] }`                          | Get only selected fields from the collection Essentially an upgraded version of readRaw.                                |
-| values(valueOption)           | valueOption: `{ field: string, flatten?: boolean }`           | Get all existing values for a given key across a collection.                                                            |
-| random(max, seed, offset)     | max?: `integer >= -1` seed?: `integer` offset?:`integer >= 0` | Reads random entries of collection.                                                                                     |
+| Name                          | Parameters                                                  | Description                                                                                                           |
+| ----------------------------- | ------------------------------------------------------------| --------------------------------------------------------------------------------------------------------------------- |
+| sha1()                        | none                                                        | Get the sha1 hash of the file. Can be used to see if same file content without downloading the file.                  |
+| readRaw()                     | none                                                        | Returns the whole content of the JSON. ID values are injected for easier iteration, so this may be different to sha1. |
+| get(id)                       | id: `string \| number`                                      | Get an element from the collection.                                                                                   |
+| search(searchOptions, random) | searchOptions: `SearchOption[]` random?:`boolean \| number` | Search through the collection You can randomize the output order with random as true or a given seed.                 |
+| searchKeys(keys)              | keys: `string[] \| number[]`                                | Search specific keys through the collection.                                                                          |
+| select(selectOption)          | selectOption: `{ fields: string[] }`                        | Get only selected fields from the collection Essentially an upgraded version of readRaw.                              |
+| values(valueOption)           | valueOption: `{ field: string, flatten?: boolean }`         | Get all existing values for a given key across a collection.                                                          |
+| random(max, seed, offset)     | max?: `number >= -1` seed?: `number` offset?:`number >= 0`  | Reads random entries of collection.                                                                                   |
 
 The search method can take one or more options to filter entries in a collection. A search option takes a `field` with a `criteria` and compares it to a `value`. You can also use the boolean `ignoreCase` option for string values.
 
@@ -98,32 +97,32 @@ Not all criteria are available depending the field type. There are more options 
 
 ### All search options available
 
-| Criteria               | Types allowed                 | Description                                                                                       |
-| ---------------------- | ----------------------------- | ------------------------------------------------------------------------------------------------- |
-| `'!='`                 | `boolean`, `number`, `string` | Searches if the entry field's value is different from yours                                       |
-| `'=='`                 | `boolean`, `number`, `string` | Searches if the entry field's value is equal to yours                                             |
-| `'>='`                 | `number`, `string`            | Searches if the entry field's value is greater or equal than yours                                |
-| `'<='`                 | `number`, `string`            | Searches if the entry field's value is equal to than yours                                        |
-| `'>'`                  | `number`, `string`            | Searches if the entry field's value is greater than yours                                         |
-| `'<'`                  | `number`, `string`            | Searches if the entry field's value is lower than yours                                           |
-| `'in'`                 | `number`, `string`            | Searches if the entry field's value is in the array of values you gave                            |
-| `'includes'`           | `string`                      | Searches if the entry field's value includes your substring                                       |
-| `'startsWith'`         | `string`                      | Searches if the entry field's value starts with your substring                                    |
-| `'endsWith'`           | `string`                      | Searches if the entry field's value ends with your substring                                      |
-| `'array-contains'`     | `Array`                       | Searches if the entry field's array contains your value                                           |
-| `'array-contains-any'` | `Array`                       | Searches if the entry field's array ends contains your one value of more inside your values array |
-| `'array-length-eq'`    | `number`                      | Searches if the entry field's array size is equal to your value                                   |
-| `'array-length-df'`    | `number`                      | Searches if the entry field's array size is different from your value                             |
-| `'array-length-lt'`    | `number`                      | Searches if the entry field's array size is lower than your value                                 |
-| `'array-length-gt'`    | `number`                      | Searches if the entry field's array size is lower greater than your value                         |
-| `'array-length-le'`    | `number`                      | Searches if the entry field's array size is lower or equal to your value                          |
-| `'array-length-ge'`    | `number`                      | Searches if the entry field's array size is greater or equal to your value                        |
+| Criteria               | Types allowed                 | Description                                                                       |
+| ---------------------- | ----------------------------- | --------------------------------------------------------------------------------- |
+| `'!='`                 | `boolean`, `number`, `string` | Entry field's value is different from yours                                       |
+| `'=='`                 | `boolean`, `number`, `string` | Entry field's value is equal to yours                                             |
+| `'>='`                 | `number`, `string`            | Entry field's value is greater or equal than yours                                |
+| `'<='`                 | `number`, `string`            | Entry field's value is equal to than yours                                        |
+| `'>'`                  | `number`, `string`            | Entry field's value is greater than yours                                         |
+| `'<'`                  | `number`, `string`            | Entry field's value is lower than yours                                           |
+| `'in'`                 | `number`, `string`            | Entry field's value is in the array of values you gave                            |
+| `'includes'`           | `string`                      | Entry field's value includes your substring                                       |
+| `'startsWith'`         | `string`                      | Entry field's value starts with your substring                                    |
+| `'endsWith'`           | `string`                      | Entry field's value ends with your substring                                      |
+| `'array-contains'`     | `Array`                       | Entry field's array contains your value                                           |
+| `'array-contains-any'` | `Array`                       | Entry field's array ends contains your one value of more inside your values array |
+| `'array-length-eq'`    | `number`                      | Entry field's array size is equal to your value                                   |
+| `'array-length-df'`    | `number`                      | Entry field's array size is different from your value                             |
+| `'array-length-lt'`    | `number`                      | Entry field's array size is lower than your value                                 |
+| `'array-length-gt'`    | `number`                      | Entry field's array size is lower greater than your value                         |
+| `'array-length-le'`    | `number`                      | Entry field's array size is lower or equal to your value                          |
+| `'array-length-ge'`    | `number`                      | Entry field's array size is greater or equal to your value                        |
 
 ### Write operations
 
 | Name                    | Parameters                                       | Description                                                                         |
 | ----------------------- | ------------------------------------------------ | ----------------------------------------------------------------------------------- |
-| writeRaw()              | none                                             | Set the entire JSON file contents **/!\\ Very dangerous /!\\**                      |
+| writeRaw()              | none                                             | Set the entire JSON file contents **⚠️ Very dangerous! ⚠️**                           |
 | add(value)              | value: `Object`                                  | Adds one element with autoKey into the collection                                   |
 | addBulk(values)         | value: `Object[]`                                | Adds multiple elements with autoKey into the collection                             |
 | remove(key)             | key: `string \| number`                          | Remove one element from the collection with the corresponding key                   |
@@ -135,25 +134,25 @@ Not all criteria are available depending the field type. There are more options 
 
 ### Edit field operations
 
-Edit objects have an `id` to get the wanted element, a `field` they want to edit, an `operation` with what to do to this field, and a possible `value`. Here is a list of operations:
+Edit objects have an `id` of the element, a `field` to edit, an `operation` with what to do to this field, and a possible `value`. Here is a list of operations:
 
-| Operation      | Value required | Types allowed        | Description                                                                                                                                                          |
-| -------------- | -------------- | -------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `set`          | Yes            | `any`                | Sets a field to a given value                                                                                                                                        |
-| `remove`       | No             | `any`                | Removes a field from the element                                                                                                                                     |
-| `append`       | Yes            | `string`             | Appends string at the end of the string field                                                                                                                        |
-| `invert`       | No             | `any`                | Inverts tate of boolean field                                                                                                                                        |
-| `increment`    | No             | `number`             | Adds a number to the field, default is 1                                                                                                                             |
-| `decrement`    | No             | `number`             | Retrieves a number to the field, default is -1                                                                                                                       |
-| `array-push `  | Yes            | `any`                | Push an element to the end of an array field                                                                                                                         |
-| `array-delete` | Yes            | `integer`            | Removes and element at a certain index in an array field, check [array_splice documentation](https://www.php.net/manual/function.array-splice) offset for more infos |
-| `array-splice` | Yes            | `[integer, integer]` | Removes certain elements, check [array_splice documentation](https://www.php.net/manual/function.array-splice) offset and length for more infos                      |
+| Operation      | Needs value | Types allowed      | Description                                                                                                                                                   |
+| -------------- | ----------- | ------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `set`          | Yes         | `any`              | Sets a field to a given value.                                                                                                                                |
+| `remove`       | No          | `any`              | Removes a field from the element.                                                                                                                             |
+| `append`       | Yes         | `string`           | Appends a new string at the end of the string field.                                                                                                          |
+| `invert`       | No          | `any`              | Inverts the state of a boolean field.                                                                                                                         |
+| `increment`    | No          | `number`           | Adds a number to the field, default is 1.                                                                                                                     |
+| `decrement`    | No          | `number`           | Removes a number from the field, default is 1.                                                                                                                |
+| `array-push `  | Yes         | `any`              | Push an element to the end of an array field.                                                                                                                 |
+| `array-delete` | Yes         | `number`           | Removes an element at a certain index in an array field. Check the PHP [array_splice](https://www.php.net/manual/function.array-splice) offset for more info. |
+| `array-splice` | Yes         | `[number, number]` | Removes certain elements. Check the PHP [array_splice](https://www.php.net/manual/function.array-splice) offset and length for more info.                     |
 
 <br>
 
-## PHP files
+# PHP Part
 
-The PHP files are the ones handling files, read and writes. They also handle GET and POST requests to manipulate the database.
+The PHP files are the ones handling files, read and writes. They also handle `GET` and `POST` requests to manipulate the database.
 
 ## PHP setup
 
@@ -188,7 +187,7 @@ $database_list[$tmp->fileName] = $tmp;
 
 The database will be stored in `<folderPath>/<filename>.json` and `autoKey` allows or forbids some write operations.
 
-## Files feature
+## Firestorm Files
 
 File API functions are detailed in the `files.php` PHP script. If you do not want to include this functionality, then just delete this file.
 
@@ -199,7 +198,7 @@ You have to add 2 new configuration variables to your `config.php` file:
 $authorized_file_extension = array('.txt', '.png');
 
 // subfolder of uploads location, must start with dirname($_SERVER['SCRIPT_FILENAME'])
-// to force a subfolder of firestorm installation
+// to force a subfolder of Firestorm installation
 $STORAGE_LOCATION = dirname($_SERVER['SCRIPT_FILENAME']) . '/uploads/';
 ```
 
@@ -235,12 +234,8 @@ form.append("overwrite", "true"); // override optional argument (do not append t
 const uploadPromise = firestorm.files.upload(form);
 
 uploadPromise
-    .then(() => {
-        console.log("Upload successful");
-    })
-    .catch((err) => {
-        consoler.error(err);
-    });
+    .then(() => console.log("Upload successful"))
+    .catch((err) => console.error(err));
 ```
 
 ## Get a file
@@ -254,12 +249,8 @@ firestorm.address("ADDRESS_VALUE");
 const getPromise = firestorm.files.get("/quote.txt");
 
 getPromise
-    .then((fileContent) => {
-        console.log(fileContent); // 'but your kids are gonna love it.
-    })
-    .catch((err) => {
-        console.error(err);
-    });
+    .then((fileContent) => console.log(fileContent)) // 'but your kids are gonna love it.
+    .catch((err) => console.error(err));
 ```
 
 ## Delete a file
@@ -274,12 +265,8 @@ firestorm.token("TOKEN_VALUE");
 const deletePromise = firestorm.files.delete("/quote.txt");
 
 deletePromise
-    .then(() => {
-        console.log("File successfully deleted");
-    })
-    .catch((err) => {
-        console.error(err);
-    });
+    .then(() => console.log("File successfully deleted"))
+    .catch((err) => console.error(err));
 ```
 
 ## Memory warning
@@ -291,7 +278,7 @@ Fatal error:
 Allowed memory size of 134217728 bytes exhausted (tried to allocate 32360168 bytes)
 ```
 
-If you encounter a memory allocation issue, you have to allow more memory through this file `/etc/php/7.4/apache2/php.ini` with a bigger value here:
+If you encounter a memory allocation issue, you have to allow more memory through `/etc/php/7.4/apache2/php.ini` with a bigger value:
 
 ```
 memory_limit = 256M
@@ -299,9 +286,9 @@ memory_limit = 256M
 
 ## API endpoints
 
-All Firestorm methods correspond to an equivalent Axios request to the relevant PHP file. Read requests are GET requests and write requests are POST requests with provided JSON data.
+All Firestorm methods correspond to an equivalent Axios request to the relevant PHP file. Read requests are `GET` requests and write requests are `POST` requests with provided JSON data.
 
-You always have the same first keys and the one key per method:
+The first keys in the request will always be the same:
 
 ```json
 {
