@@ -162,16 +162,16 @@ export interface ValueOption<K, F extends boolean> {
 	flatten?: F;
 }
 
-export interface CollectionMethods<T> {
-	(collectionElement: Collection<T> & T): Collection<T> & T;
-}
+/** Add methods to found elements */
+export type CollectionMethods<T> = (collectionElement: T) => T;
 
+/** Remove methods from a type */
 export type RemoveMethods<T> = {
 	[K in keyof T as T[K] extends Function ? never : K]: any;
 };
 
 /** ID field not known at add time */
-export type Addable<T> = Pick<T, keyof RemoveMethods<T>>;
+export type Addable<T> = Omit<Pick<T, keyof RemoveMethods<T>>, "id">;
 /** ID field can be provided in request */
 export type Settable<T> = Addable<T> & {
 	id?: number | string;
