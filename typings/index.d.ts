@@ -152,7 +152,7 @@ export type SearchOption<T> = {
 
 export interface SelectOption<T> {
 	/** Chosen fields to eventually return */
-	fields: Array<keyof T | "id">;
+	fields: Array<Path<T> | "id">;
 }
 
 export interface ValueOption<K, F extends boolean> {
@@ -166,12 +166,15 @@ export interface ValueOption<K, F extends boolean> {
 export type CollectionMethods<T> = (collectionElement: T) => T;
 
 /** Remove methods from a type */
-export type RemoveMethods<T> = {
-	[K in keyof T as T[K] extends Function ? never : K]: any;
-};
+export type RemoveMethods<T> = Pick<
+	T,
+	{
+		[K in keyof T]: T[K] extends Function ? never : K;
+	}[keyof T]
+>;
 
 /** ID field not known at add time */
-export type Addable<T> = Omit<Pick<T, keyof RemoveMethods<T>>, "id">;
+export type Addable<T> = Omit<RemoveMethods<T>, "id">;
 /** ID field can be provided in request */
 export type Settable<T> = Addable<T> & {
 	id?: number | string;
@@ -261,7 +264,7 @@ export class Collection<T> {
 	 * @param value - The value to write
 	 * @returns Write confirmation
 	 */
-	public writeRaw(value: Record<string, T>): Promise<WriteConfirmation>;
+	public writeRaw(value: Record<string, RemoveMethods<T>>): Promise<WriteConfirmation>;
 
 	/**
 	 * Set the entire JSON file contents
@@ -269,7 +272,7 @@ export class Collection<T> {
 	 * @param value - The value to write
 	 * @returns Write confirmation
 	 */
-	public write_raw(value: Record<string, T>): Promise<WriteConfirmation>;
+	public write_raw(value: Record<string, RemoveMethods<T>>): Promise<WriteConfirmation>;
 
 	/**
 	 * Automatically add a value to the JSON file
@@ -320,14 +323,14 @@ export class Collection<T> {
 	 * @param edit - The edit object
 	 * @returns Edit confirmation
 	 */
-	public editField(edit: EditField<T>): Promise<{ success: boolean }>;
+	public editField(edit: EditField<RemoveMethods<T>>): Promise<{ success: boolean }>;
 
 	/**
 	 * Change one field from multiple elements of the collection
 	 * @param edits - The edit objects
 	 * @returns Edit confirmation
 	 */
-	public editFieldBulk(edits: EditField<T>[]): Promise<{ success: boolean[] }>;
+	public editFieldBulk(edits: EditField<RemoveMethods<T>>[]): Promise<{ success: boolean[] }>;
 }
 
 /** Value for the id field when searching content */
