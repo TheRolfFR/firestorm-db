@@ -2,7 +2,7 @@
 
 class HTTPException extends Exception
 {
-  // Redéfinissez l'exception ainsi le message n'est pas facultatif
+  // custom message
   public function __construct($message, $code = 400, Throwable $previous = null) {
     $type_message = gettype($message);
 
@@ -13,13 +13,11 @@ class HTTPException extends Exception
     if($type_code != 'integer')
       throw new Exception("Incorrect code type for HTTPException constructor, expected string, got " . $type_code);
 
-    // traitement personnalisé que vous voulez réaliser ...
-
-    // assurez-vous que tout a été assigné proprement
+    // assign everything
     parent::__construct($message, $code, $previous);
   }
 
-  // chaîne personnalisée représentant l'objet
+  // prettier representation
   public function __toString() {
     return __CLASS__ . ": [{$this->code}]: {$this->message}\n";
   }

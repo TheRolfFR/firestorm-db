@@ -117,5 +117,5 @@ users.values({ field: "emails", flatten: true });
 // flattening turned off gives an extra level of nesting, so the types reflect that
 users.values({ field: "emails" });
 
-// if we try to flatten a non-flattenable value it gets ignored
+// if not array type (can't really be flattened) it gets ignored
 users.values({ field: "age", flatten: true });
