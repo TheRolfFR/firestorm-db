@@ -343,7 +343,7 @@ class Collection {
 	}
 
 	/**
-	 * Get all existing values for a given key across a collection
+	 * Get all distinct non-null values for a given key across a collection
 	 * @param {ValueObject} valueOption - Value options
 	 * @returns {Promise<T[]>} Array of unique values
 	 */
@@ -353,19 +353,24 @@ class Collection {
 		if (valueOption.flatten !== undefined && typeof valueOption.flatten !== "boolean")
 			return Promise.reject("Flatten must be a boolean");
 
-		return this.select({ fields: [valueOption.field] })
-			.then((res) => Object.values(res).map((el) => el[valueOption.field]))
-			.then((values) => (valueOption.flatten ? values.flat() : values))
-			.then((values) => {
-				if (values.some((val) => typeof val === "object"))
-					// deep compare if items aren't primitive
-					return values.filter(
-						(el, i) => i === values.findIndex((obj) => JSON.stringify(obj) === JSON.stringify(el)),
-					);
+		return new Promise((resolve, reject) => {
+			this.__get_request({
+				collection: this.collectionName,
+				command: "values",
+				values: valueOption,
+			})
+				.then((data) => {
+					// php doesn't return "real" arrays so a conversion is still needed
+					const arr = [];
+					Object.keys(data).forEach((key) => {
+						arr.push(data[key]);
+					});
 
-				// faster shallow compare if all primitives
-				return [...new Set(values)];
-			});
+					// no ID_FIELD injection since every item is guaranteed unique
+					resolve(arr);
+				})
+				.catch(reject);
+		});
 	}
 
 	/**
@@ -493,9 +498,7 @@ class Collection {
 						throw new Error("Incorrect result");
 					resolve(res.id);
 				})
-				.catch((err) => {
-					reject(err);
-				});
+				.catch(reject);
 		});
 	}
 

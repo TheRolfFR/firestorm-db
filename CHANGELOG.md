@@ -9,7 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- `Collections.values` method, which get all existing values for a given key across a collection.
+- `values` method, which gets all distinct non-null values for a given key across a collection.
 - File handler types.
 
 ### Changed
@@ -18,6 +18,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Use JSDoc links consistently.
 - Replaced broken `NoMethods` type with more useful `RemoveMethods` type.
 - Distinguish between `add` and `set` operations with `id` field.
+- More specific `select` return types.
 
 ### Fixed
 
@@ -29,7 +30,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 - Write methods being annotated as returning elements rather than confirmations
-- Missing `Collection.select` return type.
+- Missing `select` return type.
 - Make the JavaScript and TypeScript JSDoc entirely consistent.
 - Fix file namespace being declared as an abstract class rather than a constant object.
 

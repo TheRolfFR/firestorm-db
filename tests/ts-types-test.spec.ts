@@ -1,33 +1,37 @@
-// VS-Code stress test for TypeScript types of Firestorm-db.
+// Stress test for firestorm-db TypeScript types.
 import firestorm from "..";
 
 /**
- ** I. CREATE A COLLECTION
- **/
+ * I. CREATE A COLLECTION
+ */
 
 // let's declare an interface for our collection
 interface User {
 	name: string;
 }
 
-// then we use that interface in our collection
+// then we add that interface in our constructor
 firestorm.collection<User>("users");
 
-// we can also declare a collection with methods,
-// those methods should be implemented in the interface too
+// we can also declare a collection with methods listed in the interface
 interface UserWithMethods extends User {
 	getNameAsLowerCase: () => string;
 }
 
-firestorm.collection<UserWithMethods>("users", (col) => {
+// where the method implementation goes in the addMethods
+const usersWithMethods = firestorm.collection<UserWithMethods>("users", (col) => {
 	col.getNameAsLowerCase = (): string => col.name.toLowerCase();
-
 	return col;
 });
 
+// we can use the methods in all results...
+usersWithMethods.get("someKey").then((res) => res.getNameAsLowerCase());
+// ...but cannot write or search for method fields
+usersWithMethods.select({ fields: ["name", "family"] }); // getNameAsLowerCase not allowed here
+
 /**
- ** II. SEARCH THROUGH COLLECTIONS
- **/
+ * II. SEARCH THROUGH COLLECTIONS
+ */
 
 // 1. search through a collection
 interface User {
@@ -43,7 +47,7 @@ const users = firestorm.collection<User>("users");
 // search all users that have the name 'john' (not case sensitive)
 users.search([{ field: "name", criteria: "==", value: "John", ignoreCase: true }]);
 
-// search all users that have the name 'john' (case sensitive)
+// search all users that have the name 'John' (case sensitive)
 users.search([{ field: "name", criteria: "==", value: "John" }]);
 users.search([{ field: "name", criteria: "==", value: "John", ignoreCase: false }]);
 
@@ -77,10 +81,10 @@ firestorm.collection<Family>("families", (col) => {
 });
 
 /**
- ** III. EDIT FIELDS OF AN ITEM IN A COLLECTION
- **/
+ * III. METHODS WITH OBJECT PARAMETERS
+ */
 
-// editing 1 field
+// editing one field
 users.editField({
 	id: "1291931", // the user you want to edit the field
 	field: "age",
@@ -103,3 +107,15 @@ users.editFieldBulk([
 		value: 69,
 	},
 ]);
+
+// selecting two fields those types and an ID field (always given)
+users.select({ fields: ["age", "emails"] });
+
+// select an array value with flatten mode will give a flattened type as a result
+users.values({ field: "emails", flatten: true });
+
+// flattening turned off gives an extra level of nesting, so the types reflect that
+users.values({ field: "emails" });
+
+// if we try to flatten a non-flattenable value it gets ignored
+users.values({ field: "age", flatten: true });

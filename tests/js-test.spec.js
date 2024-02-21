@@ -47,6 +47,7 @@ describe("Wrapper informations", () => {
 });
 
 let houseCollection; // = undefined
+/** @type {firestorm.Collection} */
 let base; // = undefined
 let content;
 let tmp;
@@ -737,7 +738,7 @@ describe("PUT operations", () => {
 					base
 						.writeRaw(body)
 						.then((res) => {
-							done(new Error(`Should not full-fill returning ${JSON.stringify(res)}`));
+							done(new Error(`Should not fullfill returning ${JSON.stringify(res)}`));
 						})
 						.catch((err) => {
 							if (index < 2) {

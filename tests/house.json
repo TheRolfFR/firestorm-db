@@ -7,7 +7,7 @@
   "kitchen": {
     "name": "Kitchen",
     "outdoor": false,
-    "furniture": ["table", "chairs", "frisge", "hoven", "freezer", "microwaves", "dishwasher"]
+    "furniture": ["table", "chairs", "fridge", "oven", "freezer", "microwaves", "dishwasher"]
   },
   "bedroom": {
     "name": "Bedroom",

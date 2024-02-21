@@ -150,14 +150,14 @@ export type SearchOption<T> = {
 	};
 }[keyof T];
 
-export interface SelectOption<T> {
+export interface SelectOption<T extends any[]> {
 	/** Chosen fields to eventually return */
-	fields: Array<Path<T> | "id">;
+	fields: T;
 }
 
 export interface ValueOption<K, F extends boolean> {
 	/** field to search */
-	field: RemoveMethods<K> | "id";
+	field: K | "id";
 	/** flatten array fields (default false) */
 	flatten?: F;
 }
@@ -239,16 +239,18 @@ export class Collection<T> {
 	 * @param option - The option you want to select
 	 * @returns Selected fields
 	 */
-	public select(option: SelectOption<RemoveMethods<T>>): Promise<Record<string, Partial<T>>>;
+	public select<K extends Array<"id" | keyof T>>(
+		option: SelectOption<K>,
+	): Promise<Record<string, Pick<T & { id: string | number }, K[number]>>>;
 
 	/**
-	 * Get all existing values for a given key across a collection
+	 * Get all distinct non-null values for a given key across a collection
 	 * @param option - Value options
 	 * @returns Array of unique values
 	 */
 	public values<K extends keyof RemoveMethods<T>, F extends boolean = false>(
 		option: ValueOption<K, F>,
-	): Promise<F extends true ? T[K] : T[K][]>;
+	): Promise<T[K] extends Array<any> ? (F extends true ? T[K] : T[K][]) : T[K][]>;
 
 	/**
 	 * Get random max entries offset with a given seed
