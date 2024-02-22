@@ -2,7 +2,7 @@ const chai = require("chai");
 const FormData = require("form-data");
 const { expect } = chai;
 
-const firestorm = require("../src/index");
+const firestorm = require("..");
 
 const crypto = require("crypto");
 const path = require("path");
@@ -20,11 +20,11 @@ const DATABASE_FILE = path.join(__dirname, "base.json");
 
 console.log("Testing at address " + ADDRESS + " with token " + TOKEN);
 
-describe("Wrapper informations", () => {
+describe("Wrapper information", () => {
 	it("throws if no address yet", () => {
 		expect(firestorm.address).to.throw(Error, "Firestorm address was not configured");
 	});
-	it("binds good address", function () {
+	it("binds usable address", function () {
 		firestorm.address(ADDRESS);
 
 		const actual = firestorm.address();
@@ -38,7 +38,7 @@ describe("Wrapper informations", () => {
 			done();
 		}
 	});
-	it("binds good token", function () {
+	it("binds usable token", function () {
 		firestorm.token(TOKEN);
 
 		const actual = firestorm.token();
@@ -47,6 +47,7 @@ describe("Wrapper informations", () => {
 });
 
 let houseCollection; // = undefined
+/** @type {firestorm.Collection} */
 let base; // = undefined
 let content;
 let tmp;
@@ -79,13 +80,7 @@ describe("File upload, download and delete", () => {
 			});
 	});
 	it("finds an uploaded file and get it with same content", (done) => {
-		const timeoutPromise = function (timeout) {
-			return new Promise((resolve) => {
-				setTimeout(() => {
-					resolve();
-				}, timeout);
-			});
-		};
+		const timeoutPromise = (timeout) => new Promise((resolve) => setTimeout(resolve, timeout));
 		let uploaded;
 		const formData = new FormData();
 		formData.append("path", "/lyrics.txt");
@@ -98,13 +93,14 @@ describe("File upload, download and delete", () => {
 			})
 			.then((res) => {
 				expect(res).not.to.be.undefined;
-				expect(res.status).to.equals(200, "Upload failed");
+				expect(res).to.deep.equal(
+					{ message: "Written file successfully to /lyrics.txt" },
+					"Message returned should match",
+				);
 
 				return timeoutPromise(200);
 			})
-			.then(() => {
-				return firestorm.files.get("/lyrics.txt");
-			})
+			.then(() => firestorm.files.get("/lyrics.txt"))
 			.then((fileResult) => {
 				const downloaded = Buffer.from(fileResult);
 				expect(downloaded).to.deep.equal(uploaded);
@@ -201,7 +197,7 @@ describe("GET operations", () => {
 			firestorm
 				.collection("unknown")
 				.readRaw()
-				.then(() => done(new Error("Request should not full-fill")))
+				.then(() => done(new Error("Request should not fulfill")))
 				.catch((err) => {
 					if ("response" in err && err.response.status == 404) {
 						done();
@@ -601,8 +597,37 @@ describe("GET operations", () => {
 		});
 	});
 
+	describe("values(valueOptions)", () => {
+		it("requires a field", (done) => {
+			base
+				.values()
+				.then((res) => {
+					done("Did not expect it to succeed");
+				})
+				.catch(() => done());
+		});
+
+		it("doesn't require a flatten field", (done) => {
+			base
+				.values({ field: "name" })
+				.then((res) => {
+					done();
+				})
+				.catch(() => done("Did not expect it to fail"));
+		});
+
+		it("needs a boolean flatten field if provided", (done) => {
+			base
+				.values({ field: "name", flatten: "this is not a boolean" })
+				.then((res) => {
+					done("Did not expect it to succeed");
+				})
+				.catch(() => done());
+		});
+	});
+
 	describe("random(max, seed, offset)", () => {
-		it("requires no parameters", (done) => {
+		it("doesn't require parameters", (done) => {
 			base
 				.random()
 				.then((res) => {
@@ -695,7 +720,7 @@ describe("PUT operations", () => {
 				});
 		});
 
-		describe("You must give him a correct value", () => {
+		describe("You must give a correct value", () => {
 			const incorrect_bodies = [
 				undefined,
 				null,
@@ -713,7 +738,7 @@ describe("PUT operations", () => {
 					base
 						.writeRaw(body)
 						.then((res) => {
-							done(new Error(`Should not full-fill returning ${JSON.stringify(res)}`));
+							done(new Error(`Should not fulfill returning ${JSON.stringify(res)}`));
 						})
 						.catch((err) => {
 							if (index < 2) {
@@ -763,7 +788,7 @@ describe("PUT operations", () => {
 					furniture: ["table", "chair", "flowerpot"],
 				})
 				.then(() => {
-					done(new Error("This request should not full-fill"));
+					done(new Error("This request should not fulfill"));
 				})
 				.catch((err) => {
 					if ("response" in err && err.response.status == 400) {
@@ -808,7 +833,7 @@ describe("PUT operations", () => {
 					base
 						.add(unco)
 						.then((res) => {
-							done(new Error(`Should not full-fill with res ${res}`));
+							done(new Error(`Should not fulfill with res ${res}`));
 						})
 						.catch((err) => {
 							if ("response" in err && err.response.status == 400) {
@@ -833,7 +858,7 @@ describe("PUT operations", () => {
 			];
 
 			correct_values.forEach((co, index) => {
-				it(`${index === 0 ? "Empty object" : "Complex object"} should full-fill`, (done) => {
+				it(`${index === 0 ? "Empty object" : "Complex object"} should fulfill`, (done) => {
 					base
 						.add(co)
 						.then(() => {
@@ -848,7 +873,7 @@ describe("PUT operations", () => {
 	});
 
 	describe("addBulk operations", () => {
-		it("must full-fill with empty array", (done) => {
+		it("must fulfill with empty array", (done) => {
 			base
 				.addBulk([])
 				.then((res) => {
@@ -871,7 +896,7 @@ describe("PUT operations", () => {
 					base
 						.addBulk(unco)
 						.then((res) => {
-							done(new Error(`Should not full-fill with res ${res}`));
+							done(new Error(`Should not fulfill with res ${res}`));
 						})
 						.catch((err) => {
 							if ("response" in err && err.response.status == 400) {
@@ -892,7 +917,7 @@ describe("PUT operations", () => {
 					base
 						.addBulk([unco])
 						.then((res) => {
-							done(new Error(`Should not full-fill with res ${res}`));
+							done(new Error(`Should not fulfill with res ${res}`));
 						})
 						.catch((err) => {
 							if ("response" in err && err.response.status == 400) {
@@ -979,7 +1004,7 @@ describe("PUT operations", () => {
 					base
 						.remove(unco)
 						.then((res) => {
-							done(new Error(`Should not full-fill with value ${JSON.stringify(res)}`));
+							done(new Error(`Should not fulfill with value ${JSON.stringify(res)}`));
 						})
 						.catch((err) => {
 							if ("response" in err && err.response.status == 400) {
@@ -1031,7 +1056,7 @@ describe("PUT operations", () => {
 					base
 						.removeBulk([unco])
 						.then((res) => {
-							done(new Error(`Should not full-fill with value ${JSON.stringify(res)}`));
+							done(new Error(`Should not fulfill with value ${JSON.stringify(res)}`));
 						})
 						.catch((err) => {
 							if ("response" in err && err.response.status == 400) done();
@@ -1084,15 +1109,15 @@ describe("PUT operations", () => {
 		it("Should not succeed with no parameters in the methods", (done) => {
 			base
 				.set()
-				.then(() => done(new Error("Should not full-fill")))
+				.then(() => done(new Error("Should not fulfill")))
 				.catch(() => done());
 		});
 
-		describe("0 values full-fill", () => {
+		describe("0 values fulfill", () => {
 			const correct_values = ["0", 0, 0.0];
 
 			correct_values.forEach((unco) => {
-				it(`${JSON.stringify(unco)} value full-fills`, (done) => {
+				it(`${JSON.stringify(unco)} value fulfills`, (done) => {
 					base
 						.set(unco, tmp)
 						.then((res) => {
@@ -1114,7 +1139,7 @@ describe("PUT operations", () => {
 					base
 						.set(unco, tmp)
 						.then((res) => {
-							done(new Error(`Should not full-fill with value ${JSON.stringify(res)}`));
+							done(new Error(`Should not fulfill with value ${JSON.stringify(res)}`));
 						})
 						.catch((err) => {
 							if ("response" in err && err.response.status == 400) {
@@ -1134,7 +1159,7 @@ describe("PUT operations", () => {
 					base
 						.set("1", unco)
 						.then((res) => {
-							done(new Error(`Should not full-fill with value ${JSON.stringify(res)}`));
+							done(new Error(`Should not fulfill with value ${JSON.stringify(res)}`));
 						})
 						.catch((err) => {
 							if ("response" in err && err.response.status == 400) {
@@ -1181,7 +1206,7 @@ describe("PUT operations", () => {
 					done(new Error(`Should return 400 not ${JSON.stringify(err)}`));
 				});
 		});
-		it("full-fills with two empty arrays", (done) => {
+		it("fulfills with two empty arrays", (done) => {
 			base
 				.readRaw()
 				.then((before) => {
@@ -1224,7 +1249,7 @@ describe("PUT operations", () => {
 					base
 						.setBulk([unco], [tmp])
 						.then((res) => {
-							done(new Error(`Should not full-fill with value ${JSON.stringify(res)}`));
+							done(new Error(`Should not fulfill with value ${JSON.stringify(res)}`));
 						})
 						.catch((err) => {
 							if ("response" in err && err.response.status == 400) {
@@ -1268,7 +1293,7 @@ describe("PUT operations", () => {
 					base
 						.editField(unco)
 						.then((res) => {
-							done(new Error("Should not full-fill with " + JSON.stringify(res)));
+							done(new Error("Should not fulfill with " + JSON.stringify(res)));
 						})
 						.catch((err) => {
 							if ("response" in err && err.response.status == 400) {
@@ -1298,7 +1323,7 @@ describe("PUT operations", () => {
 					base
 						.editField(obj)
 						.then((res) => {
-							done(new Error("Should not full-fill with " + JSON.stringify(res)));
+							done(new Error("Should not fulfill with " + JSON.stringify(res)));
 						})
 						.catch((err) => {
 							if ("response" in err && err.response.status == 400) {
@@ -1321,7 +1346,7 @@ describe("PUT operations", () => {
 							field: "name",
 						})
 						.then((res) => {
-							done(new Error("Should not full-fill with " + JSON.stringify(res)));
+							done(new Error("Should not fulfill with " + JSON.stringify(res)));
 						})
 						.catch((err) => {
 							if ("response" in err && err.response.status == 400) {
@@ -1342,7 +1367,7 @@ describe("PUT operations", () => {
 					field: "name",
 				})
 				.then((res) => {
-					done(new Error("Should not full-fill with " + JSON.stringify(res)));
+					done(new Error("Should not fulfill with " + JSON.stringify(res)));
 				})
 				.catch((err) => {
 					if ("response" in err && err.response.status == 400) {

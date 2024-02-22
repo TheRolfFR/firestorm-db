@@ -20,9 +20,9 @@ function sec($var) {
 function http_response($body, $code=200) {
     header('Content-Type: application/json');
     http_response_code($code);
-    
+
     echo $body;
-    
+
     exit();
 }
 
@@ -47,32 +47,30 @@ function check_key_json($key, $arr, $parse = false) {
     return array_key_exists($key, $arr) ? ($parse ? sec($arr[$key]) : $arr[$key]) : false;
 }
 
-function array_assoc(array $arr)
-{
+function array_assoc(array $arr) {
     if (array() === $arr) return false;
     return array_keys($arr) !== range(0, count($arr) - 1);
 }
 
-function array_sequential(array $arr)
-{
+function array_sequential(array $arr) {
     return !array_assoc($arr);
 }
 
-function stringifier($obj, $depth = 1) {	
+function stringifier($obj, $depth = 1) {
 	if($depth == 0) {
 		return json_encode($obj);
 	}
-	
+
     $res = "{";
-    
+
     $formed = array();
     foreach(array_keys($obj) as $key) {
         array_push($formed, '"' . strval($key) . '":' . stringifier($obj[$key], $depth - 1));
     }
     $res .= implode(",", $formed);
-    
+
     $res .= "}";
-    
+
     return $res;
 }
 
@@ -88,7 +86,7 @@ if (isset($_SERVER['HTTP_ORIGIN'])) {
 if ($_SERVER['REQUEST_METHOD'] == 'OPTIONS') {
 
     if (isset($_SERVER['HTTP_ACCESS_CONTROL_REQUEST_METHOD']))
-        header("Access-Control-Allow-Methods: GET, POST, OPTIONS");         
+        header("Access-Control-Allow-Methods: GET, POST, OPTIONS");
 
     if (isset($_SERVER['HTTP_ACCESS_CONTROL_REQUEST_HEADERS']))
         header("Access-Control-Allow-Headers:        {$_SERVER['HTTP_ACCESS_CONTROL_REQUEST_HEADERS']}");
