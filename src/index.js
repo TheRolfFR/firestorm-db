@@ -44,23 +44,21 @@ const ID_FIELD_NAME = "id";
 
 const readAddress = () => {
 	if (!_address) throw new Error("Firestorm address was not configured");
-
 	return _address + "get.php";
 };
+
 const writeAddress = () => {
 	if (!_address) throw new Error("Firestorm address was not configured");
-
 	return _address + "post.php";
 };
+
 const fileAddress = () => {
 	if (!_address) throw new Error("Firestorm address was not configured");
-
 	return _address + "files.php";
 };
 
 const writeToken = () => {
 	if (!_token) throw new Error("Firestorm token was not configured");
-
 	return _token;
 };
 
@@ -319,7 +317,7 @@ class Collection {
 			values: valueOption,
 		}).then((data) =>
 			// no ID_FIELD or method injection since no ids are returned
-			Object.values(data),
+			Object.values(data).filter((d) => d !== null),
 		);
 	}
 
@@ -532,6 +530,7 @@ const firestorm = {
 	 */
 	address(newValue = undefined) {
 		if (newValue === undefined) return readAddress();
+		if (!newValue.endsWith("/")) newValue += "/";
 		if (newValue) _address = newValue;
 
 		return _address;
