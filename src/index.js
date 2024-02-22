@@ -4,29 +4,29 @@ try {
 
 /**
  * @typedef {Object} SearchOption
- * @property {string} field - The field you want to search in
- * @property {"!=" | "==" | ">=" | "<=" | "<" | ">" | "in" | "includes" | "startsWith" | "endsWith" | "array-contains" | "array-contains-any" | "array-length-(eq|df|gt|lt|ge|le)" } criteria - Filter criteria
- * @property {string | number | boolean | Array } value - The value you want to compare
- * @property {boolean} ignoreCase - Ignore case on search string
+ * @property {string} field - The field to be searched for
+ * @property {"!=" | "==" | ">=" | "<=" | "<" | ">" | "in" | "includes" | "startsWith" | "endsWith" | "array-contains" | "array-contains-any" | "array-length-(eq|df|gt|lt|ge|le)"} criteria - Search criteria to filter results
+ * @property {string | number | boolean | Array} value - The value to be searched for
+ * @property {boolean} [ignoreCase] - Is it case sensitive? (default true)
  */
 
 /**
  * @typedef {Object} EditObject
- * @property {string | number } id - The affected element
- * @property {string} field - The field you want to edit
- * @property {"set" | "remove" | "append" | "increment" | "decrement" | "array-push" | "array-delete" | "array-splice"} operation - Wanted operation on field
- * @property {string | number | boolean | Array} [value] - The value you want to compare
+ * @property {string | number} id - The affected element
+ * @property {string} field - The field to edit
+ * @property {"set" | "remove" | "append" | "increment" | "decrement" | "array-push" | "array-delete" | "array-splice"} operation - Operation for the field
+ * @property {string | number | boolean | Array} [value] - The value to write
  */
 
 /**
  * @typedef {Object} ValueObject
- * @property {string} field - Field to get values of
- * @property {boolean} [flatten] - Flatten array for array options
+ * @property {string} field - Field to search
+ * @property {boolean} [flatten] - Flatten array fields? (default false)
  */
 
 /**
  * @typedef {Object} SelectOption
- * @property {Array<string>} fields - Chosen fields to eventually return
+ * @property {Array<string>} fields - Selected fields to be returned
  */
 
 /**
@@ -76,15 +76,10 @@ const writeToken = () => {
  * @param {Promise<AxiosPromise>} request The Axios concerned request
  */
 const __extract_data = (request) => {
-	return new Promise((resolve, reject) => {
-		request
-			.then((res) => {
-				if ("data" in res) return resolve(res.data);
-				resolve(res);
-			})
-			.catch((err) => {
-				reject(err);
-			});
+	if (!(request instanceof Promise)) request = Promise.resolve(request);
+	return request.then((res) => {
+		if ("data" in res) return res.data;
+		return res;
 	});
 };
 
@@ -107,27 +102,21 @@ class Collection {
 	}
 
 	/**
-	 * Add user methods to the returned data
+	 * Add user methods to returned data
 	 * @private
 	 * @ignore
 	 * @param {AxiosPromise} req - Incoming request
 	 * @returns {Object | Object[]}
 	 */
 	__add_methods(req) {
-		return new Promise((resolve, reject) => {
-			req
-				.then((el) => {
-					if (Array.isArray(el)) {
-						return resolve(el.map((e) => this.addMethods(e)));
-					}
+		if (!(req instanceof Promise)) req = Promise.resolve(req);
+		return req.then((el) => {
+			if (Array.isArray(el)) return el.map((el) => this.addMethods(el));
+			el[Object.keys(el)[0]][ID_FIELD_NAME] = Object.keys(el)[0];
+			el = el[Object.keys(el)[0]];
 
-					el[Object.keys(el)[0]][ID_FIELD_NAME] = Object.keys(el)[0];
-					el = el[Object.keys(el)[0]];
-
-					// else on the object itself
-					return resolve(this.addMethods(el));
-				})
-				.catch((err) => reject(err));
+			// else on the object itself
+			return this.addMethods(el);
 		});
 	}
 
@@ -164,13 +153,11 @@ class Collection {
 	 * @returns {Promise<T>} Corresponding value
 	 */
 	get(id) {
-		return this.__add_methods(
-			this.__get_request({
-				collection: this.collectionName,
-				command: "get",
-				id: id,
-			}),
-		);
+		return this.__get_request({
+			collection: this.collectionName,
+			command: "get",
+			id: id,
+		}).then((res) => this.__add_methods(res));
 	}
 
 	/**
@@ -214,7 +201,7 @@ class Collection {
 			//TODO: add more strict value field warnings in JS and PHP
 		});
 
-		let params = {
+		const params = {
 			collection: this.collectionName,
 			command: "search",
 			search: searchOptions,
@@ -224,36 +211,22 @@ class Collection {
 			if (random === true) {
 				params.random = {};
 			} else {
-				let seed = parseInt(random);
+				const seed = parseInt(random);
 				if (isNaN(seed))
 					return Promise.reject(
 						new Error("random takes as parameter true, false or an integer value"),
 					);
-				params.random = {
-					seed: seed,
-				};
+				params.random = { seed };
 			}
 		}
 
-		return new Promise((resolve, reject) => {
-			let raw;
-			this.__get_request(params)
-				.then((res) => {
-					const arr = [];
+		return this.__get_request(params).then((res) => {
+			const arr = Object.entries(res).map(([id, value]) => {
+				value[ID_FIELD_NAME] = id;
+				return value;
+			});
 
-					raw = res;
-					Object.keys(res).forEach((contribID) => {
-						const tmp = res[contribID];
-						tmp[ID_FIELD_NAME] = contribID;
-						arr.push(tmp);
-					});
-
-					resolve(this.__add_methods(Promise.resolve(arr)));
-				})
-				.catch((err) => {
-					err.raw = raw;
-					reject(err);
-				});
+			return this.__add_methods(arr);
 		});
 	}
 
@@ -265,23 +238,17 @@ class Collection {
 	searchKeys(keys) {
 		if (!Array.isArray(keys)) return Promise.reject("Incorrect keys");
 
-		return new Promise((resolve, reject) => {
-			this.__get_request({
-				collection: this.collectionName,
-				command: "searchKeys",
-				search: keys,
-			})
-				.then((res) => {
-					const arr = [];
-					Object.keys(res).forEach((contribID) => {
-						const tmp = res[contribID];
-						tmp[ID_FIELD_NAME] = contribID;
-						arr.push(tmp);
-					});
+		return this.__get_request({
+			collection: this.collectionName,
+			command: "searchKeys",
+			search: keys,
+		}).then((res) => {
+			const arr = Object.entries(res).map(([id, value]) => {
+				value[ID_FIELD_NAME] = id;
+				return value;
+			});
 
-					resolve(this.__add_methods(Promise.resolve(arr)));
-				})
-				.catch((err) => reject(err));
+			return this.__add_methods(arr);
 		});
 	}
 
@@ -290,20 +257,17 @@ class Collection {
 	 * @returns {Promise<Record<string, T>>} The entire collection
 	 */
 	readRaw() {
-		return new Promise((resolve, reject) => {
-			this.__get_request({
-				collection: this.collectionName,
-				command: "read_raw",
-			})
-				.then((data) => {
-					Object.keys(data).forEach((key) => {
-						data[key][ID_FIELD_NAME] = key;
-						this.addMethods(data[key]);
-					});
+		return this.__get_request({
+			collection: this.collectionName,
+			command: "read_raw",
+		}).then((data) => {
+			// preserve as object
+			Object.keys(data).forEach((key) => {
+				data[key][ID_FIELD_NAME] = key;
+				this.addMethods(data[key]);
+			});
 
-					resolve(data);
-				})
-				.catch(reject);
+			return data;
 		});
 	}
 
@@ -324,21 +288,17 @@ class Collection {
 	 */
 	select(selectOption) {
 		if (!selectOption) selectOption = {};
-		return new Promise((resolve, reject) => {
-			this.__get_request({
-				collection: this.collectionName,
-				command: "select",
-				select: selectOption,
-			})
-				.then((data) => {
-					Object.keys(data).forEach((key) => {
-						data[key][ID_FIELD_NAME] = key;
-						this.addMethods(data[key]);
-					});
+		return this.__get_request({
+			collection: this.collectionName,
+			command: "select",
+			select: selectOption,
+		}).then((data) => {
+			Object.keys(data).forEach((key) => {
+				data[key][ID_FIELD_NAME] = key;
+				this.addMethods(data[key]);
+			});
 
-					resolve(data);
-				})
-				.catch(reject);
+			return data;
 		});
 	}
 
@@ -353,24 +313,14 @@ class Collection {
 		if (valueOption.flatten !== undefined && typeof valueOption.flatten !== "boolean")
 			return Promise.reject("Flatten must be a boolean");
 
-		return new Promise((resolve, reject) => {
-			this.__get_request({
-				collection: this.collectionName,
-				command: "values",
-				values: valueOption,
-			})
-				.then((data) => {
-					// php doesn't return "real" arrays so a conversion is still needed
-					const arr = [];
-					Object.keys(data).forEach((key) => {
-						arr.push(data[key]);
-					});
-
-					// no ID_FIELD injection since every item is guaranteed unique
-					resolve(arr);
-				})
-				.catch(reject);
-		});
+		return this.__get_request({
+			collection: this.collectionName,
+			command: "values",
+			values: valueOption,
+		}).then((data) =>
+			// no ID_FIELD or method injection since no ids are returned
+			Object.values(data),
+		);
 	}
 
 	/**
@@ -415,7 +365,7 @@ class Collection {
 				this.addMethods(data[key]);
 			});
 
-			return Promise.resolve(data);
+			return data;
 		});
 	}
 
@@ -487,19 +437,14 @@ class Collection {
 	 * @returns {Promise<string>} The generated ID of the added element
 	 */
 	add(value) {
-		return new Promise((resolve, reject) => {
-			axios
-				.post(writeAddress(), this.__write_data("add", value))
-				.then((res) => {
-					return this.__extract_data(Promise.resolve(res));
-				})
-				.then((res) => {
-					if (typeof res != "object" || !("id" in res) || typeof res.id != "string")
-						throw new Error("Incorrect result");
-					resolve(res.id);
-				})
-				.catch(reject);
-		});
+		return axios
+			.post(writeAddress(), this.__write_data("add", value))
+			.then((res) => this.__extract_data(res))
+			.then((res) => {
+				if (typeof res != "object" || !("id" in res) || typeof res.id != "string")
+					return Promise.reject(new Error("Incorrect result"));
+				return res.id;
+			});
 	}
 
 	/**
@@ -508,13 +453,9 @@ class Collection {
 	 * @returns {Promise<string[]>} The generated IDs of the added elements
 	 */
 	addBulk(values) {
-		return new Promise((resolve, reject) => {
-			this.__extract_data(axios.post(writeAddress(), this.__write_data("addBulk", values, true)))
-				.then((res) => {
-					resolve(res.ids);
-				})
-				.catch(reject);
-		});
+		return this.__extract_data(
+			axios.post(writeAddress(), this.__write_data("addBulk", values, true)),
+		).then((res) => res.ids);
 	}
 
 	/**

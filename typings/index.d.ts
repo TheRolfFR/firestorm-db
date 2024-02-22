@@ -1,49 +1,45 @@
 export type NumberCriteria =
-	| "==" /** test if the value is equal to the provided value */
-	| "!=" /** test if the value is not equal to the provided value */
-	| "<" /** test if the value is less than the provided value */
-	| "<=" /** test if the value is less than or equal to the provided value */
-	| ">" /** test if the value is greater than the provided value */
-	| ">=" /** test if the value is greater than or equal to the provided value */
-	| "in" /** test if the value is in the given array */;
+	| "==" /** Value is equal to the provided value */
+	| "!=" /** Value is not equal to the provided value */
+	| "<" /** Value is less than the provided value */
+	| "<=" /** Value is less than or equal to the provided value */
+	| ">" /** Value is greater than the provided value */
+	| ">=" /** Value is greater than or equal to the provided value */
+	| "in"; /** Value is in the given array */
 
 export type StringCriteria =
-	| "==" /** test if the string value is equal to the provided value */
-	| "!=" /** test if the string value is not equal to the provided value */
-	| "<" /** test if the string value length is less than the provided value */
-	| "<=" /** test if the string value length is less than or equal to the provided value */
-	| ">" /** test if the string value length is greater than the provided value */
-	| ">=" /** test if the string value length is greater than or equal to the provided value */
-	| "in" /** test if the string value is in the given array */
-	| "includes" /** test if the string value includes the provided value */
-	| "contains" /** same as "includes" */
-	| "startsWith" /** test if the string value starts with the provided value */
-	| "endsWith" /** test if the string value ends with the provided value */;
+	| "==" /** String value is equal to the provided value */
+	| "!=" /** String value is not equal to the provided value */
+	| "<" /** String value length is less than the provided value */
+	| "<=" /** String value length is less than or equal to the provided value */
+	| ">" /** String value length is greater than the provided value */
+	| ">=" /** String value length is greater than or equal to the provided value */
+	| "in" /** String value is in the given array */
+	| "includes" /** String value includes the provided value */
+	| "contains" /** Same as "includes" */
+	| "startsWith" /** String value starts with the provided value */
+	| "endsWith"; /** String value ends with the provided value */
 
 export type ArrayCriteria =
-	| "array-contains" /** test if the value is in the given array */
-	| "array-contains-any" /** test if the any value of the array is in the given array */
-	| "array-length-eq" /** test if the array length is equal to the provided value */
-	| "array-length-df" /** test if the array length is different from the provided value */
-	| "array-length-gt" /** test if the array length is greater than the provided value */
-	| "array-length-lt" /** test if the array length is less than the provided value */
-	| "array-length-ge" /** test if the array length is greater than or equal to the provided value */
-	| "array-length-le" /** test if the array length is less than or equal to the provided value */;
+	| "array-contains" /** Value is in the given array */
+	| "array-contains-any" /** Any value of the array is in the given array */
+	| "array-length-eq" /** Array length is equal to the provided value */
+	| "array-length-df" /** Array length is different from the provided value */
+	| "array-length-gt" /** Array length is greater than the provided value */
+	| "array-length-lt" /** Array length is less than the provided value */
+	| "array-length-ge" /** Array length is greater than or equal to the provided value */
+	| "array-length-le"; /** Array length is less than or equal to the provided value */
 
 export type BooleanCriteria =
-	| "!=" /** test if the value is not equal to the provided value */
-	| "==" /** test if the value is equal to the provided value */;
+	| "!=" /** Value is not equal to the provided value */
+	| "=="; /** Value is equal to the provided value */
 
-export type AllCriteria =
-	| StringCriteria /** criteria applying to strings */
-	| ArrayCriteria /** criteria applying to arrays */
-	| BooleanCriteria /** criteria applying to boolean */
-	| NumberCriteria /** criteria applying to numbers */;
+export type AnyCriteria = StringCriteria | ArrayCriteria | BooleanCriteria | NumberCriteria;
 
 export type Criteria<T> = T extends Function
 	? never
 	:
-				| never /** methods are not allowed in the field (they are not saved in the collection JSON file) */
+				| never /** Methods are not allowed in the field (they are not saved in the collection JSON file) */
 				| T extends Array<unknown>
 		? ArrayCriteria
 		: never | T extends string
@@ -139,26 +135,26 @@ export type WriteConfirmation = { message: string };
 
 export type SearchOption<T> = {
 	[K in keyof T]: {
-		/** the field to be searched for */
+		/** The field to be searched for */
 		field: Path<T>;
-		/** the criteria to be used to search for the field */
+		/** Search criteria to filter results */
 		criteria: Criteria<T[K]>;
-		/** the value to be searched for */
+		/** The value to be searched for */
 		value?: any;
-		/** is it case sensitive? (default true) */
+		/** Is it case sensitive? (default true) */
 		ignoreCase?: boolean;
 	};
 }[keyof T];
 
 export interface SelectOption<T extends any[]> {
-	/** Chosen fields to eventually return */
+	/** Selected fields to be returned */
 	fields: T;
 }
 
 export interface ValueOption<K, F extends boolean> {
-	/** field to search */
+	/** Field to search */
 	field: K | "id";
-	/** flatten array fields (default false) */
+	/** Flatten array fields? (default false) */
 	flatten?: F;
 }
 
