@@ -1,6 +1,5 @@
-const chai = require("chai");
+const { expect } = require("chai");
 const FormData = require("form-data");
-const { expect } = chai;
 
 const firestorm = require("..");
 

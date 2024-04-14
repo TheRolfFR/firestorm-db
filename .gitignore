@@ -5,7 +5,7 @@ node_modules
 *.log
 .vscode/
 
-# NPM RC WITH SENSIBLE INFOS
+# NPM RC WITH SENSITIVE INFO
 \.npmrc
 
 ### Node ###
