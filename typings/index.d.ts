@@ -177,6 +177,9 @@ export type Settable<T> = Addable<T> & {
 };
 
 export class Collection<T> {
+	/** Name of the Firestorm collection */
+	public readonly collectionName: string;
+
 	/**
 	 * Create a new Firestorm collection instance
 	 * @param name - The name of the collection
@@ -205,7 +208,7 @@ export class Collection<T> {
 	 * @returns The found elements
 	 */
 	public search(
-		options: SearchOption<RemoveMethods<T> & { id: string | number }>[],
+		options: SearchOption<RemoveMethods<T> & { id: string }>[],
 		random?: boolean | number,
 	): Promise<T[]>;
 
@@ -237,7 +240,7 @@ export class Collection<T> {
 	 */
 	public select<K extends Array<"id" | keyof T>>(
 		option: SelectOption<K>,
-	): Promise<Record<string, Pick<T & { id: string | number }, K[number]>>>;
+	): Promise<Record<string, Pick<T & { id: string }, K[number]>>>;
 
 	/**
 	 * Get all distinct non-null values for a given key across a collection
@@ -355,13 +358,6 @@ export function token(value?: string): string;
  * @returns The collection
  */
 export function collection<T>(value: string, addMethods?: CollectionMethods<T>): Collection<T>;
-
-/**
- * Create a temporary Firestorm collection with no methods
- * @param table - The table name to get
- * @returns The collection
- */
-export function table<T>(table: string): Promise<Collection<T>>;
 
 /**
  * Firestorm file handler

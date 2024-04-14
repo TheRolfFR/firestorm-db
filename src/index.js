@@ -71,7 +71,7 @@ const writeToken = () => {
 /**
  * Auto-extracts data from Axios request
  * @ignore
- * @param {Promise<AxiosPromise>} request The Axios concerned request
+ * @param {AxiosPromise} request - Axios request promise
  */
 const __extract_data = (request) => {
 	if (!(request instanceof Promise)) request = Promise.resolve(request);
@@ -104,7 +104,7 @@ class Collection {
 	 * @private
 	 * @ignore
 	 * @param {AxiosPromise} req - Incoming request
-	 * @returns {Object | Object[]}
+	 * @returns {Promise<any>}
 	 */
 	__add_methods(req) {
 		if (!(req instanceof Promise)) req = Promise.resolve(req);
@@ -122,27 +122,81 @@ class Collection {
 	 * Auto-extracts data from Axios request
 	 * @private
 	 * @ignore
-	 * @param {AxiosPromise} request - The Axios concerned request
+	 * @param {AxiosPromise} request - Axios request promise
 	 */
 	__extract_data(request) {
 		return __extract_data(request);
 	}
 
 	/**
-	 * Send get request and extract data from response
+	 * Send GET request with provided data and return extracted response
 	 * @private
 	 * @ignore
-	 * @param {Object} data - Body data
-	 * @returns {Promise<Object|Object[]>} data out
+	 * @param {string} command - The read command name
+	 * @param {Object} [data] - Body data
+	 * @param {boolean} [objectLike] - Reject if an object or array isn't being returned
+	 * @returns {Promise<any>} Extracted response
 	 */
-	__get_request(data) {
+	__get_request(command, data = {}, objectLike = true) {
+		const obj = {
+			collection: this.collectionName,
+			command: command,
+			...data,
+		};
 		const request =
 			typeof process === "object"
 				? axios.get(readAddress(), {
-						data: data,
+						data: obj,
 					})
-				: axios.post(readAddress(), data);
-		return this.__extract_data(request);
+				: axios.post(readAddress(), obj);
+		return this.__extract_data(request).then((res) => {
+			// reject php error strings if enforcing return type
+			if (objectLike && typeof res !== "object") return Promise.reject(res);
+			return res;
+		});
+	}
+
+	/**
+	 * Generate POST data with provided data
+	 * @private
+	 * @ignore
+	 * @param {string} command - The write command name
+	 * @param {Object} [value] - The value for this command
+	 * @param {boolean} [multiple] - Need to delete multiple
+	 * @returns {Object} Write data object
+	 */
+	__write_data(command, value = undefined, multiple = false) {
+		const obj = {
+			token: writeToken(),
+			collection: this.collectionName,
+			command: command,
+		};
+
+		// clone/serialize data if possible (prevents mutating data)
+		if (value) value = JSON.parse(JSON.stringify(value));
+
+		if (multiple && Array.isArray(value)) {
+			value.forEach((v) => {
+				if (typeof v === "object" && !Array.isArray(v) && v != null) delete v[ID_FIELD_NAME];
+			});
+		} else if (
+			multiple === false &&
+			value !== null &&
+			value !== undefined &&
+			typeof value !== "number" &&
+			typeof value !== "string" &&
+			!Array.isArray(value)
+		) {
+			if (typeof value === "object") value = { ...value };
+			delete value[ID_FIELD_NAME];
+		}
+
+		if (value) {
+			if (multiple) obj.values = value;
+			else obj.value = value;
+		}
+
+		return obj;
 	}
 
 	/**
@@ -151,9 +205,7 @@ class Collection {
 	 * @returns {Promise<T>} Corresponding value
 	 */
 	get(id) {
-		return this.__get_request({
-			collection: this.collectionName,
-			command: "get",
+		return this.__get_request("get", {
 			id: id,
 		}).then((res) => this.__add_methods(res));
 	}
@@ -164,10 +216,8 @@ class Collection {
 	 * @returns {string} The sha1 hash of the file
 	 */
 	sha1() {
-		return this.__get_request({
-			collection: this.collectionName,
-			command: "sha1",
-		});
+		// string value is correct so we don't need validation
+		return this.__get_request("sha1", {}, false);
 	}
 
 	/**
@@ -178,7 +228,7 @@ class Collection {
 	 */
 	search(searchOptions, random = false) {
 		if (!Array.isArray(searchOptions))
-			return Promise.reject(new Error("searchOptions shall be an array"));
+			return Promise.reject(new TypeError("searchOptions shall be an array"));
 
 		searchOptions.forEach((searchOption) => {
 			if (
@@ -186,22 +236,20 @@ class Collection {
 				searchOption.criteria === undefined ||
 				searchOption.value === undefined
 			)
-				return Promise.reject(new Error("Missing fields in searchOptions array"));
+				return Promise.reject(new TypeError("Missing fields in searchOptions array"));
 
 			if (typeof searchOption.field !== "string")
 				return Promise.reject(
-					new Error(`${JSON.stringify(searchOption)} search option field is not a string`),
+					new TypeError(`${JSON.stringify(searchOption)} search option field is not a string`),
 				);
 
 			if (searchOption.criteria == "in" && !Array.isArray(searchOption.value))
-				return Promise.reject(new Error("in takes an array of values"));
+				return Promise.reject(new TypeError("in takes an array of values"));
 
-			//TODO: add more strict value field warnings in JS and PHP
+			// TODO: add more strict value field warnings in JS and PHP
 		});
 
 		const params = {
-			collection: this.collectionName,
-			command: "search",
 			search: searchOptions,
 		};
 
@@ -212,13 +260,13 @@ class Collection {
 				const seed = parseInt(random);
 				if (isNaN(seed))
 					return Promise.reject(
-						new Error("random takes as parameter true, false or an integer value"),
+						new TypeError("random takes as parameter true, false or an integer value"),
 					);
 				params.random = { seed };
 			}
 		}
 
-		return this.__get_request(params).then((res) => {
+		return this.__get_request("search", params).then((res) => {
 			const arr = Object.entries(res).map(([id, value]) => {
 				value[ID_FIELD_NAME] = id;
 				return value;
@@ -234,11 +282,9 @@ class Collection {
 	 * @returns {Promise<T[]>} The found elements
 	 */
 	searchKeys(keys) {
-		if (!Array.isArray(keys)) return Promise.reject("Incorrect keys");
+		if (!Array.isArray(keys)) return Promise.reject(new TypeError("Incorrect keys"));
 
-		return this.__get_request({
-			collection: this.collectionName,
-			command: "searchKeys",
+		return this.__get_request("searchKeys", {
 			search: keys,
 		}).then((res) => {
 			const arr = Object.entries(res).map(([id, value]) => {
@@ -255,10 +301,7 @@ class Collection {
 	 * @returns {Promise<Record<string, T>>} The entire collection
 	 */
 	readRaw() {
-		return this.__get_request({
-			collection: this.collectionName,
-			command: "read_raw",
-		}).then((data) => {
+		return this.__get_request("read_raw").then((data) => {
 			// preserve as object
 			Object.keys(data).forEach((key) => {
 				data[key][ID_FIELD_NAME] = key;
@@ -286,16 +329,13 @@ class Collection {
 	 */
 	select(selectOption) {
 		if (!selectOption) selectOption = {};
-		return this.__get_request({
-			collection: this.collectionName,
-			command: "select",
+		return this.__get_request("select", {
 			select: selectOption,
 		}).then((data) => {
 			Object.keys(data).forEach((key) => {
 				data[key][ID_FIELD_NAME] = key;
 				this.addMethods(data[key]);
 			});
-
 			return data;
 		});
 	}
@@ -306,14 +346,13 @@ class Collection {
 	 * @returns {Promise<T[]>} Array of unique values
 	 */
 	values(valueOption) {
-		if (!valueOption) return Promise.reject("Value option must be provided");
-		if (typeof valueOption.field !== "string") return Promise.reject("Field must be a string");
+		if (!valueOption) return Promise.reject(new TypeError("Value option must be provided"));
+		if (typeof valueOption.field !== "string")
+			return Promise.reject(new TypeError("Field must be a string"));
 		if (valueOption.flatten !== undefined && typeof valueOption.flatten !== "boolean")
-			return Promise.reject("Flatten must be a boolean");
+			return Promise.reject(new TypeError("Flatten must be a boolean"));
 
-		return this.__get_request({
-			collection: this.collectionName,
-			command: "values",
+		return this.__get_request("values", {
 			values: valueOption,
 		}).then((data) =>
 			// no ID_FIELD or method injection since no ids are returned
@@ -332,30 +371,28 @@ class Collection {
 		const params = {};
 		if (max !== undefined) {
 			if (typeof max !== "number" || !Number.isInteger(max) || max < -1)
-				return Promise.reject(new Error("Expected integer >= -1 for the max"));
+				return Promise.reject(new TypeError("Expected integer >= -1 for the max"));
 			params.max = max;
 		}
 
 		const hasSeed = seed !== undefined;
 		const hasOffset = offset !== undefined;
 		if (hasOffset && !hasSeed)
-			return Promise.reject(new Error("You can't put an offset without a seed"));
+			return Promise.reject(new TypeError("You can't put an offset without a seed"));
 
 		if (hasOffset && (typeof offset !== "number" || !Number.isInteger(offset) || offset < 0))
-			return Promise.reject(new Error("Expected integer >= -1 for the max"));
+			return Promise.reject(new TypeError("Expected integer >= -1 for the max"));
 
 		if (hasSeed) {
 			if (typeof seed !== "number" || !Number.isInteger(seed))
-				return Promise.reject(new Error("Expected integer for the seed"));
+				return Promise.reject(new TypeError("Expected integer for the seed"));
 
 			if (!hasOffset) offset = 0;
 			params.seed = seed;
 			params.offset = offset;
 		}
 
-		return this.__get_request({
-			collection: this.collectionName,
-			command: "random",
+		return this.__get_request("random", {
 			random: params,
 		}).then((data) => {
 			Object.keys(data).forEach((key) => {
@@ -368,54 +405,13 @@ class Collection {
 	}
 
 	/**
-	 * Creates write requests with given value
-	 * @private
-	 * @ignore
-	 * @param {string} command The write command you want
-	 * @param {Object} [value] The value for this command
-	 * @param {boolean | undefined} multiple if I need to delete multiple
-	 * @returns {Object} Write data object
-	 */
-	__write_data(command, value = undefined, multiple = false) {
-		const obj = {
-			token: writeToken(),
-			collection: this.collectionName,
-			command: command,
-		};
-		if (multiple === true && Array.isArray(value)) {
-			// solves errors with undefined and null values
-			value.forEach((v) => {
-				if (typeof value != "number" && typeof value != "string" && !Array.isArray(value))
-					delete v[ID_FIELD_NAME];
-			});
-		} else if (
-			multiple === false &&
-			value != null &&
-			value != undefined &&
-			typeof value != "number" &&
-			typeof value != "string" &&
-			!Array.isArray(value)
-		) {
-			// solves errors with undefined and null values
-			delete value[ID_FIELD_NAME];
-		}
-		if (value) {
-			if (multiple) obj["values"] = value;
-			else obj["value"] = value;
-		}
-
-		return obj;
-	}
-
-	/**
 	 * Set the entire JSON file contents
 	 * @param {Record<string, T>} value - The value to write
 	 * @returns {Promise<WriteConfirmation>} Write confirmation
 	 */
 	writeRaw(value) {
-		if (value === undefined || value === null) {
-			return Promise.reject(new Error("writeRaw value must not be undefined or null"));
-		}
+		if (value === undefined || value === null)
+			return Promise.reject(new TypeError("writeRaw value must not be undefined or null"));
 		return this.__extract_data(axios.post(writeAddress(), this.__write_data("write_raw", value)));
 	}
 
@@ -440,7 +436,7 @@ class Collection {
 			.then((res) => this.__extract_data(res))
 			.then((res) => {
 				if (typeof res != "object" || !("id" in res) || typeof res.id != "string")
-					return Promise.reject(new Error("Incorrect result"));
+					return Promise.reject(res);
 				return res.id;
 			});
 	}
@@ -557,16 +553,6 @@ const firestorm = {
 	 */
 	collection(name, addMethods = (el) => el) {
 		return new Collection(name, addMethods);
-	},
-
-	/**
-	 * Create a temporary Firestorm collection with no methods
-	 * @template T
-	 * @param {string} name - The table name to get
-	 * @returns {Collection<T>} The collection
-	 */
-	table(name) {
-		return this.collection(name);
 	},
 
 	/** Value for the id field when researching content */

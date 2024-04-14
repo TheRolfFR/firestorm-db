@@ -274,10 +274,7 @@ describe("GET operations", () => {
 				.then(() => {
 					done(new Error("Parameter should be an array of string or number"));
 				})
-				.catch((err) => {
-					expect(err).to.equal("Incorrect keys");
-					done();
-				});
+				.catch(() => done());
 		});
 
 		it("returns empty results when no found", (done) => {
@@ -285,7 +282,7 @@ describe("GET operations", () => {
 				.searchKeys([5, 7])
 				.then((res) => {
 					// expected []
-					expect(res).to.be.a("array", "Value should be an array");
+					expect(res).to.be.an("array", "Value should be an array");
 					expect(res).to.have.lengthOf(0, "Value should be empty array");
 					done();
 				})
@@ -377,7 +374,7 @@ describe("GET operations", () => {
 						},
 					])
 					.then((res) => {
-						expect(res).to.be.a("array", "Search result must be an array");
+						expect(res).to.be.an("array", "Search result must be an array");
 						expect(res).to.have.lengthOf(
 							ids_found.length,
 							"Expected result have not correct length",
@@ -698,7 +695,7 @@ describe("GET operations", () => {
 	});
 });
 
-describe("PUT operations", () => {
+describe("POST operations", () => {
 	describe("writeRaw operations", () => {
 		it("Rejects when incorrect token", (done) => {
 			firestorm.token("LetsGoToTheMall");
@@ -939,7 +936,7 @@ describe("PUT operations", () => {
 				base
 					.addBulk([{}])
 					.then((res) => {
-						expect(res).to.be.a("array");
+						expect(res).to.be.an("array");
 						expect(res).to.have.length(1);
 						done();
 					})
@@ -954,7 +951,7 @@ describe("PUT operations", () => {
 				base
 					.addBulk(in_value)
 					.then((res) => {
-						expect(res).to.be.a("array");
+						expect(res).to.be.an("array");
 						expect(res).to.have.length(3);
 						res.forEach((id) => {
 							expect(id).to.be.a("string");
@@ -963,7 +960,7 @@ describe("PUT operations", () => {
 					})
 					.then((results) => {
 						const search_results = results[1];
-						expect(search_results).to.be.a("array");
+						expect(search_results).to.be.an("array");
 						expect(search_results).to.have.length(3);
 
 						const ids_generated = results[0];

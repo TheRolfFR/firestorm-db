@@ -5,7 +5,27 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [1.12.0]
+## Unreleased
+
+### Added
+
+- Exposed `Collection.collectionName` as a readonly property for TypeScript.
+
+### Changed
+
+- Rejected incorrect parameters are now `TypeError`s instead of regular `Error`s.
+
+### Fixed
+
+- Failed GET requests not rejecting the error message properly.
+- Certain write commands mutating data internally and affecting parameters outside Firestorm.
+- `Collection.searchKeys` and `Collection.values` not returning proper `Error`s sometimes.
+
+### Removed
+
+- Redundant `firestorm.table(name)` method, since `firestorm.collection(name)` does exactly the same thing.
+
+## [1.12.0] - 2024-02-22
 
 ### Added
 
