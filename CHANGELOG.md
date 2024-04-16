@@ -20,7 +20,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
-- Failed GET requests not rejecting the error message properly.
+- PHP-level errors not being rejected properly in GET requests.
 - Certain write commands mutating data internally and affecting parameters outside Firestorm.
 - `Collection.searchKeys` and `Collection.values` not returning proper `Error`s sometimes.
 - `files.upload` not allowing the `form-data` package's typing of `FormData`.
