@@ -116,16 +116,12 @@ describe("File upload, download and delete", () => {
 		const formData = new FormData();
 		formData.append("path", "/");
 		readFile(path.join(__dirname, "lyrics.txt"))
-			.catch(() => {
-				done(new Error("Should not succeed at first"));
-			})
+			.catch(() => done(new Error("Should not succeed at first")))
 			.then((res) => {
 				formData.append("file", res, "lyrics.txt");
 				return firestorm.files.upload(formData);
 			})
-			.then((res) => {
-				done(res);
-			})
+			.then((res) => done(res))
 			.catch((uploadError) => {
 				expect(uploadError).not.to.be.undefined;
 				expect(uploadError.response).not.to.be.undefined;
@@ -149,9 +145,7 @@ describe("File upload, download and delete", () => {
 		const lyricsPromise = readFile(path.join(__dirname, "lyrics.txt"));
 
 		// get done now
-		lyricsPromise.catch(() => {
-			done("File read should not failed");
-		});
+		lyricsPromise.catch(() => done("File read should not failed"));
 
 		const uploadPromise = lyricsPromise.then((res) => {
 			// add file to form data
@@ -285,9 +279,7 @@ describe("GET operations", () => {
 					expect(res).to.have.lengthOf(0, "Value should be empty array");
 					done();
 				})
-				.catch(() => {
-					done(new Error("Should not reject"));
-				});
+				.catch(() => done(new Error("Should not reject")));
 		});
 
 		it("returns correct content", (done) => {
@@ -303,9 +295,7 @@ describe("GET operations", () => {
 					expect(res).deep.equals(expected, "Result content doesn't match");
 					done();
 				})
-				.catch(() => {
-					done(new Error("Should not reject"));
-				});
+				.catch(() => done(new Error("Should not reject")));
 		});
 	});
 
@@ -461,9 +451,7 @@ describe("GET operations", () => {
 						unco,
 					)
 					.then((res) => done(`got ${JSON.stringify(res)} value`))
-					.catch(() => {
-						done();
-					});
+					.catch(() => done());
 			});
 		});
 
@@ -532,9 +520,7 @@ describe("GET operations", () => {
 					base
 						.select({ fields: unco })
 						.then((res) => done(`got ${JSON.stringify(res)} value`))
-						.catch(() => {
-							done();
-						});
+						.catch(() => done());
 				});
 			});
 		});
@@ -562,9 +548,7 @@ describe("GET operations", () => {
 					base
 						.select({ fields: [unco] })
 						.then(() => done(`[${JSON.stringify(unco)}] value passed`))
-						.catch(() => {
-							done();
-						});
+						.catch(() => done());
 				});
 			});
 		});
@@ -648,9 +632,7 @@ describe("GET operations", () => {
 					base
 						.random(unco)
 						.then((res) => done(`got ${JSON.stringify(res)} value`))
-						.catch(() => {
-							done();
-						});
+						.catch(() => done());
 				});
 			});
 		});
@@ -663,9 +645,7 @@ describe("GET operations", () => {
 					base
 						.random(5, unco)
 						.then((res) => done(`got ${JSON.stringify(res)} value`))
-						.catch(() => {
-							done();
-						});
+						.catch(() => done());
 				});
 			});
 		});
@@ -685,9 +665,7 @@ describe("GET operations", () => {
 					base
 						.random(5, 69, unco)
 						.then((res) => done(`got ${JSON.stringify(res)} value`))
-						.catch(() => {
-							done();
-						});
+						.catch(() => done());
 				});
 			});
 		});

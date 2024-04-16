@@ -1,7 +1,6 @@
 <?php
 
-function array_contains($array, $value, $ignoreCase = false)
-{
+function array_contains($array, $value, $ignoreCase = false) {
     $tmp = false;
     $tmp_i = 0;
     while ($tmp_i < count($array) and !$tmp) {
@@ -15,9 +14,7 @@ function array_contains($array, $value, $ignoreCase = false)
     return $tmp;
 }
 
-function array_contains_any($concernedField, $value, $ignoreCase = false)
-{
-
+function array_contains_any($concernedField, $value, $ignoreCase = false) {
     $add = false;
 
     if (gettype($value) === "array") {

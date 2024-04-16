@@ -55,7 +55,7 @@ class JSONDatabase {
                 return 400;
             }
 
-            // we accept assosiative array as items beacuse they may have an integer key
+            // we accept associative array as items because they may have an integer key
         }
 
         $content = stringifier($content);

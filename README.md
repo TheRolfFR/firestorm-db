@@ -64,16 +64,16 @@ A collection takes one required argument and one optional argument:
 const firestorm = require("firestorm-db");
 
 const userCollection = firestorm.collection("users", (el) => {
-    el.hello = () => console.log(`${el.name} says hello!`);
+    el.hello = () => `${el.name} says hello!`;
     // return the modified element back with the injected method
     return el;
 });
 
 // if you have a 'users' table with a printable field named name
 const johnDoe = await userCollection.get(123456789);
-// gives { name: "John Doe", hello: function}
+// gives { name: "John Doe", hello: Function }
 
-johnDoe.hello(); // prints out "John Doe says hello!"
+johnDoe.hello(); // "John Doe says hello!"
 ```
 
 Available methods for a collection:
@@ -152,15 +152,14 @@ Edit objects have an `id` of the element, a `field` to edit, an `operation` with
 
 # PHP Part
 
-The PHP files are the ones handling files, read and writes. They also handle `GET` and `POST` requests to manipulate the database.
+The PHP files handle files, read, and writes, through `GET` and `POST` requests sent by the JavaScript wrapper. All Firestorm methods correspond to an equivalent Axios request to the relevant PHP file.
 
 ## PHP setup
 
-The developer has to create two main files at the root of their Firestorm setup: `tokens.php` and `config.php`.
+The basic files to handle requests can be found and copied [here](./php/). The two files that need editing are `tokens.php` and `config.php`.
 
-`tokens.php` will contain the tokens inside a `$db_tokens` value array with the tokens to use. You will use these tokens to write data or read private tables.
-
-`config.php` stores all of your collections config. You will create a `$database_list` variable with an array of `JSONDatabase` instances
+- `tokens.php` contains the tokens using a `$db_tokens` array. You will use these tokens to write data or read private tables.
+- `config.php` stores all of your collections config. This exports a `$database_list` variable with an array of `JSONDatabase` instances.
 
 ```php
 <?php
@@ -180,57 +179,64 @@ $tmp = new JSONDatabase;
 $tmp->folderPath = './files/';
 $tmp->fileName = 'paths';
 $tmp->autoKey = true;
+$tmp->autoIncrement = false;
 
 $database_list[$tmp->fileName] = $tmp;
 ?>
 ```
 
-The database will be stored in `<folderPath>/<filename>.json` and `autoKey` allows or forbids some write operations.
+- The database will be stored in `<folderPath>/<filename>.json` (default folder is `./files/`).
+- `autoKey` controls whether to automatically generate the key name or to have explicit key names (default `true`).
+- `autoIncrement` controls whether to simply start generating key names from zero or to use a random ID each time (defualt `true`).
+- The key in the `$database_list` array is what the collection will be called in JavaScript (this can be different from the JSON filename if needed).
 
-## Firestorm Files
+# Firestorm Files
 
 File API functions are detailed in the `files.php` PHP script. If you do not want to include this functionality, then just delete this file.
 
 You have to add 2 new configuration variables to your `config.php` file:
 
 ```php
-// whitelist of correct extensions
-$authorized_file_extension = array('.txt', '.png');
+// Extension whitelist
+$authorized_file_extension = array('.txt', '.png', '.jpg', '.jpeg');
 
-// subfolder of uploads location, must start with dirname($_SERVER['SCRIPT_FILENAME'])
-// to force a subfolder of Firestorm installation
+// Root directory for where files should be uploaded
+// ($_SERVER['SCRIPT_FILENAME']) is a shortcut to the root Firestorm directory.
 $STORAGE_LOCATION = dirname($_SERVER['SCRIPT_FILENAME']) . '/uploads/';
 ```
 
 You can use the wrapper functions in order to upload, get and delete a file.
 If the folder is accessible from server url, you can directly type its address.
 
-### File rights
+## File rights
 
 The PHP scripts create folders and files, so the script will fail if the PHP user doesn't have write permissions.
 You can give rights to a folder with the following command:
 
-```
+```sh
 sudo chown -R www-data "/path/to/uploads/"
 ```
 
-### Upload a file
+## Upload a file
 
 In order to upload a file, you have to give the function a `FormData` object. This class is generated from forms and is [native in modern browsers](https://developer.mozilla.org/en-US/docs/Web/API/FormData/FormData) but in Node.js can be imported with the [form-data package](https://www.npmjs.com/package/form-data).
 
 The uploaded file content can be a [String](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String), a [Blob](https://developer.mozilla.org/en-US/docs/Web/API/Blob), a [Buffer](https://nodejs.org/api/buffer.html) or an [ArrayBuffer](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/ArrayBuffer).
 
-There is additionally an overwrite option in order to avoid big mistakes and allow unique file names.
+There is additionally an overwrite option in order to avoid mistakes.
 
 ```js
+const FormData = require("form-data");
 const firestorm = require("firestorm-db");
 firestorm.address("ADDRESS_VALUE");
 firestorm.token("TOKEN_VALUE");
 
 const form = new FormData();
 form.append("path", "/quote.txt");
-form.append("file", "but your kids are gonna love it.", "quote.txt"); // make sure to set a temporary name to the file
-form.append("overwrite", "true"); // override optional argument (do not append to set to false)
+// make sure to set a temporary file name
+form.append("file", "but your kids are gonna love it.", "quote.txt");
+// override is false by default; don't append it if you don't need to
+form.append("overwrite", "true");
 const uploadPromise = firestorm.files.upload(form);
 
 uploadPromise
@@ -269,7 +275,61 @@ deletePromise
     .catch((err) => console.error(err));
 ```
 
-## Memory warning
+# TypeScript
+
+Firestorm ships with TypeScript support out of the box.
+
+## Collection types
+
+Collections in TypeScript additionally take a generic parameter `T`, which is the type of each element in the collection. If you aren't using a relational collection, this can simply be set to `any`.
+
+```ts
+import firestorm from "firestorm-db";
+firestorm.address("ADDRESS_VALUE");
+
+interface User {
+    id: string;
+    name: string;
+    password: string;
+    pets: string[];
+}
+
+const userCollection = firestorm.collection<User>("users");
+
+const johnDoe = await userCollection.get(123456789);
+// type: { name: string, password: string, pets: string[] }
+```
+
+Methods should also be stored in this interface:
+
+```ts
+import firestorm from "firestorm-db";
+firestorm.address("ADDRESS_VALUE");
+
+interface User {
+    id: string;
+    name: string;
+    hello(): string;
+}
+
+const johnDoe = await userCollection.get(123456789);
+const hello = johnDoe.hello();
+// type: string
+```
+
+## Additional types
+
+Additional types exist for search criteria options, write method return types, configuration methods, the file handler, etc.
+
+```ts
+import firestorm from "firestorm-db";
+firestorm.address("ADDRESS_VALUE");
+
+const deleteConfirmation = await firestorm.files.delete("/quote.txt");
+// type: firestorm.WriteConfirmation
+```
+
+# Memory warning
 
 Handling big collections can cause memory allocation issues like:
 
@@ -284,11 +344,11 @@ If you encounter a memory allocation issue, you have to allow more memory throug
 memory_limit = 256M
 ```
 
-## API endpoints
+# API endpoints
 
-All Firestorm methods correspond to an equivalent Axios request to the relevant PHP file. Read requests are `GET` requests and write requests are `POST` requests with provided JSON data.
+If you want to manually send requests without using the JavaScript wrapper, simply make an HTTP request to the relevant PHP file with your content. Read requests are `GET` requests sent to `get.php`, write requests are `POST` requests sent to `post.php` with provided JSON data, and file requests are requests sent to `files.php` with provided form data.
 
-The first keys in the request will always be the same:
+The first keys in the request will always be the same, and further keys will depend on the specific method:
 
 ```json
 {

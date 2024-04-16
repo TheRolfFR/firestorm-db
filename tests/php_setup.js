@@ -1,11 +1,12 @@
 const { mkdtemp, mkdir, symlink, unlink } = require("fs").promises;
 const { existsSync } = require("fs");
-const path = require("path");
+const { join, relative, dirname, basename } = require("path");
 const { tmpdir } = require("os");
 const { glob } = require("glob");
 const copy = require("recursive-copy");
 const { execSync, spawn } = require("child_process");
 
+const PHP_PATH = "php";
 const PHP_SERVER_START_DELAY = 2000;
 const PORT = 8000;
 
@@ -16,24 +17,24 @@ async function setup_php() {
 	// create tmp folder for PHP
 	execSync("rm -rf /tmp/php-*");
 
-	const tmpFolder = await mkdtemp(path.join(tmpdir(), "php-"));
+	const tmpFolder = await mkdtemp(join(tmpdir(), "php-"));
 	console.log(`Created ${tmpFolder}`);
 
 	console.log(
 		"Moving PHP folder + Checking test php files + Creating files folder + Checking test databases...",
 	);
 	const [globPHP, globJSON] = await Promise.all([
-		glob(path.join(process.cwd(), "src/php", "**/*.php")),
-		glob(path.join(process.cwd(), "tests", "*.json")),
-		mkdir(path.join(tmpFolder, "files")),
+		glob(join(process.cwd(), PHP_PATH, "**/*.php")),
+		glob(join(process.cwd(), "tests", "*.json")),
+		mkdir(join(tmpFolder, "files")),
 	]);
 
 	const symlinkProm = globPHP.map(async (from) => {
-		const endPath = path.relative(path.join(process.cwd(), "src", "php"), from);
-		const to = path.join(tmpFolder, endPath);
+		const endPath = relative(join(process.cwd(), PHP_PATH), from);
+		const to = join(tmpFolder, endPath);
 		console.log(`Linking ${endPath}...`);
 
-		await mkdir(path.dirname(to), { recursive: true });
+		await mkdir(dirname(to), { recursive: true });
 		const res = await symlink(from, to, "file");
 		console.log(`Linked ${endPath}`);
 		return res;
@@ -42,16 +43,16 @@ async function setup_php() {
 	console.log("Copying test databases...");
 
 	const jsonProm = globJSON.map((from) => {
-		const filename = path.basename(from);
+		const filename = basename(from);
 		console.log(`Copying ${filename}...`);
-		const to = path.join(tmpFolder, "files", filename);
+		const to = join(tmpFolder, "files", filename);
 		return copy(from, to).then((res) => {
 			console.log(`Copied ${filename}`);
 			return res;
 		});
 	});
 
-	const globTestPHP = await glob(path.join(process.cwd(), "tests", "*.php"));
+	const globTestPHP = await glob(join(process.cwd(), "tests", "*.php"));
 
 	await Promise.all([...symlinkProm, ...jsonProm]);
 
@@ -59,8 +60,8 @@ async function setup_php() {
 
 	await Promise.all(
 		globTestPHP.map(async (from) => {
-			const filename = path.basename(from);
-			const to = path.join(tmpFolder, filename);
+			const filename = basename(from);
+			const to = join(tmpFolder, filename);
 			console.log(`Linking test ${filename}...`);
 
 			if (existsSync(to)) await unlink(to);
@@ -69,9 +70,9 @@ async function setup_php() {
 			return res;
 		}),
 	);
-	// console.log(await (glob(path.join(tmpFolder, '/**/*'))))
+
 	const phpCommand = `sh tests/php_server_start.sh ${tmpFolder} ${PORT}`;
-	console.log('Starting php server with command "' + phpCommand + '"');
+	console.log('Starting php server with command "' + phpCommand + '"...');
 	const args = phpCommand.split(" ");
 	const command = args.shift();
 

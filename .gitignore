@@ -1,5 +1,3 @@
-php/tokens.php
-php/config.php
 files/*
 node_modules
 *.log

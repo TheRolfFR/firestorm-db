@@ -9,21 +9,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- Exposed `Collection.collectionName` as a readonly property for TypeScript.
+- Exposed `Collection.collectionName` as a readonly property for TypeScript usage.
+- Added TypeScript overview to README.md.
 
 ### Changed
 
 - Rejected incorrect parameters are now `TypeError`s instead of regular `Error`s.
+- Deprecated `firestorm.table(name)` method, since `firestorm.collection(name)` does exactly the same thing.
+- Reformatted the repository and improved README.md to make it easier to set up Firestorm.
 
 ### Fixed
 
 - Failed GET requests not rejecting the error message properly.
 - Certain write commands mutating data internally and affecting parameters outside Firestorm.
 - `Collection.searchKeys` and `Collection.values` not returning proper `Error`s sometimes.
-
-### Removed
-
-- Redundant `firestorm.table(name)` method, since `firestorm.collection(name)` does exactly the same thing.
+- `files.upload` not allowing the `form-data` package's typing of `FormData`.
+- Inconsistent use of indentation in PHP files.
 
 ## [1.12.0] - 2024-02-22
 
@@ -96,4 +97,4 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Removed
 
-- crypto module as it is now deprecated and a built-in node package
+- `crypto` module as it is now deprecated and a built-in node package

@@ -555,6 +555,17 @@ const firestorm = {
 		return new Collection(name, addMethods);
 	},
 
+	/**
+	 * Create a temporary Firestorm collection with no methods
+	 * @deprecated Use {@link collection} with no second argument instead
+	 * @template T
+	 * @param {string} name - The table name to get
+	 * @returns {Collection<T>} The collection
+	 */
+	table(name) {
+		return this.collection(name);
+	},
+
 	/** Value for the id field when researching content */
 	ID_FIELD: ID_FIELD_NAME,
 
