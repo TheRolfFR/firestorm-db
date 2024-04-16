@@ -173,35 +173,39 @@ export type RemoveMethods<T> = Pick<
 
 /** ID field not known at add time */
 export type Addable<T> = Omit<RemoveMethods<T>, "id">;
-/** ID field can be provided in request or omitted */
+/** ID field known at add time */
 export type Settable<T> = Addable<T> & {
 	id?: number | string;
 };
 
-export interface Collection<T> {
+/**
+ * Represents a Firestorm Collection
+ * @template T Type of collection item
+ */
+declare class Collection<T> {
 	/** Name of the Firestorm collection */
-	readonly collectionName: string;
+	public readonly collectionName: string;
 
 	/**
 	 * Create a new Firestorm collection instance
 	 * @param name - The name of the collection
 	 * @param addMethods - Additional methods and data to add to the objects
 	 */
-	new(name: string, addMethods?: CollectionMethods<T>);
+	public constructor(name: string, addMethods?: CollectionMethods<T>);
 
 	/**
 	 * Get an element from the collection
 	 * @param id - The ID of the element you want to get
 	 * @returns Corresponding value
 	 */
-	get(id: string | number): Promise<T>;
+	public get(id: string | number): Promise<T>;
 
 	/**
 	 * Get the sha1 hash of the file
 	 * - Can be used to see if same file content without downloading the file
 	 * @returns The sha1 hash of the file
 	 */
-	sha1(): string;
+	public sha1(): string;
 
 	/**
 	 * Search through the collection
@@ -209,7 +213,7 @@ export interface Collection<T> {
 	 * @param random - Random result seed, disabled by default, but can activated with true or a given seed
 	 * @returns The found elements
 	 */
-	search(
+	public search(
 		options: SearchOption<RemoveMethods<T> & { id: string }>[],
 		random?: boolean | number,
 	): Promise<T[]>;
@@ -219,20 +223,20 @@ export interface Collection<T> {
 	 * @param keys - Array of keys to search
 	 * @returns The found elements
 	 */
-	searchKeys(keys: string[] | number[]): Promise<T[]>;
+	public searchKeys(keys: string[] | number[]): Promise<T[]>;
 
 	/**
 	 * Returns the whole content of the JSON
 	 * @returns The entire collection
 	 */
-	readRaw(): Promise<Record<string, T>>;
+	public readRaw(): Promise<Record<string, T>>;
 
 	/**
 	 * Returns the whole content of the JSON
 	 * @deprecated Use {@link readRaw} instead
 	 * @returns The entire collection
 	 */
-	read_raw(): Promise<Record<string, T>>;
+	public read_raw(): Promise<Record<string, T>>;
 
 	/**
 	 * Get only selected fields from the collection
@@ -240,7 +244,7 @@ export interface Collection<T> {
 	 * @param option - The option you want to select
 	 * @returns Selected fields
 	 */
-	select<K extends Array<"id" | keyof T>>(
+	public select<K extends Array<"id" | keyof T>>(
 		option: SelectOption<K>,
 	): Promise<Record<string, Pick<T & { id: string }, K[number]>>>;
 
@@ -249,7 +253,7 @@ export interface Collection<T> {
 	 * @param option - Value options
 	 * @returns Array of unique values
 	 */
-	values<K extends keyof RemoveMethods<T>, F extends boolean = false>(
+	public values<K extends keyof RemoveMethods<T>, F extends boolean = false>(
 		option: ValueOption<K, F>,
 	): Promise<T[K] extends Array<any> ? (F extends true ? T[K] : T[K][]) : T[K][]>;
 
@@ -260,14 +264,14 @@ export interface Collection<T> {
 	 * @param offset - The offset to use
 	 * @returns The found elements
 	 */
-	random(max: number, seed: number, offset: number): Promise<T[]>;
+	public random(max: number, seed: number, offset: number): Promise<T[]>;
 
 	/**
 	 * Set the entire JSON file contents
 	 * @param value - The value to write
 	 * @returns Write confirmation
 	 */
-	writeRaw(value: Record<string, RemoveMethods<T>>): Promise<WriteConfirmation>;
+	public writeRaw(value: Record<string, RemoveMethods<T>>): Promise<WriteConfirmation>;
 
 	/**
 	 * Set the entire JSON file contents
@@ -275,35 +279,35 @@ export interface Collection<T> {
 	 * @param value - The value to write
 	 * @returns Write confirmation
 	 */
-	write_raw(value: Record<string, RemoveMethods<T>>): Promise<WriteConfirmation>;
+	public write_raw(value: Record<string, RemoveMethods<T>>): Promise<WriteConfirmation>;
 
 	/**
 	 * Automatically add a value to the JSON file
 	 * @param value - The value (without methods) to add
 	 * @returns The generated ID of the added element
 	 */
-	add(value: Addable<T>): Promise<string>;
+	public add(value: Addable<T>): Promise<string>;
 
 	/**
 	 * Automatically add multiple values to the JSON file
 	 * @param values - The values (without methods) to add
 	 * @returns The generated IDs of the added elements
 	 */
-	addBulk(values: Addable<T>[]): Promise<string[]>;
+	public addBulk(values: Addable<T>[]): Promise<string[]>;
 
 	/**
 	 * Remove an element from the collection by its ID
 	 * @param id - The ID of the element you want to remove
 	 * @returns Write confirmation
 	 */
-	remove(id: string | number): Promise<WriteConfirmation>;
+	public remove(id: string | number): Promise<WriteConfirmation>;
 
 	/**
 	 * Remove multiple elements from the collection by their IDs
 	 * @param ids - The IDs of the elements you want to remove
 	 * @returns Write confirmation
 	 */
-	removeBulk(ids: string[] | number[]): Promise<WriteConfirmation>;
+	public removeBulk(ids: string[] | number[]): Promise<WriteConfirmation>;
 
 	/**
 	 * Set a value in the collection by ID
@@ -311,7 +315,7 @@ export interface Collection<T> {
 	 * @param value - The value (without methods) you want to edit
 	 * @returns Write confirmation
 	 */
-	set(id: string | number, value: Settable<T>): Promise<WriteConfirmation>;
+	public set(id: string | number, value: Settable<T>): Promise<WriteConfirmation>;
 
 	/**
 	 * Set multiple values in the collection by their IDs
@@ -319,21 +323,21 @@ export interface Collection<T> {
 	 * @param values - The values (without methods) you want to edit
 	 * @returns Write confirmation
 	 */
-	setBulk(ids: string[] | number[], values: Settable<T>[]): Promise<WriteConfirmation>;
+	public setBulk(ids: string[] | number[], values: Settable<T>[]): Promise<WriteConfirmation>;
 
 	/**
 	 * Edit one field of the collection
 	 * @param edit - The edit object
 	 * @returns Edit confirmation
 	 */
-	editField(edit: EditField<RemoveMethods<T>>): Promise<{ success: boolean }>;
+	public editField(edit: EditField<RemoveMethods<T>>): Promise<{ success: boolean }>;
 
 	/**
 	 * Change one field from multiple elements of the collection
 	 * @param edits - The edit objects
 	 * @returns Edit confirmation
 	 */
-	editFieldBulk(edits: EditField<RemoveMethods<T>>[]): Promise<{ success: boolean[] }>;
+	public editFieldBulk(edits: EditField<RemoveMethods<T>>[]): Promise<{ success: boolean[] }>;
 }
 
 /** Value for the id field when searching content */

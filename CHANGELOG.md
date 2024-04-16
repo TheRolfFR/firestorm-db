@@ -25,6 +25,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `Collection.searchKeys` and `Collection.values` not returning proper `Error`s sometimes.
 - `files.upload` not allowing the `form-data` package's typing of `FormData`.
 - Inconsistent use of indentation in PHP files.
+- Collection class being public in TypeScript despite the actual class being private.
 
 ## [1.12.0] - 2024-02-22
 
