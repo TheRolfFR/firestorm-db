@@ -15,7 +15,7 @@ $inputJSON = json_decode(file_get_contents('php://input'), true);
 
 if(!$inputJSON)
     http_error(400, 'No JSON body provided');
-    
+
 // pre_dump($inputJSON);
 // exit();
 
@@ -26,7 +26,7 @@ if(!$token)
 if(file_exists('./tokens.php') == false)
     http_error(501, 'Admin didn\'t implemented tokens.php file');
 
-// add tokens    
+// add tokens
 require_once('./tokens.php');
 
 if(!$db_tokens)
@@ -48,22 +48,22 @@ require_once('./config.php');
 
 // trying things
 try {
-    
+
 // checking good collection
 if(!array_key_exists($collection, $database_list))
     http_error(404, 'Collection not found: ' . $collection);
-    
+
 $db = $database_list[$collection];
 
 $command = check_key_json('command', $inputJSON);
 if($command === false)
     http_error(400, 'No command provided');
-    
+
 $commands_available = ['write_raw', 'add', 'addBulk', 'remove', 'removeBulk', 'set', 'setBulk', 'editField', 'editFieldBulk'];
 
 if(!in_array($command, $commands_available))
     http_error(404, 'Command not found: ' . $command . '. Available commands: ' . join(', ', $commands_available));
-    
+
 $valueKeyName = ($command != 'setBulk' && $command != 'addBulk') ? 'value' : 'values';
 $value = check_key_json($valueKeyName, $inputJSON, false);
 
@@ -95,7 +95,7 @@ switch($command) {
         $dbKey = check_key_json('key', $inputJSON);
         if($dbKey === false)
             http_error(400, 'No key provided');
-        
+
         $db->set($dbKey, $value);
         http_success('Successful ' . $command . ' command');
         break;
@@ -103,7 +103,7 @@ switch($command) {
         $dbKey = check_key_json('keys', $inputJSON, false);
         if($dbKey === false)
             http_error(400, 'No keys provided');
-        
+
         $db->setBulk($dbKey, $value);
         http_success('Successful ' . $command . ' command');
         break;
@@ -111,14 +111,14 @@ switch($command) {
         $res = $db->editField($value);
         if($res === false)
             http_error(400, 'Incorrect data provided');
-        
+
         http_message($res, 'success', 200);
         break;
     case 'editFieldBulk':
         $res = $db->editFieldBulk($value);
         if($res === false)
             http_error(400, 'Incorrect data provided');
-        
+
         http_message($res, 'success', 200);
         break;
     default:

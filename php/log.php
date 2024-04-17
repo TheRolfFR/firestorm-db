@@ -10,7 +10,7 @@ class Log {
         $fp = fopen($path, 'a');
         fwrite($fp, $now->format('Y-m-d H:i:s'));
         fwrite($fp, $message);
-        fwrite($fp, '\n');  
-        fclose($fp);  
+        fwrite($fp, '\n');
+        fclose($fp);
     }
 }
