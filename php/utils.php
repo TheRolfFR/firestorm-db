@@ -7,7 +7,7 @@ function pre_dump($val) {
 }
 
 function check($var) {
-    if(isset($var) and !empty($var)) {
+    if (isset($var) and !empty($var)) {
         return true;
     }
     return false;
@@ -57,7 +57,7 @@ function array_sequential(array $arr) {
 }
 
 function stringifier($obj, $depth = 1) {
-	if($depth == 0) {
+	if ($depth == 0) {
 		return json_encode($obj);
 	}
 

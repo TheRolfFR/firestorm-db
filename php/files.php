@@ -7,19 +7,19 @@ error_reporting(E_ALL - E_NOTICE);
 
 require_once('./config.php');
 
-if(!$STORAGE_LOCATION) http_error(501, 'Developer forgot the $STORAGE_LOCATION');
+if (!$STORAGE_LOCATION) http_error(501, 'Developer forgot the $STORAGE_LOCATION');
 
 // import useful functions
 require_once('./utils.php');
 require_once('./log.php');
 
 $method = sec($_SERVER['REQUEST_METHOD']);
-if($method !== 'GET' && $method !== 'POST' && $method !== 'DELETE') {
+if ($method !== 'GET' && $method !== 'POST' && $method !== 'DELETE') {
     http_error(400, 'Incorrect request type, expected GET, POST or DELETE, not ' . $method);
 }
 
 
-if($method === 'POST') {
+if ($method === 'POST') {
     /**
      * post is creation
      * You need a token
@@ -30,20 +30,20 @@ if($method === 'POST') {
     // add tokens
     require_once('./tokens.php');
 
-    if(!$db_tokens)
+    if (!$db_tokens)
         http_error(501, 'Developer is dumb and forgot to create tokens');
 
-    if(!$authorized_file_extension)
+    if (!$authorized_file_extension)
         http_error(501, 'Developer is dumb and forgot to create $authorized_file_extension');
 
     $token = p('token');
 
     // verifying token
-    if($token === false) http_error(400, 'No token provided');
-    if(!in_array($token, $db_tokens)) http_error(403, 'Invalid token');
+    if ($token === false) http_error(400, 'No token provided');
+    if (!in_array($token, $db_tokens)) http_error(403, 'Invalid token');
 
     $path = trim(p('path'));
-    if($path === false) http_error(400, 'No path provided');
+    if ($path === false) http_error(400, 'No path provided');
 
     // check path lower than me
     $relativePath = removeDots($path);
@@ -51,9 +51,9 @@ if($method === 'POST') {
     $myPath = removeDots($STORAGE_LOCATION);
 
     // avoid hacks to write script or files unauthorized
-    if(strpos($absolutePath, $myPath) !== 0) http_error(403, 'Path not authorized');
+    if (strpos($absolutePath, $myPath) !== 0) http_error(403, 'Path not authorized');
     // no php script allowed
-    if(str_ends_with($absolutePath, '.php') === 0) http_error(403, 'Cannot write php scripts');
+    if (str_ends_with($absolutePath, '.php') === 0) http_error(403, 'Cannot write PHP scripts');
 
     $extensionFound = false;
     $i = 0;
@@ -62,18 +62,18 @@ if($method === 'POST') {
         $i = $i + 1;
     }
 
-    if(!$extensionFound) {
+    if (!$extensionFound) {
         http_error(403, 'Extension not allowed');
     }
 
-    if(!check($_FILES) || !check($_FILES['file'])) {
+    if (!check($_FILES) || !check($_FILES['file'])) {
         http_error(400, 'No file provided or the provided file did not contain an original name');
     }
 
     // overwrite parameter
     $overwrite = !!p('overwrite');
 
-    if(!$overwrite && file_exists($absolutePath)) http_error(403, 'File already exists');
+    if (!$overwrite && file_exists($absolutePath)) http_error(403, 'File already exists');
 
     $uploaddir = dirname($absolutePath);
 
@@ -87,31 +87,31 @@ if($method === 'POST') {
         http_error(500, "PHP script can't create folder " . $uploaddir . ", check permission, group and owner.");
     }
 
-    if(!check($_FILES) || !check($_FILES['file'])) http_error(400, 'No actual file was given');
+    if (!check($_FILES) || !check($_FILES['file'])) http_error(400, 'No actual file was given');
 
     $tmpName = $_FILES['file']['tmp_name'];
 
     // eventually write the file
-    if(move_uploaded_file($tmpName, $absolutePath)) {
+    if (move_uploaded_file($tmpName, $absolutePath)) {
         http_success('Written file successfully to ' . $relativePath);
     } else {
         http_error(500, "PHP script can't write to file, check permission, group and owner.");
     }
 
     die();
-} else if($method === 'GET') {
+} else if ($method === 'GET') {
     $path = trim(g('path'));
-    if($path === false) http_error(400, 'No path provided');
+    if ($path === false) http_error(400, 'No path provided');
 
     // check path lower than me
     $absolutePath = removeDots($STORAGE_LOCATION . $path);
     $myPath = removeDots($STORAGE_LOCATION);
     // avoid hacks to write script or files unauthorized
-    if(strpos($absolutePath, $myPath) !== 0) http_error(403, 'Path not authorized');
+    if (strpos($absolutePath, $myPath) !== 0) http_error(403, 'Path not authorized');
     // no php script allowed
-    if(substr_compare($absolutePath, ".php", -strlen(".php"), null, true) === 0) http_error(403, 'Cannot read php scripts');
+    if (substr_compare($absolutePath, ".php", -strlen(".php"), null, true) === 0) http_error(403, 'Cannot read PHP scripts');
 
-    if(!file_exists($absolutePath)) http_error(404, 'File not found');
+    if (!file_exists($absolutePath)) http_error(404, 'File not found');
 
     try {
         // try to read the image
@@ -140,7 +140,7 @@ if($method === 'POST') {
         die();
     }
 
-} else if($method === 'DELETE') {
+} else if ($method === 'DELETE') {
     /**
      * delete is deletion
      * You need a token
@@ -150,11 +150,11 @@ if($method === 'POST') {
     // add tokens
     require_once('./tokens.php');
 
-    if(!$db_tokens)
+    if (!$db_tokens)
         http_error(501, 'Developer is dumb and forgot to create tokens');
 
     $data = json_decode(file_get_contents('php://input'), true);
-    if($data === false) http_error(400, 'Could not parse input data');
+    if ($data === false) http_error(400, 'Could not parse input data');
 
     try {
         $token = $data['token'];
@@ -163,11 +163,11 @@ if($method === 'POST') {
     }
 
     // verifying token
-    if($token === false) http_error(400, 'No token provided');
-    if(!in_array($token, $db_tokens)) http_error(403, 'Invalid token');
+    if ($token === false) http_error(400, 'No token provided');
+    if (!in_array($token, $db_tokens)) http_error(403, 'Invalid token');
 
     $path = trim($data['path']);
-    if($path === false) http_error(400, 'No path provided');
+    if ($path === false) http_error(400, 'No path provided');
 
     // check path lower than me
     $relativePath = removeDots($path);
@@ -175,13 +175,13 @@ if($method === 'POST') {
     $myPath = removeDots($STORAGE_LOCATION);
 
     // avoid hacks to write script or files unauthorized
-    if(strpos($absolutePath, $myPath) !== 0) http_error(403, 'Path not authorized');
+    if (strpos($absolutePath, $myPath) !== 0) http_error(403, 'Path not authorized');
 
-    if(!file_exists($absolutePath)) http_error(404, 'File not found');
+    if (!file_exists($absolutePath)) http_error(404, 'File not found');
 
     $is_deleted = unlink($absolutePath);
 
-    if($is_deleted) http_success('File successfully deleted');
+    if ($is_deleted) http_success('File successfully deleted');
 
     http_error(500, 'Deletion failed');
 }
@@ -190,7 +190,7 @@ http_error(501, 'Request unhandled by developer');
 
 function p($var) {
     try {
-        if(!check($_POST[$var])) return false;
+        if (!check($_POST[$var])) return false;
     } catch (Throwable $th) {
         return false;
     }
@@ -199,7 +199,7 @@ function p($var) {
 
 function g($var) {
     try {
-        if(!check($_GET[$var])) return false;
+        if (!check($_GET[$var])) return false;
     } catch (Throwable $th) {
         return false;
     }

@@ -520,7 +520,7 @@ class Collection {
  */
 const firestorm = {
 	/**
-	 * Change the current Firestorm address
+	 * Change or get the current Firestorm address
 	 * @param {string} [newValue] - The new Firestorm address
 	 * @returns {string} The stored Firestorm address
 	 */
@@ -533,7 +533,7 @@ const firestorm = {
 	},
 
 	/**
-	 * Change the current Firestorm token
+	 * Change or get the current Firestorm token
 	 * @param {string} [newValue] - The new Firestorm write token
 	 * @returns {string} The stored Firestorm write token
 	 */
@@ -566,7 +566,7 @@ const firestorm = {
 		return this.collection(name);
 	},
 
-	/** Value for the id field when researching content */
+	/** Value for the ID field when searching content */
 	ID_FIELD: ID_FIELD_NAME,
 
 	/**
@@ -579,7 +579,7 @@ const firestorm = {
 		/**
 		 * Get a file by its path
 		 * @memberof firestorm.files
-		 * @param {string} path - The file path wanted
+		 * @param {string} path - The wanted file path
 		 * @returns {Promise<any>} File contents
 		 */
 		get(path) {
@@ -595,7 +595,7 @@ const firestorm = {
 		/**
 		 * Upload a file
 		 * @memberof firestorm.files
-		 * @param {FormData} form - The form data with path, filename, and file
+		 * @param {FormData} form - Form data with path, filename, and file
 		 * @returns {Promise<WriteConfirmation>} Write confirmation
 		 */
 		upload(form) {
@@ -610,7 +610,7 @@ const firestorm = {
 		},
 
 		/**
-		 * Deletes a file by path
+		 * Delete a file by its path
 		 * @memberof firestorm.files
 		 * @param {string} path - The file path to delete
 		 * @returns {Promise<WriteConfirmation>} Write confirmation

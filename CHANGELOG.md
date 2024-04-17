@@ -10,7 +10,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - Exposed `Collection.collectionName` as a readonly property for TypeScript usage.
-- Added TypeScript overview to README.md.
+- TypeScript overview to README.md.
+- Optional replacement argument for `array-splice` edit fields.
 
 ### Changed
 
@@ -24,8 +25,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Certain write commands mutating data internally and affecting parameters outside Firestorm.
 - `Collection.searchKeys` and `Collection.values` not returning proper `Error`s sometimes.
 - `files.upload` not allowing the `form-data` package's typing of `FormData`.
-- Inconsistent use of indentation in PHP files.
-- Collection class being public in TypeScript despite the actual class being private.
+- Inconsistent use of indentation and formatting in PHP files.
+- Various typos in PHP files.
+- `Collection` class being exported in TypeScript despite the actual class being private.
+- `array-splice` edit fields being incorrectly typed as `array-slice`.
 
 ## [1.12.0] - 2024-02-22
 
@@ -36,7 +39,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - Refactored JavaScript part to be less verbose and reuse existing code better.
-- Use JSDoc `{@link }` properties.
+- Added JSDoc `{@link }` properties.
 - Cleaned up and clarified README.md.
 - Renamed `AllCriteria` to `AnyCriteria` to be more accurate.
 - Replaced broken `NoMethods<T>` type with a more generalized `RemoveMethods<T>` type.

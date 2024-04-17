@@ -1311,7 +1311,7 @@ describe("POST operations", () => {
 		});
 
 		describe("Rejects operations with value required", () => {
-			["set", "append", "array-push", "array-delete", "array-slice"].forEach((op) => {
+			["set", "append", "array-push", "array-delete", "array-splice"].forEach((op) => {
 				it(`${op} operation needs a value`, (done) => {
 					base
 						.editField({

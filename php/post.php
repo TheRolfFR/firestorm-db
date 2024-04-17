@@ -7,41 +7,38 @@ require_once('./utils.php');
 cors();
 
 $method = sec($_SERVER['REQUEST_METHOD']);
-if($method === 'GET') {
+if ($method === 'GET') {
     http_error(400, 'Incorrect request type, expected POST, not ' . $method);
 }
 
 $inputJSON = json_decode(file_get_contents('php://input'), true);
 
-if(!$inputJSON)
+if (!$inputJSON)
     http_error(400, 'No JSON body provided');
 
-// pre_dump($inputJSON);
-// exit();
-
 $token = check_key_json('token', $inputJSON);
-if(!$token)
+if (!$token)
     http_error(400, 'No token provided');
 
-if(file_exists('./tokens.php') == false)
-    http_error(501, 'Admin didn\'t implemented tokens.php file');
+if (file_exists('./tokens.php') == false)
+    http_error(501, 'Developer didn\'t implement a tokens.php file');
 
 // add tokens
 require_once('./tokens.php');
 
-if(!$db_tokens)
+if (!$db_tokens)
     http_error(400, 'Developer is dumb and forgot to create tokens');
 
 // verifying token
-if(!in_array($token, $db_tokens))
+if (!in_array($token, $db_tokens))
     http_error(403, 'Invalid token');
 
 $collection = check_key_json('collection', $inputJSON);
-if(!check($collection))
+if (!check($collection))
     http_error(400, 'No collection provided');
 
-if(file_exists('./config.php') == false)
-    http_error(501, 'Admin didn\'t implemented config.php file');
+if (file_exists('./config.php') == false)
+    http_error(501, 'Developer didn\'t implement a config.php file');
 
 // import db config
 require_once('./config.php');
@@ -50,24 +47,24 @@ require_once('./config.php');
 try {
 
 // checking good collection
-if(!array_key_exists($collection, $database_list))
+if (!array_key_exists($collection, $database_list))
     http_error(404, 'Collection not found: ' . $collection);
 
 $db = $database_list[$collection];
 
 $command = check_key_json('command', $inputJSON);
-if($command === false)
+if ($command === false)
     http_error(400, 'No command provided');
 
 $commands_available = ['write_raw', 'add', 'addBulk', 'remove', 'removeBulk', 'set', 'setBulk', 'editField', 'editFieldBulk'];
 
-if(!in_array($command, $commands_available))
+if (!in_array($command, $commands_available))
     http_error(404, 'Command not found: ' . $command . '. Available commands: ' . join(', ', $commands_available));
 
 $valueKeyName = ($command != 'setBulk' && $command != 'addBulk') ? 'value' : 'values';
 $value = check_key_json($valueKeyName, $inputJSON, false);
 
-if($value === false)
+if ($value === false)
     http_error(400, 'No ' . $valueKeyName . ' provided');
 
 switch($command) {
@@ -93,7 +90,7 @@ switch($command) {
         break;
     case 'set':
         $dbKey = check_key_json('key', $inputJSON);
-        if($dbKey === false)
+        if ($dbKey === false)
             http_error(400, 'No key provided');
 
         $db->set($dbKey, $value);
@@ -101,7 +98,7 @@ switch($command) {
         break;
     case 'setBulk':
         $dbKey = check_key_json('keys', $inputJSON, false);
-        if($dbKey === false)
+        if ($dbKey === false)
             http_error(400, 'No keys provided');
 
         $db->setBulk($dbKey, $value);
@@ -109,14 +106,14 @@ switch($command) {
         break;
     case 'editField':
         $res = $db->editField($value);
-        if($res === false)
+        if ($res === false)
             http_error(400, 'Incorrect data provided');
 
         http_message($res, 'success', 200);
         break;
     case 'editFieldBulk':
         $res = $db->editFieldBulk($value);
-        if($res === false)
+        if ($res === false)
             http_error(400, 'Incorrect data provided');
 
         http_message($res, 'success', 200);

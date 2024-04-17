@@ -126,8 +126,8 @@ export type EditField<T> = {
 			  }
 			| {
 					field: Field<Array<unknown>, T>;
-					operation: "array-slice";
-					value: [number, number];
+					operation: "array-splice";
+					value: [number, number] | [number, number, T[Field<Array<unknown>, T>][any]];
 			  }
 		);
 }[keyof T];
@@ -344,14 +344,14 @@ declare class Collection<T> {
 export const ID_FIELD: string;
 
 /**
- * Change the current Firestorm address
+ * Change or get the current Firestorm address
  * @param value - The new Firestorm address
  * @returns The stored Firestorm address
  */
 export function address(value?: string): string;
 
 /**
- * Change the current Firestorm token
+ * Change or get the current Firestorm token
  * @param value - The new Firestorm write token
  * @returns The stored Firestorm write token
  */
@@ -379,20 +379,20 @@ export function table<T>(table: string): Promise<Collection<T>>;
 export declare const files: {
 	/**
 	 * Get a file by its path
-	 * @param path - The file path wanted
+	 * @param path - The wanted file path
 	 * @returns File contents
 	 */
 	get(path: string): Promise<any>;
 
 	/**
 	 * Upload a file
-	 * @param form - The form data with path, filename, and file
+	 * @param form - Form data with path, filename, and file
 	 * @returns Write confirmation
 	 */
 	upload(form: FormData | NodeFormData): Promise<WriteConfirmation>;
 
 	/**
-	 * Deletes a file by path
+	 * Delete a file by its path
 	 * @param path - The file path to delete
 	 * @returns Write confirmation
 	 */

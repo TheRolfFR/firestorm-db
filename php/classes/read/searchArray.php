@@ -33,8 +33,6 @@ function array_contains_any($concernedField, $value, $ignoreCase = false) {
             $val_i = $val_i + 1;
         }
 
-        if($val_i  == count($value)) {
-        }
         $add = $tmp;
     } else {
         $add = false;

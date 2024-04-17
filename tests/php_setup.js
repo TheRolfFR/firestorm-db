@@ -23,13 +23,13 @@ async function setup_php() {
 	console.log(
 		"Moving PHP folder + Checking test php files + Creating files folder + Checking test databases...",
 	);
-	const [globPHP, globJSON] = await Promise.all([
+	const [phpPaths, jsonPaths] = await Promise.all([
 		glob(join(process.cwd(), PHP_PATH, "**/*.php")),
 		glob(join(process.cwd(), "tests", "*.json")),
 		mkdir(join(tmpFolder, "files")),
 	]);
 
-	const symlinkProm = globPHP.map(async (from) => {
+	const phpSymlinkProms = phpPaths.map(async (from) => {
 		const endPath = relative(join(process.cwd(), PHP_PATH), from);
 		const to = join(tmpFolder, endPath);
 		console.log(`Linking ${endPath}...`);
@@ -42,7 +42,7 @@ async function setup_php() {
 
 	console.log("Copying test databases...");
 
-	const jsonProm = globJSON.map((from) => {
+	const jsonCopyProms = jsonPaths.map((from) => {
 		const filename = basename(from);
 		console.log(`Copying ${filename}...`);
 		const to = join(tmpFolder, "files", filename);
@@ -52,14 +52,14 @@ async function setup_php() {
 		});
 	});
 
-	const globTestPHP = await glob(join(process.cwd(), "tests", "*.php"));
+	const phpTestPaths = await glob(join(process.cwd(), "tests", "*.php"));
 
-	await Promise.all([...symlinkProm, ...jsonProm]);
+	await Promise.all([...phpSymlinkProms, ...jsonCopyProms]);
 
-	console.log("Copying test php config files...");
+	console.log("Copying test PHP config files...");
 
 	await Promise.all(
-		globTestPHP.map(async (from) => {
+		phpTestPaths.map(async (from) => {
 			const filename = basename(from);
 			const to = join(tmpFolder, filename);
 			console.log(`Linking test ${filename}...`);
@@ -89,20 +89,8 @@ setup_php().catch((err) => {
 });
 
 /**
- * Promisify setTimeout
+ * Promise-based implementation of setTimeout
  * @param {Number} ms Timeout in ms
- * @param {Function} cb callback function after timeout
- * @param  {...any} args Optional return arguments
  * @returns {Promise<any>}
  */
-const pause = (ms, cb, ...args) =>
-	new Promise((resolve, reject) => {
-		setTimeout(async () => {
-			try {
-				const result = !!cb ? await cb(...args) : undefined;
-				resolve(result);
-			} catch (error) {
-				reject(error);
-			}
-		}, ms);
-	});
+const pause = (ms) => new Promise((resolve) => setTimeout(resolve, ms));

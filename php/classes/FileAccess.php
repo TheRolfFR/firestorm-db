@@ -8,7 +8,7 @@ class FileAccess {
 
         // exit if couldn't find file
         if ($file === false) {
-            if($default == null)
+            if ($default == null)
                 throw new Exception('Could not open file: ' . $filepath);
 
             // set default value
@@ -16,7 +16,7 @@ class FileAccess {
         }
 
         // if no file, puts default value inside
-        if($file === false) {
+        if ($file === false) {
             file_put_contents($fileobj['filepath'], $fileobj['content'], LOCK_EX);
             $file = fopen($filepath, 'rb');
         }
@@ -24,7 +24,7 @@ class FileAccess {
         $fileobj['fd'] = $file;
 
         // if want the lock, we wait for the shared lock
-        if($waitLock) {
+        if ($waitLock) {
             $lock = flock($file, LOCK_SH);
             if (!$lock) {
                 fclose($file);
@@ -41,7 +41,7 @@ class FileAccess {
         $fileobj['content'] = $string;
 
         // if no wait you can close the file
-        if(!$waitLock)
+        if (!$waitLock)
             fclose($file);
 
         return $fileobj;
@@ -51,7 +51,7 @@ class FileAccess {
         flock($fileobj['fd'], LOCK_UN);
         fclose($fileobj['fd']);
 
-        if(!is_writable($fileobj['filepath'])) {
+        if (!is_writable($fileobj['filepath'])) {
             throw new HTTPException("PHP script can't write to file. Check permission, group and owner.", 400);
         }
 
