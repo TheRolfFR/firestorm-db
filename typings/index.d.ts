@@ -371,7 +371,7 @@ export function collection<T>(value: string, addMethods?: CollectionMethods<T>):
  * @param table - The table name to get
  * @returns The collection
  */
-export function table<T>(table: string): Promise<Collection<T>>;
+export function table<T>(table: string): Collection<T>;
 
 /**
  * Firestorm file handler
