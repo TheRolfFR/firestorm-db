@@ -384,7 +384,7 @@ describe("GET operations", () => {
 
 	describe("search(searchOptions, random)", () => {
 		describe("Nested keys test", () => {
-			it("doesn't crash if nested key unknown", (done) => {
+			it("doesn't crash if unknown nested key", (done) => {
 				base
 					.search([
 						{
@@ -398,9 +398,7 @@ describe("GET operations", () => {
 						expect(res.length).to.equal(0);
 						done();
 					})
-					.catch((err) => {
-						done(err);
-					});
+					.catch((err) => done(err));
 			});
 			it("can find correct nested value", (done) => {
 				base
@@ -436,7 +434,8 @@ describe("GET operations", () => {
 			});
 		});
 
-		let incorrect = [null, "gg", ""]; // undefined works because random becomes default parameter false, so false works too
+		// undefined works because random becomes default parameter false, so false works too
+		const incorrect = [null, "gg", ""];
 		incorrect.forEach((unco) => {
 			it(`${JSON.stringify(unco)} seed rejects`, (done) => {
 				base
@@ -507,14 +506,12 @@ describe("GET operations", () => {
 		it("requires a fields field", (done) => {
 			base
 				.select(undefined)
-				.then((res) => {
-					done("Did not expect it to success");
-				})
+				.then(() => done("Did not expect it to success"))
 				.catch(() => done());
 		});
 		describe("requires field to be a string array", () => {
 			// all incorrect values must catch
-			let incorrect = [undefined, null, false, 5, 12.5, "gg", { toto: "tata" }];
+			const incorrect = [undefined, null, false, 5, 12.5, "gg", { toto: "tata" }];
 			incorrect.forEach((unco) => {
 				it(`${JSON.stringify(unco)} value`, (done) => {
 					base
@@ -530,12 +527,8 @@ describe("GET operations", () => {
 				it(`${JSON.stringify(val)} value`, (done) => {
 					base
 						.select({ fields: val })
-						.then(() => {
-							done();
-						})
-						.catch((err) => {
-							done(err);
-						});
+						.then(() => done())
+						.catch((err) => done(err));
 				});
 			});
 		});
@@ -565,7 +558,7 @@ describe("GET operations", () => {
 							}
 						});
 					});
-					let selectResult = results[1];
+					const selectResult = results[1];
 					Object.keys(selectResult).forEach((k) => {
 						delete selectResult[k][firestorm.ID_FIELD];
 					});
@@ -581,27 +574,21 @@ describe("GET operations", () => {
 		it("requires a field", (done) => {
 			base
 				.values()
-				.then((res) => {
-					done("Did not expect it to succeed");
-				})
+				.then(() => done("Did not expect it to succeed"))
 				.catch(() => done());
 		});
 
 		it("doesn't require a flatten field", (done) => {
 			base
 				.values({ field: "name" })
-				.then((res) => {
-					done();
-				})
+				.then(() => done())
 				.catch(() => done("Did not expect it to fail"));
 		});
 
 		it("needs a boolean flatten field if provided", (done) => {
 			base
 				.values({ field: "name", flatten: "this is not a boolean" })
-				.then((res) => {
-					done("Did not expect it to succeed");
-				})
+				.then(() => done("Did not expect it to succeed"))
 				.catch(() => done());
 		});
 	});
@@ -610,17 +597,13 @@ describe("GET operations", () => {
 		it("doesn't require parameters", (done) => {
 			base
 				.random()
-				.then((res) => {
-					done();
-				})
+				.then(() => done())
 				.catch(() => done("Did not expect it to fail"));
 		});
 		it("passes with undefined parameters", (done) => {
 			base
 				.random(undefined, undefined, undefined)
-				.then((res) => {
-					done();
-				})
+				.then(() => done())
 				.catch(() => done("Did not expect it to fail"));
 		});
 
@@ -639,7 +622,7 @@ describe("GET operations", () => {
 
 		describe("requires seed parameter to be an integer", () => {
 			// all incorrect values must catch
-			let incorrect = [null, false, "gg", 5.5]; // undefined works because then seed is automatic
+			const incorrect = [null, false, "gg", 5.5]; // undefined works because then seed is automatic
 			incorrect.forEach((unco) => {
 				it(`${JSON.stringify(unco)} value`, (done) => {
 					base
@@ -659,7 +642,7 @@ describe("GET operations", () => {
 
 		describe("requires offset parameter to be an integer >= 0", () => {
 			// all incorrect values must catch
-			let incorrect = [null, false, "gg", 5.5, -1]; // undefined works because then offset is 0
+			const incorrect = [null, false, "gg", 5.5, -1]; // undefined works because then offset is 0
 			incorrect.forEach((unco) => {
 				it(`${JSON.stringify(unco)} value`, (done) => {
 					base
@@ -679,9 +662,7 @@ describe("POST operations", () => {
 
 			base
 				.writeRaw({})
-				.then((res) => {
-					done(res);
-				})
+				.then((res) => done(res))
 				.catch((err) => {
 					if ("response" in err && err.response.status == 403) {
 						done();
@@ -689,9 +670,7 @@ describe("POST operations", () => {
 					}
 					done(new Error("Should return 403"));
 				})
-				.finally(() => {
-					firestorm.token(TOKEN);
-				});
+				.finally(() => firestorm.token(TOKEN));
 		});
 
 		describe("You must give a correct value", () => {
@@ -711,9 +690,7 @@ describe("POST operations", () => {
 				it(`${JSON.stringify(body)} value rejects`, (done) => {
 					base
 						.writeRaw(body)
-						.then((res) => {
-							done(new Error(`Should not fulfill returning ${JSON.stringify(res)}`));
-						})
+						.then((res) => done(new Error(`Should not fulfill returning ${JSON.stringify(res)}`)))
 						.catch((err) => {
 							if (index < 2) {
 								expect(err).to.be.an("error");
@@ -738,9 +715,7 @@ describe("POST operations", () => {
 			it("but it can write an empty content : {}", (done) => {
 				base
 					.writeRaw({})
-					.then(() => {
-						done();
-					})
+					.then(() => done())
 					.catch((err) => {
 						console.trace(err);
 						done(err);
@@ -761,9 +736,7 @@ describe("POST operations", () => {
 					outdoor: true,
 					furniture: ["table", "chair", "flowerpot"],
 				})
-				.then(() => {
-					done(new Error("This request should not fulfill"));
-				})
+				.then(() => done(new Error("This request should not fulfill")))
 				.catch((err) => {
 					if ("response" in err && err.response.status == 400) {
 						done();
@@ -793,9 +766,7 @@ describe("POST operations", () => {
 					expect(id).to.equals(String(parseInt(last_id) + 1));
 					done();
 				})
-				.catch((err) => {
-					done(err);
-				});
+				.catch((err) => done(err));
 		});
 
 		describe("It should not accept incorrect values", () => {
@@ -835,12 +806,8 @@ describe("POST operations", () => {
 				it(`${index === 0 ? "Empty object" : "Complex object"} should fulfill`, (done) => {
 					base
 						.add(co)
-						.then(() => {
-							done();
-						})
-						.catch((err) => {
-							done(err);
-						});
+						.then(() => done())
+						.catch((err) => done(err));
 				});
 			});
 		});

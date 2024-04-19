@@ -276,19 +276,21 @@ class JSONDatabase {
                 // get condition
                 $condition = $conditions[$condition_index];
 
-                // get condition fields extracted
+                // extract field
                 $field = $condition['field'];
                 $field_path = explode(".", $field);
 
-                error_reporting(error_reporting() - E_NOTICE);
                 $field_ind = 0;
 
                 while($el != NULL && $field_ind + 1 < count($field_path)) {
+                    // don't crash if unknown nested key, break early
+                    if (!array_key_exists($field_path[$field_ind], $el))
+                        break;
+
                     $el = $el[$field_path[$field_ind]];
-                    $field_ind = $field_ind + 1;
+                    $field_ind += 1;
                     $field = $field_path[$field_ind];
                 }
-                error_reporting(error_reporting() + E_NOTICE);
 
                 if ($el != NULL && array_key_exists($field, $el) && array_key_exists('criteria', $condition) && array_key_exists('value', $condition)) {
                     $criteria = $condition['criteria'];
