@@ -192,6 +192,8 @@ $database_list[$tmp->fileName] = $tmp;
 - `autoIncrement` controls whether to simply start generating key names from zero or to use a [random ID](https://www.php.net/manual/en/function.uniqid.php) each time (default: `true`).
 - The key in the `$database_list` array is what the collection will be called in JavaScript in the Collection constructor (this can be different from the JSON filename if needed).
 
+The sample files additionally have some comments on how to edit Collections.
+
 # Firestorm Files
 
 Firestorm's file APIs are implemented in `files.php`. If you don't need file-related features, then simply delete this file.

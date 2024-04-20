@@ -9,7 +9,7 @@ $database_list = array();
 /**
  * Example server-side collection creation:
  * The class has most things set by default, so this is intentionally verbose
- * If you're working with multiple collections, it's probably easier to iterate over an array of options to create new instances
+ * For adding multiple collections, you can declare them directly in the array constructor.
  */
 
 $db = new JSONDatabase;
