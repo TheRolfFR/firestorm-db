@@ -3,11 +3,6 @@
 require_once('./utils.php');
 require_once('./classes/JSONDatabase.php');
 
-$props = array(
-    array('house', false),
-    array('base', true, true),
-);
-
 // whitelist of correct extensions
 $authorized_file_extension = array('.txt', '.png', '.jpg', '.jpeg');
 // subfolder of uploads location, must start with dirname($_SERVER['SCRIPT_FILENAME'])
