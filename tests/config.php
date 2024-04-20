@@ -15,18 +15,18 @@ $authorized_file_extension = array('.txt', '.png', '.jpg', '.jpeg');
 $STORAGE_LOCATION = dirname($_SERVER['SCRIPT_FILENAME']) . '/uploads/';
 
 $database_list = array();
-foreach($props as $prop) {
-  $dbName = $prop[0];
-  $autoKey = $prop[1];
-  $autoKeyIncrement = count($prop) > 2 and $prop[2] == true;
 
-  $tmp_db = new JSONDatabase;
-  $tmp_db->fileName = $dbName;
-  $tmp_db->autoKey = $autoKey;
-  $tmp_db->autoIncrement = $autoKeyIncrement;
+// test with constructor/optional args
+$database_list['house'] = new JSONDatabase('house', false);
 
-  $database_list[$dbName] = $tmp_db;
-}
+// test without constructor
+$tmp = new JSONDatabase;
+$tmp->fileName = 'base';
+$tmp->autoKey = true;
+$tmp->autoIncrement = true;
+
+$database_list[$tmp->fileName] = $tmp;
+
 
 $log_path = "firestorm.log";
 

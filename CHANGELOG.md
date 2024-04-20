@@ -12,6 +12,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Exposed `Collection.collectionName` as a readonly property for TypeScript usage.
 - TypeScript overview to README.md.
 - Optional replacement argument for `array-splice` edit fields.
+- Optional constructor for the `JSONDatabase` PHP class to reduce repetitive code.
 
 ### Changed
 

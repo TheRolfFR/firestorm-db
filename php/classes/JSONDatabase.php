@@ -16,6 +16,13 @@ class JSONDatabase {
     public $autoKey = true;
     public $autoIncrement = true;
 
+    public function __construct(string $fileName = 'db', bool $autoKey = true, bool $autoIncrement = true) {
+        // if no/some args provided they just fall back to their defaults
+        $this->fileName = $fileName;
+        $this->autoKey = $autoKey;
+        $this->autoIncrement = $autoIncrement;
+    }
+
     public function fullPath() {
         return $this->folderPath . $this->fileName . $this->fileExt;
     }

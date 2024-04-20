@@ -26,6 +26,11 @@ $db->autoIncrement = true;
 // The database_list key is what the collection will be called in JavaScript
 $database_list["my_collection_name"] = $db;
 
+// This can be simplified into the following constructor:
+// - Note: all of these arguments are optional and will fall back to their defaults if not provided
+// - Order: (fileName, autoKey, autoIncrement)
+$database_list["my_collection_name"] = new JSONDatabase("my_json_name", true, true);
+
 /**
  * File handling:
  * If you don't need this functionality, delete this section and files.php.

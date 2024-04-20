@@ -14,28 +14,29 @@ _Self hosted Firestore-like database with API endpoints based on micro bulk oper
 
 ## Installation
 
+Installing the JavaScript wrapper is as simple as running:
+```sh
+npm install firestorm-db
 ```
-npm install --save firestorm-db
-```
+To install the PHP backend used to actually query data, copy the sample [php](./php/) folder to your hosting platform and edit the configuration files.
+More information about configuring Firestorm server-side is given in the [PHP](#php-part) section.
 
 # JavaScript Part
 
-The JavaScript [index.js](./src/index.js) file is just an [Axios](https://www.npmjs.com/package/axios) wrapper of the library.
+The JavaScript [index.js](./src/index.js) file is simply an [Axios](https://www.npmjs.com/package/axios) wrapper of the PHP API.
 
-## How to use it
+## JavaScript setup
 
-First, you need to configure your API address, and your token if needed:
+First, set your API address (and your writing token if needed) using the `address()` and `token()` functions:
 
 ```js
-require("dotenv").config(); // add some env variables
 const firestorm = require("firestorm-db");
 
-// ex: 'http://example.com/path/to/firestorm/root/'
-firestorm.address(process.env.FIRESTORM_URL);
+firestorm.address("http://example.com/path/to/firestorm/root/");
 
 // only necessary if you want to write or access private collections
 // must match token stored in tokens.php file
-firestorm.token(process.env.FIRESTORM_TOKEN);
+firestorm.token("my_secret_token_probably_from_an_env_file");
 ```
 
 Now you can use Firestorm to its full potential:
@@ -53,23 +54,24 @@ userCollection
     .catch((err) => console.error(err));
 ```
 
-### Collection constructor
+## Create your first Collection
 
-A collection takes one required argument and one optional argument:
+A Firestorm collection takes one required argument and one optional argument:
 
-- The name of the collection as a `String`.
+- The name of the collection as a `string`.
 - The method adder, which lets you inject methods to query results. It's implemented similarly to [`Array.prototype.map`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/map), taking an outputted element as an argument, modifying the element with methods and data inside a callback, and returning the modified element at the end.
 
 ```js
 const firestorm = require("firestorm-db");
 
 const userCollection = firestorm.collection("users", (el) => {
+    // inject a method into the element
     el.hello = () => `${el.name} says hello!`;
     // return the modified element back with the injected method
     return el;
 });
 
-// if you have a 'users' table with a printable field named name
+// assumes you have a 'users' table with a printable field called 'name'
 const johnDoe = await userCollection.get(123456789);
 // gives { name: "John Doe", hello: Function }
 
@@ -148,18 +150,18 @@ Edit objects have an `id` of the element, a `field` to edit, an `operation` with
 | `array-delete` | Yes         | `number`           | Removes an element at a certain index in an array field. Check the PHP [array_splice](https://www.php.net/manual/function.array-splice) offset for more info. |
 | `array-splice` | Yes         | `[number, number]` | Removes certain elements. Check the PHP [array_splice](https://www.php.net/manual/function.array-splice) offset and length for more info.                     |
 
-<br>
+Various other methods and constants exist in the JavaScript wrapper, which will make more sense once you learn what's actually happening behind the scenes.
 
 # PHP Part
 
-The PHP files handle files, read, and writes, through `GET` and `POST` requests sent by the JavaScript wrapper. All Firestorm methods correspond to an equivalent Axios request to the relevant PHP file.
+The PHP files handle files, read, and writes, through `GET` and `POST` requests sent by the JavaScript wrapper. All JavaScript methods correspond to an equivalent Axios request to the relevant PHP file.
 
 ## PHP setup
 
-The basic files to handle requests can be found and copied [here](./php/). The two files that need editing are `tokens.php` and `config.php`.
+The server-side files to handle requests can be found and copied [here](./php/). The two files that need editing are `tokens.php` and `config.php`.
 
-- `tokens.php` contains the tokens using a `$db_tokens` array. You will use these tokens to write data or read private tables.
-- `config.php` stores all of your collections config. This exports a `$database_list` variable with an array of `JSONDatabase` instances.
+- `tokens.php` contains writing tokens declared in a `$db_tokens` array. These correspond to the tokens used with `firestorm.token()` in the JavaScript wrapper.
+- `config.php` stores all of your collections. This file needs to declare a `$database_list` array of `JSONDatabase` instances.
 
 ```php
 <?php
@@ -168,13 +170,7 @@ require_once('./classes/JSONDatabase.php');
 
 $database_list = array();
 
-$tmp = new JSONDatabase;
-$tmp->folderPath = './files/';
-$tmp->fileName = 'users';
-$tmp->autoKey = false;
-
-$database_list[$tmp->fileName] = $tmp;
-
+// without constructor
 $tmp = new JSONDatabase;
 $tmp->folderPath = './files/';
 $tmp->fileName = 'paths';
@@ -182,19 +178,25 @@ $tmp->autoKey = true;
 $tmp->autoIncrement = false;
 
 $database_list[$tmp->fileName] = $tmp;
+
+// with constructor ($fileName, $autoKey = true, $autoIncrement = true)
+$tmp = new JSONDatabase('users', false);
+$tmp->folderPath = './files/';
+
+$database_list[$tmp->fileName] = $tmp;
 ?>
 ```
 
-- The database will be stored in `<folderPath>/<filename>.json` (default folder is `./files/`).
-- `autoKey` controls whether to automatically generate the key name or to have explicit key names (default `true`).
-- `autoIncrement` controls whether to simply start generating key names from zero or to use a random ID each time (defualt `true`).
-- The key in the `$database_list` array is what the collection will be called in JavaScript (this can be different from the JSON filename if needed).
+- The database will be stored in `<folderPath>/<filename>.json` (default folder: `./files/`).
+- `autoKey` controls whether to automatically generate the key name or to have explicit key names (default: `true`).
+- `autoIncrement` controls whether to simply start generating key names from zero or to use a [random ID](https://www.php.net/manual/en/function.uniqid.php) each time (default: `true`).
+- The key in the `$database_list` array is what the collection will be called in JavaScript in the Collection constructor (this can be different from the JSON filename if needed).
 
 # Firestorm Files
 
-File API functions are detailed in the `files.php` PHP script. If you do not want to include this functionality, then just delete this file.
+Firestorm's file APIs are implemented in `files.php`. If you don't need file-related features, then simply delete this file.
 
-You have to add 2 new configuration variables to your `config.php` file:
+To work with files server-side, you need two new configuration variables in `config.php`:
 
 ```php
 // Extension whitelist
@@ -205,23 +207,21 @@ $authorized_file_extension = array('.txt', '.png', '.jpg', '.jpeg');
 $STORAGE_LOCATION = dirname($_SERVER['SCRIPT_FILENAME']) . '/uploads/';
 ```
 
-You can use the wrapper functions in order to upload, get and delete a file.
-If the folder is accessible from server url, you can directly type its address.
-
-## File rights
-
-The PHP scripts create folders and files, so the script will fail if the PHP user doesn't have write permissions.
-You can give rights to a folder with the following command:
+Additionally, since the PHP scripts create folders and files, the script will fail if the PHP user doesn't have write permissions.
+You can give Firestorm rights to a folder with the following command:
 
 ```sh
 sudo chown -R www-data "/path/to/uploads/"
 ```
 
+From there, you can use the functions in `firestorm.files` (detailed below) from the JavaScript wrapper.
+If your upload folder is accessible from a server URL, you can directly use its address to retrieve the file.
+
 ## Upload a file
 
-In order to upload a file, you have to give the function a `FormData` object. This class is generated from forms and is [native in modern browsers](https://developer.mozilla.org/en-US/docs/Web/API/FormData/FormData) but in Node.js can be imported with the [form-data package](https://www.npmjs.com/package/form-data).
+`firestorm.files.upload` uses a `FormData` object to represent an uploaded file. This class is generated from forms and is [native in modern browsers](https://developer.mozilla.org/en-US/docs/Web/API/FormData/FormData), and with Node.js can be installed with the [form-data](https://www.npmjs.com/package/form-data) package.
 
-The uploaded file content can be a [String](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String), a [Blob](https://developer.mozilla.org/en-US/docs/Web/API/Blob), a [Buffer](https://nodejs.org/api/buffer.html) or an [ArrayBuffer](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/ArrayBuffer).
+The uploaded file content can be a [String](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String), a [Blob](https://developer.mozilla.org/en-US/docs/Web/API/Blob), a [Buffer](https://nodejs.org/api/buffer.html), or an [ArrayBuffer](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/ArrayBuffer).
 
 There is additionally an overwrite option in order to avoid mistakes.
 
@@ -246,7 +246,7 @@ uploadPromise
 
 ## Get a file
 
-You can get a file via its direct file URL location or its content with a request.
+`firestorm.files.get` takes a file's direct URL location or its content as its parameter.
 
 ```js
 const firestorm = require("firestorm-db");
@@ -261,7 +261,7 @@ getPromise
 
 ## Delete a file
 
-Because I am a nice guy, I thought about deletion too. So I figured I would put a method to delete the files too.
+`firestorm.files.delete` has the same interface as `firestorm.files.get`, but as the name suggests, it deletes the file rather than gets it.
 
 ```js
 const firestorm = require("firestorm-db");
@@ -275,7 +275,7 @@ deletePromise
     .catch((err) => console.error(err));
 ```
 
-# TypeScript
+# TypeScript Support
 
 Firestorm ships with TypeScript support out of the box.
 
@@ -300,7 +300,7 @@ const johnDoe = await userCollection.get(123456789);
 // type: { name: string, password: string, pets: string[] }
 ```
 
-Methods should also be stored in this interface:
+Methods should also be stored in this interface, and will be filtered out from write operations:
 
 ```ts
 import firestorm from "firestorm-db";
@@ -312,9 +312,21 @@ interface User {
     hello(): string;
 }
 
-const johnDoe = await userCollection.get(123456789);
-const hello = johnDoe.hello();
-// type: string
+const johnDoe = await userCollection.get(123456789, (el) => {
+    // interface types should agree with injected methods
+    el.hello = () => `${el.name} says hello!`;
+    return el;
+});
+const hello = johnDoe.hello(); // type: string
+
+await userCollection.add({
+    id: "123456788",
+    name: "Mary Doe",
+    // error: Object literal may only specify known properties, and 'hello' does not exist in type 'Addable<User>'.
+    hello() {
+        return "Mary Doe says hello!"
+    }
+})
 ```
 
 ## Additional types
@@ -329,7 +341,7 @@ const deleteConfirmation = await firestorm.files.delete("/quote.txt");
 // type: firestorm.WriteConfirmation
 ```
 
-# Memory warning
+# Memory Warning
 
 Handling big collections can cause memory allocation issues like:
 
@@ -344,11 +356,11 @@ If you encounter a memory allocation issue, you have to allow more memory throug
 memory_limit = 256M
 ```
 
-# API endpoints
+# API Endpoints
 
-If you want to manually send requests without using the JavaScript wrapper, simply make an HTTP request to the relevant PHP file with your content. Read requests are `GET` requests sent to `get.php`, write requests are `POST` requests sent to `post.php` with provided JSON data, and file requests are requests sent to `files.php` with provided form data.
+If you want to manually send requests without using the JavaScript wrapper, simply make an HTTP request to the relevant PHP file with your content. Read requests are `GET` requests sent to `<your_address_here>/get.php`, write requests are `POST` requests sent to `<your_address_here>/post.php` with provided JSON data, and file requests are requests sent to `<your_address_here>/files.php` with provided form data.
 
-The first keys in the request will always be the same, and further keys will depend on the specific method:
+The first keys in a Firestorm request will always be the same regardless of its type, and further keys will depend on the specific method:
 
 ```json
 {
