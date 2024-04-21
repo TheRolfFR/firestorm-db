@@ -13,6 +13,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - TypeScript overview to README.md.
 - Optional replacement argument for `array-splice` edit fields.
 - Optional constructor for the `JSONDatabase` PHP class to reduce repetitive code.
+- "Advanced" section to the README for previously undocumented features.
 
 ### Changed
 

@@ -1,6 +1,7 @@
+// browser check
 try {
 	if (typeof process === "object") var axios = require("axios").default;
-} catch (_error) {}
+} catch {}
 
 /**
  * @typedef {Object} SearchOption
@@ -161,8 +162,8 @@ class Collection {
 	 * @private
 	 * @ignore
 	 * @param {string} command - The write command name
-	 * @param {Object} [value] - The value for this command
-	 * @param {boolean} [multiple] - Need to delete multiple
+	 * @param {Object} [value] - The value for the command
+	 * @param {boolean} [multiple] - Used to delete multiple
 	 * @returns {Object} Write data object
 	 */
 	__write_data(command, value = undefined, multiple = false) {
@@ -628,8 +629,7 @@ const firestorm = {
 	},
 };
 
+// browser check
 try {
 	if (typeof process === "object") module.exports = firestorm;
-} catch (_error) {
-	// normal browser
-}
+} catch {}

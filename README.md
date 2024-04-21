@@ -14,14 +14,15 @@ _Self hosted Firestore-like database with API endpoints based on micro bulk oper
 
 ## Installation
 
-Installing the JavaScript wrapper is as simple as running:
+Installing the JavaScript client is as simple as running:
+
 ```sh
 npm install firestorm-db
 ```
-To install the PHP backend used to actually query data, copy the sample [php](./php/) folder to your hosting platform and edit the configuration files.
-More information about configuring Firestorm server-side is given in the [PHP](#php-part) section.
 
-# JavaScript Part
+Information about installing Firestorm server-side is given in the [PHP](#php-backend) section.
+
+# JavaScript Client
 
 The JavaScript [index.js](./src/index.js) file is simply an [Axios](https://www.npmjs.com/package/axios) wrapper of the PHP API.
 
@@ -30,6 +31,7 @@ The JavaScript [index.js](./src/index.js) file is simply an [Axios](https://www.
 First, set your API address (and your writing token if needed) using the `address()` and `token()` functions:
 
 ```js
+// only needed in Node.js, including the script tag in a browser is enough otherwise.
 const firestorm = require("firestorm-db");
 
 firestorm.address("http://example.com/path/to/firestorm/root/");
@@ -39,24 +41,11 @@ firestorm.address("http://example.com/path/to/firestorm/root/");
 firestorm.token("my_secret_token_probably_from_an_env_file");
 ```
 
-Now you can use Firestorm to its full potential:
-
-```js
-const firestorm = require("firestorm-db");
-
-// returns a Collection instance
-const userCollection = firestorm.collection("users");
-
-// all methods return promises
-userCollection
-    .readRaw()
-    .then((res) => console.log(res))
-    .catch((err) => console.error(err));
-```
+Now you can use Firestorm to its full potential.
 
 ## Create your first Collection
 
-A Firestorm collection takes one required argument and one optional argument:
+Firestorm is based around the concept of a `Collection`, which is akin to an SQL table or Firestore document. A Firestorm collection takes one required argument and one optional argument:
 
 - The name of the collection as a `string`.
 - The method adder, which lets you inject methods to query results. It's implemented similarly to [`Array.prototype.map`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/map), taking an outputted element as an argument, modifying the element with methods and data inside a callback, and returning the modified element at the end.
@@ -65,13 +54,13 @@ A Firestorm collection takes one required argument and one optional argument:
 const firestorm = require("firestorm-db");
 
 const userCollection = firestorm.collection("users", (el) => {
-    // inject a method into the element
+    // assumes you have a 'users' table with a printable field called 'name'
     el.hello = () => `${el.name} says hello!`;
     // return the modified element back with the injected method
     return el;
 });
 
-// assumes you have a 'users' table with a printable field called 'name'
+// all methods return promises
 const johnDoe = await userCollection.get(123456789);
 // gives { name: "John Doe", hello: Function }
 
@@ -80,7 +69,7 @@ johnDoe.hello(); // "John Doe says hello!"
 
 Available methods for a collection:
 
-### Read operations
+## Read operations
 
 | Name                          | Parameters                                                  | Description                                                                                                           |
 | ----------------------------- | ------------------------------------------------------------| --------------------------------------------------------------------------------------------------------------------- |
@@ -97,7 +86,7 @@ The search method can take one or more options to filter entries in a collection
 
 Not all criteria are available depending the field type. There are more options available than the firestore `where` command, allowing you to get better and faster search results.
 
-### All search options available
+## All search options available
 
 | Criteria               | Types allowed                 | Description                                                                       |
 | ---------------------- | ----------------------------- | --------------------------------------------------------------------------------- |
@@ -120,7 +109,7 @@ Not all criteria are available depending the field type. There are more options 
 | `'array-length-le'`    | `number`                      | Entry field's array size is lower or equal to your value                          |
 | `'array-length-ge'`    | `number`                      | Entry field's array size is greater or equal to your value                        |
 
-### Write operations
+## Write operations
 
 | Name                    | Parameters                                       | Description                                                                         |
 | ----------------------- | ------------------------------------------------ | ----------------------------------------------------------------------------------- |
@@ -134,7 +123,7 @@ Not all criteria are available depending the field type. There are more options 
 | editField(obj)          | obj: `EditObject`                                | Changes one field of a given element in a collection                                |
 | editFieldBulk(objArray) | objArray: `EditObject[]`                         | Changes one field per element in a collection                                       |
 
-### Edit field operations
+## Edit field operations
 
 Edit objects have an `id` of the element, a `field` to edit, an `operation` with what to do to this field, and a possible `value`. Here is a list of operations:
 
@@ -150,17 +139,17 @@ Edit objects have an `id` of the element, a `field` to edit, an `operation` with
 | `array-delete` | Yes         | `number`           | Removes an element at a certain index in an array field. Check the PHP [array_splice](https://www.php.net/manual/function.array-splice) offset for more info. |
 | `array-splice` | Yes         | `[number, number]` | Removes certain elements. Check the PHP [array_splice](https://www.php.net/manual/function.array-splice) offset and length for more info.                     |
 
-Various other methods and constants exist in the JavaScript wrapper, which will make more sense once you learn what's actually happening behind the scenes.
+Various other methods and constants exist in the JavaScript client, which will make more sense once you learn what's actually happening behind the scenes.
 
-# PHP Part
+# PHP Backend
 
-The PHP files handle files, read, and writes, through `GET` and `POST` requests sent by the JavaScript wrapper. All JavaScript methods correspond to an equivalent Axios request to the relevant PHP file.
+Firestorm's PHP files handle files, read, and writes, through `GET` and `POST` requests sent by the JavaScript client. All JavaScript methods correspond to an equivalent Axios request to the relevant PHP file.
 
 ## PHP setup
 
-The server-side files to handle requests can be found and copied [here](./php/). The two files that need editing are `tokens.php` and `config.php`.
+The server-side files to handle requests can be found and copied to your hosting platform [here](./php/). The two files that need editing are `tokens.php` and `config.php`.
 
-- `tokens.php` contains writing tokens declared in a `$db_tokens` array. These correspond to the tokens used with `firestorm.token()` in the JavaScript wrapper.
+- `tokens.php` contains writing tokens declared in a `$db_tokens` array. These correspond to the tokens used with `firestorm.token()` in the JavaScript client.
 - `config.php` stores all of your collections. This file needs to declare a `$database_list` array of `JSONDatabase` instances.
 
 ```php
@@ -216,8 +205,7 @@ You can give Firestorm rights to a folder with the following command:
 sudo chown -R www-data "/path/to/uploads/"
 ```
 
-From there, you can use the functions in `firestorm.files` (detailed below) from the JavaScript wrapper.
-If your upload folder is accessible from a server URL, you can directly use its address to retrieve the file.
+From there, you can use the functions in `firestorm.files` (detailed below) from the JavaScript client.
 
 ## Upload a file
 
@@ -239,6 +227,7 @@ form.append("path", "/quote.txt");
 form.append("file", "but your kids are gonna love it.", "quote.txt");
 // override is false by default; don't append it if you don't need to
 form.append("overwrite", "true");
+
 const uploadPromise = firestorm.files.upload(form);
 
 uploadPromise
@@ -248,7 +237,7 @@ uploadPromise
 
 ## Get a file
 
-`firestorm.files.get` takes a file's direct URL location or its content as its parameter.
+`firestorm.files.get` takes a file's direct URL location or its content as its parameter. If your upload folder is accessible from a server URL, you can directly use its address to retrieve the file.
 
 ```js
 const firestorm = require("firestorm-db");
@@ -257,13 +246,13 @@ firestorm.address("ADDRESS_VALUE");
 const getPromise = firestorm.files.get("/quote.txt");
 
 getPromise
-    .then((fileContent) => console.log(fileContent)) // 'but your kids are gonna love it.
+    .then((fileContent) => console.log(fileContent)) // but your kids are gonna love it.
     .catch((err) => console.error(err));
 ```
 
 ## Delete a file
 
-`firestorm.files.delete` has the same interface as `firestorm.files.get`, but as the name suggests, it deletes the file rather than gets it.
+`firestorm.files.delete` has the same interface as `firestorm.files.get`, but as the name suggests, it deletes the file.
 
 ```js
 const firestorm = require("firestorm-db");
@@ -302,7 +291,7 @@ const johnDoe = await userCollection.get(123456789);
 // type: { name: string, password: string, pets: string[] }
 ```
 
-Methods should also be stored in this interface, and will be filtered out from write operations:
+Injected methods should also be stored in this interface. They'll get filtered out from write operations to prevent false positives:
 
 ```ts
 import firestorm from "firestorm-db";
@@ -314,17 +303,19 @@ interface User {
     hello(): string;
 }
 
-const johnDoe = await userCollection.get(123456789, (el) => {
+const userCollection = firestorm.collection("users", (el) => {
     // interface types should agree with injected methods
     el.hello = () => `${el.name} says hello!`;
     return el;
 });
+
+const johnDoe = await userCollection.get(123456789);
 const hello = johnDoe.hello(); // type: string
 
 await userCollection.add({
     id: "123456788",
     name: "Mary Doe",
-    // error: Object literal may only specify known properties, and 'hello' does not exist in type 'Addable<User>'.
+    // error: 'hello' does not exist in type 'Addable<User>'.
     hello() {
         return "Mary Doe says hello!"
     }
@@ -337,38 +328,103 @@ Additional types exist for search criteria options, write method return types, c
 
 ```ts
 import firestorm from "firestorm-db";
-firestorm.address("ADDRESS_VALUE");
+const address = firestorm.address("ADDRESS_VALUE");
+// type: string
 
 const deleteConfirmation = await firestorm.files.delete("/quote.txt");
 // type: firestorm.WriteConfirmation
 ```
 
-# Memory Warning
+# Advanced features
 
-Handling big collections can cause memory allocation issues like:
+## `ID_FIELD` and its meaning
+
+There's a constant in Firestorm called `ID_FIELD`, which is a JavaScript-side property added afterwards to each query element.
+
+Its value will always be the key of the element its in, which allows you to use `Object.values` on results without worrying about key names disappearing. Additionally, it can be used in the method adder in the constructor, and is convenient for collections with manual key names.
+
+```js
+import firestorm from "firestorm-db";
+firestorm.address("ADDRESS_VALUE");
+
+const userCollection = firestorm.collection("users", (el) => {
+    el.basicInfo = () => `${el.name} (${el[firestorm.ID_FIELD]})`;
+    return el;
+});
+
+const returnedID = await userCollection.add({ name: "Bob", age: 30 });
+const returnedUser = await userCollection.get(returnedID);
+
+console.log(returnedID === returnedUser[firestorm.ID_FIELD]); // true
+
+returnedUser.basicInfo(); // Bob (123456789)
+```
+
+As it's entirely a JavaScript construct, `ID_FIELD` values will never be in your collection.
+
+## Combining Collections
+
+Using add methods in the constructor, you can link multiple collections together.
+
+```js
+import firestorm from "firestorm-db";
+firestorm.address("ADDRESS_VALUE");
+
+const orders = firestorm.collection("orders");
+
+// using the example of a customer having orders
+const customers = firestorm.collection("customers", (el) => {
+    el.getOrders = () => orders.search([
+        {
+            field: "customer",
+            criteria: "==",
+            // assuming the customers field in the orders collection stores by user ID
+            value: el[firestorm.ID_FIELD]
+        }
+    ])
+    return el;
+})
+
+const johnDoe = await customers.get(123456789);
+
+// returns orders where the customer field is John Doe's ID
+await johnDoe.getOrders();
+```
+
+## Manually sending data
+
+Each operation type requests a different file. In the JavaScript client, the corresponding file gets appended onto your base Firestorm address.
+
+- Read requests are `GET` requests sent to `<your_address_here>/get.php`.
+- Write requests are `POST` requests sent to `<your_address_here>/post.php` with JSON data.
+- File requests are sent to `<your_address_here>/files.php` with form data.
+
+The first keys in a Firestorm request will always be the same regardless of its type, and further keys will depend on the specific method:
+
+```json
+{
+    "collection": "<collectionName>",
+    "token": "<writeTokenIfNecessary>",
+    "command": "<methodName>",
+    ...
+}
+```
+
+PHP grabs the `JSONDatabase` instance created in `config.php` using the `collection` key in the request as the `$database_list` key name. From there, the `token` is used to validate the request if needed and the `command` is found and executed.
+
+## Memory warning
+
+Handling very large collections can cause memory allocation issues:
 
 ```
 Fatal error:
 Allowed memory size of 134217728 bytes exhausted (tried to allocate 32360168 bytes)
 ```
 
-If you encounter a memory allocation issue, you have to allow more memory through `/etc/php/7.4/apache2/php.ini` with a bigger value:
+If you encounter a memory allocation issue, simply change the memory limit in `/etc/php/7.4/apache2/php.ini` to be bigger:
 
 ```
 memory_limit = 256M
 ```
 
-# API Endpoints
-
-If you want to manually send requests without using the JavaScript wrapper, simply make an HTTP request to the relevant PHP file with your content. Read requests are `GET` requests sent to `<your_address_here>/get.php`, write requests are `POST` requests sent to `<your_address_here>/post.php` with provided JSON data, and file requests are requests sent to `<your_address_here>/files.php` with provided form data.
-
-The first keys in a Firestorm request will always be the same regardless of its type, and further keys will depend on the specific method:
-
-```json
-{
-  "collection": "<collectionName>",
-  "token": "<writeTokenIfNecessary>",
-  "command": "<methodName>",
-  ...
-}
-```
+If this doesn't help, considering splitting your collection into smaller collections and linking them together with methods.

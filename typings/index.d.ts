@@ -180,7 +180,7 @@ export type Settable<T> = Addable<T> & {
 
 /**
  * Represents a Firestorm Collection
- * @template T Type of collection item
+ * @template T Type of collection element
  */
 declare class Collection<T> {
 	/** Name of the Firestorm collection */
