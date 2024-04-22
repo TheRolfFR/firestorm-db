@@ -48,7 +48,7 @@ firestorm.token("my_secret_token_probably_from_an_env_file");
 
 Now you can use Firestorm to its full potential.
 
-## Create your first Collection
+## Create your first collection
 
 Firestorm is based around the concept of a `Collection`, which is akin to an SQL table or Firestore document. A Firestorm collection takes one required argument and one optional argument in its constructor:
 
@@ -183,7 +183,7 @@ $database_list[$tmp->fileName] = $tmp;
 - `autoIncrement` controls whether to simply start generating key names from zero or to use a [random ID](https://www.php.net/manual/en/function.uniqid.php) each time (default: `true`).
 - The key in the `$database_list` array is what the collection will be called in JavaScript in the Collection constructor (this can be different from the JSON filename if needed).
 
-If you're working with multiple collections, it's easier to initialize them all in the array constructor directly:
+If you're working with multiple collections, it's probably easier to initialize them all in the array constructor directly:
 
 ```php
 // config.php
@@ -193,6 +193,14 @@ $database_list = array(
     'orders' => new JSONDatabase('orders', true),
     'users' => new JSONDatabase('users', false),
 )
+```
+
+## Permissions
+
+The PHP scripts used to write and read files need permissions to edit the JSON files. You can give Firestorm rights to a folder with the following command:
+
+```sh
+sudo chown -R www-data "/path/to/firestorm/root/"
 ```
 
 # Firestorm Files
@@ -208,13 +216,6 @@ $authorized_file_extension = array('.txt', '.png', '.jpg', '.jpeg');
 // Root directory for where files should be uploaded
 // ($_SERVER['SCRIPT_FILENAME']) is a shortcut to the root Firestorm directory.
 $STORAGE_LOCATION = dirname($_SERVER['SCRIPT_FILENAME']) . '/uploads/';
-```
-
-Additionally, since the PHP scripts create folders and files, the script will fail if the PHP user doesn't have write permissions.
-You can give Firestorm rights to a folder with the following command:
-
-```sh
-sudo chown -R www-data "/path/to/uploads/"
 ```
 
 From there, you can use the functions in `firestorm.files` (detailed below) from the JavaScript client.
@@ -392,7 +393,7 @@ userCollection.set(123, { name: "John Doe", age: 30 })
     .then((id) => userCollection.get(id));
 ```
 
-## Combining Collections
+## Combining collections
 
 Using add methods in the constructor, you can link multiple collections together.
 
