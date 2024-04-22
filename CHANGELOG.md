@@ -20,6 +20,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Rejected incorrect parameters are now `TypeError`s instead of regular `Error`s.
 - Deprecated `firestorm.table(name)` method, since `firestorm.collection(name)` does exactly the same thing.
 - Reformatted the repository and improved README.md to make it easier to set up Firestorm.
+- Clean up and standardize JSDoc comments.
 
 ### Fixed
 

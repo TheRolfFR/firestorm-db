@@ -133,7 +133,7 @@ class JSONDatabase {
         // we verify that our keys are in an array
         $key_var_type = gettype($keys);
         if ($key_var_type != 'array')
-            throw new Exception('Incorect keys type');
+            throw new Exception('Incorrect keys type');
 
         // else set it at the corresponding value
         $obj = $this->read(true);
@@ -210,11 +210,11 @@ class JSONDatabase {
         if ($this->autoKey == false)
             throw new Exception('Autokey disabled');
 
-        // veriify that values is an array with number indices
+        // verify that values is an array with number indices
         if (array_assoc($values))
             throw new Exception('Wanted sequential array');
 
-        // else set it at the correspongding value
+        // else set it at the corresponding value
         $obj = $this->read(true);
 
         // decode and add all values

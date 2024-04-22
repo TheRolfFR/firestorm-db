@@ -12,7 +12,7 @@ try {
  */
 
 /**
- * @typedef {Object} EditObject
+ * @typedef {Object} EditFieldOption
  * @property {string | number} id - The affected element
  * @property {string} field - The field to edit
  * @property {"set" | "remove" | "append" | "increment" | "decrement" | "array-push" | "array-delete" | "array-splice"} operation - Operation for the field
@@ -20,7 +20,7 @@ try {
  */
 
 /**
- * @typedef {Object} ValueObject
+ * @typedef {Object} ValueOption
  * @property {string} field - Field to search
  * @property {boolean} [flatten] - Flatten array fields? (default false)
  */
@@ -83,8 +83,8 @@ const __extract_data = (request) => {
 };
 
 /**
- * Class representing a collection
- * @template T
+ * Represents a Firestorm Collection
+* @template T
  */
 class Collection {
 	/**
@@ -201,19 +201,8 @@ class Collection {
 	}
 
 	/**
-	 * Get an element from the collection
-	 * @param {string | number} id - The ID of the element you want to get
-	 * @returns {Promise<T>} Corresponding value
-	 */
-	get(id) {
-		return this.__get_request("get", {
-			id: id,
-		}).then((res) => this.__add_methods(res));
-	}
-
-	/**
-	 * Get the sha1 hash of the file
-	 * - Can be used to see if same file content without downloading the file
+	 * Get the sha1 hash of the JSON
+	 * - Can be used to compare file content without downloading the file
 	 * @returns {string} The sha1 hash of the file
 	 */
 	sha1() {
@@ -222,16 +211,47 @@ class Collection {
 	}
 
 	/**
-	 * Search through collection
-	 * @param {SearchOption[]} searchOptions - Array of search options
+	 * Get an element from the collection by its key
+	 * @param {string | number} key - Key to search
+	 * @returns {Promise<T>} The found element
+	 */
+	get(key) {
+		return this.__get_request("get", {
+			id: key,
+		}).then((res) => this.__add_methods(res));
+	}
+
+	/**
+	 * Get multiple elements from the collection by their keys
+	 * @param {string[] | number[]} keys - Array of keys to search
+	 * @returns {Promise<T[]>} The found elements
+	 */
+	searchKeys(keys) {
+		if (!Array.isArray(keys)) return Promise.reject(new TypeError("Incorrect keys"));
+
+		return this.__get_request("searchKeys", {
+			search: keys,
+		}).then((res) => {
+			const arr = Object.entries(res).map(([id, value]) => {
+				value[ID_FIELD_NAME] = id;
+				return value;
+			});
+
+			return this.__add_methods(arr);
+		});
+	}
+
+	/**
+	 * Search through the collection
+	 * @param {SearchOption[]} options - Array of search options
 	 * @param {boolean | number} [random] - Random result seed, disabled by default, but can activated with true or a given seed
 	 * @returns {Promise<T[]>} The found elements
 	 */
-	search(searchOptions, random = false) {
-		if (!Array.isArray(searchOptions))
+	search(options, random = false) {
+		if (!Array.isArray(options))
 			return Promise.reject(new TypeError("searchOptions shall be an array"));
 
-		searchOptions.forEach((searchOption) => {
+		options.forEach((searchOption) => {
 			if (
 				searchOption.field === undefined ||
 				searchOption.criteria === undefined ||
@@ -251,7 +271,7 @@ class Collection {
 		});
 
 		const params = {
-			search: searchOptions,
+			search: options,
 		};
 
 		if (random !== false) {
@@ -278,27 +298,8 @@ class Collection {
 	}
 
 	/**
-	 * Search specific keys through collection
-	 * @param {string[] | number[]} keys - Array of keys to search
-	 * @returns {Promise<T[]>} The found elements
-	 */
-	searchKeys(keys) {
-		if (!Array.isArray(keys)) return Promise.reject(new TypeError("Incorrect keys"));
-
-		return this.__get_request("searchKeys", {
-			search: keys,
-		}).then((res) => {
-			const arr = Object.entries(res).map(([id, value]) => {
-				value[ID_FIELD_NAME] = id;
-				return value;
-			});
-
-			return this.__add_methods(arr);
-		});
-	}
-
-	/**
-	 * Returns the whole content of the JSON
+	 * Read the entire collection
+	 * - ID values are injected for easier iteration, so this may be different from {@link sha1}
 	 * @returns {Promise<Record<string, T>>} The entire collection
 	 */
 	readRaw() {
@@ -314,7 +315,8 @@ class Collection {
 	}
 
 	/**
-	 * Returns the whole content of the JSON
+	 * Read the entire collection
+	 * - ID values are injected for easier iteration, so this may be different from {@link sha1}
 	 * @deprecated Use {@link readRaw} instead
 	 * @returns {Promise<Record<string, T>>} The entire collection
 	 */
@@ -324,14 +326,14 @@ class Collection {
 
 	/**
 	 * Get only selected fields from the collection
-	 * - Essentially an upgraded version of readRaw
-	 * @param {SelectOption} selectOption - Select options
+	 * - Essentially an upgraded version of {@link readRaw}
+	 * @param {SelectOption} option - The fields you want to select
 	 * @returns {Promise<Record<string, Partial<T>>>} Selected fields
 	 */
-	select(selectOption) {
-		if (!selectOption) selectOption = {};
+	select(option) {
+		if (!option) option = {};
 		return this.__get_request("select", {
-			select: selectOption,
+			select: option,
 		}).then((data) => {
 			Object.keys(data).forEach((key) => {
 				data[key][ID_FIELD_NAME] = key;
@@ -343,18 +345,18 @@ class Collection {
 
 	/**
 	 * Get all distinct non-null values for a given key across a collection
-	 * @param {ValueObject} valueOption - Value options
+	 * @param {ValueOption} option - Value options
 	 * @returns {Promise<T[]>} Array of unique values
 	 */
-	values(valueOption) {
-		if (!valueOption) return Promise.reject(new TypeError("Value option must be provided"));
-		if (typeof valueOption.field !== "string")
+	values(option) {
+		if (!option) return Promise.reject(new TypeError("Value option must be provided"));
+		if (typeof option.field !== "string")
 			return Promise.reject(new TypeError("Field must be a string"));
-		if (valueOption.flatten !== undefined && typeof valueOption.flatten !== "boolean")
+		if (option.flatten !== undefined && typeof option.flatten !== "boolean")
 			return Promise.reject(new TypeError("Flatten must be a boolean"));
 
 		return this.__get_request("values", {
-			values: valueOption,
+			values: option,
 		}).then((data) =>
 			// no ID_FIELD or method injection since no ids are returned
 			Object.values(data).filter((d) => d !== null),
@@ -362,7 +364,7 @@ class Collection {
 	}
 
 	/**
-	 * Returns random max entries offsets with a given seed
+	 * Read random elements of the collection
 	 * @param {number} max - The maximum number of entries
 	 * @param {number} seed - The seed to use
 	 * @param {number} offset - The offset to use
@@ -406,7 +408,8 @@ class Collection {
 	}
 
 	/**
-	 * Set the entire JSON file contents
+	 * Set the entire content of the collection.
+	 * - Only use this method if you know what you are doing!
 	 * @param {Record<string, T>} value - The value to write
 	 * @returns {Promise<WriteConfirmation>} Write confirmation
 	 */
@@ -417,7 +420,8 @@ class Collection {
 	}
 
 	/**
-	 * Set the entire JSON file contents
+	 * Set the entire content of the collection.
+	 * - Only use this method if you know what you are doing!
 	 * @deprecated Use {@link writeRaw} instead
 	 * @param {Record<string, T>} value - The value to write
 	 * @returns {Promise<WriteConfirmation>} Write confirmation
@@ -427,9 +431,10 @@ class Collection {
 	}
 
 	/**
-	 * Automatically add a value to the JSON file
+	 * Append a value to the collection
+	 * - Only works if autoKey is enabled server-side
 	 * @param {T} value - The value (without methods) to add
-	 * @returns {Promise<string>} The generated ID of the added element
+	 * @returns {Promise<string>} The generated key of the added element
 	 */
 	add(value) {
 		return axios
@@ -443,9 +448,10 @@ class Collection {
 	}
 
 	/**
-	 * Automatically add multiple values to the JSON file
-	 * @param {Object[]} values - The values (without methods) to add
-	 * @returns {Promise<string[]>} The generated IDs of the added elements
+	 * Append multiple values to the collection
+	 * - Only works if autoKey is enabled server-side
+	 * @param {T[]} values - The values (without methods) to add
+	 * @returns {Promise<string[]>} The generated keys of the added elements
 	 */
 	addBulk(values) {
 		return this.__extract_data(
@@ -454,7 +460,7 @@ class Collection {
 	}
 
 	/**
-	 * Remove an element from the collection by its ID
+	 * Remove an element from the collection by its key
 	 * @param {string | number} key The key from the entry to remove
 	 * @returns {Promise<WriteConfirmation>} Write confirmation
 	 */
@@ -463,7 +469,7 @@ class Collection {
 	}
 
 	/**
-	 * Remove multiple elements from the collection by their IDs
+	 * Remove multiple elements from the collection by their keys
 	 * @param {string[] | number[]} keys The key from the entries to remove
 	 * @returns {Promise<WriteConfirmation>} Write confirmation
 	 */
@@ -472,8 +478,8 @@ class Collection {
 	}
 
 	/**
-	 * Set a value in the collection by ID
-	 * @param {string} key - The ID of the element you want to edit
+	 * Set a value in the collection by key
+	 * @param {string} key - The key of the element you want to edit
 	 * @param {T} value - The value (without methods) you want to edit
 	 * @returns {Promise<WriteConfirmation>} Write confirmation
 	 */
@@ -484,8 +490,8 @@ class Collection {
 	}
 
 	/**
-	 * Set multiple values in the collection by their IDs
-	 * @param {string[]} keys - The IDs of the elements you want to edit
+	 * Set multiple values in the collection by their keys
+	 * @param {string[]} keys - The keys of the elements you want to edit
 	 * @param {T[]} values - The values (without methods) you want to edit
 	 * @returns {Promise<WriteConfirmation>} Write confirmation
 	 */
@@ -496,22 +502,22 @@ class Collection {
 	}
 
 	/**
-	 * Edit one field of the collection
-	 * @param {EditObject} obj - The edit object
+	 * Edit an element's field in the collection
+	 * @param {EditFieldOption} option - The edit object
 	 * @returns {Promise<{ success: boolean }>} Edit confirmation
 	 */
-	editField(obj) {
-		const data = this.__write_data("editField", obj, null);
+	editField(option) {
+		const data = this.__write_data("editField", option, null);
 		return this.__extract_data(axios.post(writeAddress(), data));
 	}
 
 	/**
-	 * Changes one field from an element in this collection
-	 * @param {EditObject[]} objArray The edit object array with operations
+	 * Edit multiple elements' fields in the collection
+	 * @param {EditFieldOption[]} options - The edit objects
 	 * @returns {Promise<{ success: boolean[] }>} Edit confirmation
 	 */
-	editFieldBulk(objArray) {
-		const data = this.__write_data("editFieldBulk", objArray, undefined);
+	editFieldBulk(options) {
+		const data = this.__write_data("editFieldBulk", options, undefined);
 		return this.__extract_data(axios.post(writeAddress(), data));
 	}
 }
@@ -550,7 +556,7 @@ const firestorm = {
 	 * @template T
 	 * @param {string} name - The name of the collection
 	 * @param {Function} [addMethods] - Additional methods and data to add to the objects
-	 * @returns {Collection<T>} The collection
+	 * @returns {Collection<T>} The collection instance
 	 */
 	collection(name, addMethods = (el) => el) {
 		return new Collection(name, addMethods);
@@ -561,7 +567,7 @@ const firestorm = {
 	 * @deprecated Use {@link collection} with no second argument instead
 	 * @template T
 	 * @param {string} name - The table name to get
-	 * @returns {Collection<T>} The collection
+	 * @returns {Collection<T>} The table instance
 	 */
 	table(name) {
 		return this.collection(name);
