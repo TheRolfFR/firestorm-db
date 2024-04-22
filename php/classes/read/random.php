@@ -1,13 +1,15 @@
 <?php
 
-require_once(__DIR__.'/../HTTPException.php');
+require_once('./classes/HTTPException.php');
 
 function make_seed() {
     list($usec, $sec) = explode(' ', microtime());
     return intval($sec + $usec * 1000000);
 }
 
-// can run with a maximum amount of random entries (if collection is smaller you cannot guarantied) (is optional, else it will be all the results)
+// can run with a maximum amount of random entries
+// (if collection is smaller it's not guaranteed)
+// (is optional, else it will be all the results)
 function random($params, $class) {
     $hasMax = array_key_exists('max', $params);
     $max = $hasMax ? $params['max'] : -1;
@@ -19,11 +21,15 @@ function random($params, $class) {
     // offset is relevant only if you get the key
     if ($hasOffset && !$hasSeed) throw new HTTPException('You can\'t put an offset without a seed');
 
-    // offset verif
+    // offset validation
     $offset = $hasOffset ? $params['offset'] : 0;
-    if ($hasOffset && (gettype($offset) !== 'integer' || $offset < 0)) throw new HTTPException('Expected integer >= 0 for the offset');
+    if (
+        $hasOffset &&
+        (gettype($offset) !== 'integer' ||
+        $offset < 0)
+    ) throw new HTTPException('Expected integer >= 0 for the offset');
 
-    // seed verif
+    // seed validation
     $seed = $hasSeed ? $params['seed'] : false;
     if ($hasSeed && gettype($seed) !== 'integer') throw new HTTPException('Expected integer for the seed');
 
@@ -57,7 +63,7 @@ function chooseRandom($json, $seed = false, $max = -1, $offset = 0) {
     // -> I still have keys
     // -> I am not at maximum
     $i = 0;
-    while($keys_length > 0 && $i < $max) {
+    while ($keys_length > 0 && $i < $max) {
         // get an index
         $index = mt_rand(0, $keys_length - 1);
 

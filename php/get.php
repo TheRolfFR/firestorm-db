@@ -13,7 +13,7 @@ require_once('./log.php');
 
 $method = sec($_SERVER['REQUEST_METHOD']);
 if ($method !== 'GET' && $method !== 'POST') {
-    http_error(400, 'Incorrect request type, expected GET or POST, not ' . $method);
+    http_error(400, "Incorrect request type, expected GET or POST, not $method");
 }
 
 $inputJSON = json_decode(file_get_contents('php://input'), true);
@@ -35,7 +35,7 @@ try {
 
 // checking good collection
 if (!array_key_exists($collection, $database_list))
-    http_error(404, 'Collection not found: ' . $collection);
+    http_error(404, "Collection not found: $collection");
 
 /**
  * @var JSONDatabase
@@ -46,12 +46,21 @@ $command = check_key_json('command', $inputJSON);
 if (!$command)
     http_error(400, 'No command provided');
 
-$commands_available = ['read_raw', 'get', 'search', 'searchKeys', 'select', 'random', 'sha1', 'values'];
+$available_commands = [
+    'read_raw',
+    'get',
+    'search',
+    'searchKeys',
+    'select',
+    'random',
+    'sha1',
+    'values'
+];
 
-if (!in_array($command, $commands_available))
-    http_error(404, 'Command not found: ' . $command . '. Available commands: ' . join(', ', $commands_available));
+if (!in_array($command, $available_commands))
+    http_error(404, "Command not found: $command. Available commands: " . join(', ', $available_commands));
 
-switch($command) {
+switch ($command) {
     case 'sha1':
         $res = $db->sha1();
         http_response($res);
@@ -70,7 +79,7 @@ switch($command) {
 
         $result = $db->get($id);
         if (!$result)
-            http_error(404, 'get failed on collection ' . $collection . ' with key ' . $id);
+            http_error(404, "get failed on collection $collection with key $id");
 
         http_response(stringifier($result));
         break;

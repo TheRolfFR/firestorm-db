@@ -17,7 +17,7 @@ function array_contains($array, $value, $ignoreCase = false) {
 function array_contains_any($concernedField, $value, $ignoreCase = false) {
     $add = false;
 
-    if (gettype($value) === "array") {
+    if (gettype($value) === 'array') {
         $tmp = false;
         $val_i = 0;
         while ($val_i < count($value) and !$tmp) {

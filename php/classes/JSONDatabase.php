@@ -3,8 +3,8 @@
 require_once('./utils.php');
 require_once('./classes/FileAccess.php');
 require_once('./classes/HTTPException.php');
-require_once(__DIR__.'/read/random.php');
-require_once(__DIR__.'/read/searchArray.php');
+require_once('./classes/read/random.php');
+require_once('./classes/read/searchArray.php');
 
 class JSONDatabase {
     public $folderPath = './files/';
@@ -33,18 +33,16 @@ class JSONDatabase {
 
         // content must not be primitive
         if (in_array($content_type, $incorrect_types)) {
-            throw new HTTPException('write_raw value cannot be a ' . $content_type, 400);
-            return 400;
+            throw new HTTPException("write_raw value cannot be a $content_type", 400);
         }
 
         // value must not be a sequential array with values inside [1, 2, 3]
         // we accept sequential arrays but with objects not primitives
         if (is_array($content) and !array_assoc($content)) {
-            foreach($content as $item) {
+            foreach ($content as $item) {
                 $item_type = gettype($item);
                 if (in_array($item_type, $incorrect_types)) {
-                    throw new HTTPException('write_raw item cannot be a ' . $item_type, 400);
-                    return 400;
+                    throw new HTTPException("write_raw item cannot be a $item_type", 400);
                 }
             }
         }
@@ -58,8 +56,7 @@ class JSONDatabase {
             // we don't accept primitive keys as value
             $item_type = gettype($item);
             if (in_array($item_type, $incorrect_types)) {
-                throw new HTTPException('write_raw item with key' . $key . ' item cannot be a ' . $item_type, 400);
-                return 400;
+                throw new HTTPException("write_raw item with key $key item cannot be a $item_type", 400);
             }
 
             // we accept associative array as items because they may have an integer key
@@ -91,7 +88,6 @@ class JSONDatabase {
     public function read($waitLock = false) {
         $res = $this->read_raw($waitLock);
         $res['content'] = json_decode($res['content'], true);
-
         return $res;
     }
 
@@ -107,7 +103,7 @@ class JSONDatabase {
     public function set($key, $value) {
         // "===" fixes the empty array "==" comparison
         if ($key === null or $value === null) {
-            throw new HTTPException("Key or value are null", 400);
+            throw new HTTPException('Key or value is null', 400);
         }
 
         $key_var_type = gettype($key);
@@ -116,7 +112,7 @@ class JSONDatabase {
 
         $value_var_type = gettype($value);
         if ($value_var_type == 'double' or $value_var_type == 'integer' or $value_var_type == 'string')
-            throw new HTTPException('Invalid value type, got ' . $value_var_type . ', expected object', 400);
+            throw new HTTPException("Invalid value type, got $value_var_type, expected object", 400);
 
         if ($value !== array() and !array_assoc($value))
             throw new HTTPException('Value cannot be a sequential array', 400);
@@ -142,7 +138,6 @@ class JSONDatabase {
         $value_decoded = json_decode(json_encode($values), true);
         $keys_decoded = json_decode(json_encode($keys), true);
         for ($i = 0; $i < count($value_decoded); $i++) {
-
             $key_var_type = gettype($keys_decoded[$i]);
             if ($key_var_type != 'string' and $key_var_type != 'double' and $key_var_type != 'integer')
                 throw new Exception('Incorrect key');
@@ -157,27 +152,25 @@ class JSONDatabase {
 
     private function newLastKey($arr) {
         if ($this->autoIncrement) {
-            $int_keys = array_filter(array_keys($arr), "is_int");
+            $int_keys = array_filter(array_keys($arr), 'is_int');
             sort($int_keys);
             $last_key = count($int_keys) > 0 ? $int_keys[count($int_keys) - 1] + 1 : 0;
         } else {
             $last_key = uniqid();
-            while(array_key_exists($last_key, $arr)) {
-                $last_key = uniqid();
-            }
+            while (array_key_exists($last_key, $arr)) $last_key = uniqid();
         }
 
         return strval($last_key);
     }
 
     public function add($value) {
+        if ($this->autoKey == false)
+            throw new Exception('Automatic key generation is disabled');
+
         // restricts types to objects only
         $value_type = gettype($value);
-        if ($value_type == 'NULL' or $value_type == 'boolean' or $value_type == 'integer' or $value_type == 'double' or $value_type == 'string' or (is_array($value) and count($value) and !array_assoc($value)))
-            throw new HTTPException('add value must be an object not a ' . $value_type, 400);
-
-        if ($this->autoKey == false)
-            throw new Exception('Autokey disabled');
+        if (is_primitive($value) or (is_array($value) and count($value) and !array_assoc($value)))
+            throw new HTTPException("add value must be an object, not a $value_type", 400);
 
         // else set it at the corresponding value
         $obj = $this->read(true);
@@ -191,24 +184,25 @@ class JSONDatabase {
     }
 
     public function addBulk($values) {
+        if (!$this->autoKey)
+            throw new Exception('Automatic key generation is disabled');
+
         if ($values !== array() and $values == NULL)
             throw new HTTPException('null-like value not accepted', 400);
 
         // restricts types to non base variables
         $value_type = gettype($values);
-        if ($value_type == 'NULL' or $value_type == 'boolean' or $value_type == 'integer' or $value_type == 'double' or $value_type == 'string' or (is_array($values) and count($values) and array_assoc($values)))
-            throw new HTTPException('value must be an array not a ' . $value_type, 400);
+        if (is_primitive($values) or (is_array($values) and count($values) and array_assoc($values)))
+            throw new HTTPException("value must be an array not a $value_type", 400);
 
         // so here we have a sequential array type
         // now the values inside this array must not be base values
-        foreach($values as $value) {
+        foreach ($values as $value) {
             $value_type = gettype($value);
-            if ($value_type == 'NULL' or $value_type == 'boolean' or $value_type == 'integer' or $value_type == 'double' or $value_type == 'string' or (is_array($value) and count($value) and !array_assoc($value)))
-                throw new HTTPException('array value must be an object not a ' . $value_type, 400);
+            if (is_primitive($value) or (is_array($value) and count($value) and !array_assoc($value))
+            )
+                throw new HTTPException("array value must be an object not a $value_type", 400);
         }
-
-        if ($this->autoKey == false)
-            throw new Exception('Autokey disabled');
 
         // verify that values is an array with number indices
         if (array_assoc($values))
@@ -220,7 +214,7 @@ class JSONDatabase {
         // decode and add all values
         $values_decoded = $values;
         $id_array = array();
-        foreach($values_decoded as $value_decoded) {
+        foreach ($values_decoded as $value_decoded) {
             $id = $this->newLastKey($obj['content']);
 
             $obj['content'][$id] = $value_decoded;
@@ -235,7 +229,7 @@ class JSONDatabase {
 
     public function remove($key) {
         if (gettype($key) != 'string')
-            throw new HTTPException("remove value must be a string", 400);
+            throw new HTTPException('remove value must be a string', 400);
 
         $obj = $this->read(true);
         unset($obj['content'][$key]);
@@ -260,11 +254,106 @@ class JSONDatabase {
         $obj = $this->read(true);
 
         // remove all keys
-        foreach($keys as $key_decoded) {
+        foreach ($keys as $key_decoded) {
             unset($obj['content'][$key_decoded]);
         }
 
         $this->write($obj);
+    }
+
+    private function __search($concernedField, $criteria, $value, $ignoreCase) {
+        $fieldType = gettype($concernedField);
+        switch ($fieldType) {
+            case 'boolean':
+                switch ($criteria) {
+                    case '!=':
+                        return $concernedField != $value;
+                    case '==':
+                        return $concernedField == $value;
+                    default:
+                        return false;
+                }
+            case 'integer':
+            case 'double':
+                switch ($criteria) {
+                    case '!=':
+                        return $concernedField != $value;
+                    case '==':
+                        return $concernedField == $value;
+                    case '>=':
+                        return $concernedField >= $value;
+                    case '<=':
+                        return $concernedField <= $value;
+                    case '<':
+                        return $concernedField < $value;
+                    case '>':
+                        return $concernedField > $value;
+                    case 'in':
+                        return in_array($concernedField, $value);
+                    default:
+                        return false;
+                }
+            case 'string':
+                // saves a lot of duplicate ternaries, no idea why php needs these to be strings
+                $cmpFunc = $ignoreCase ? 'strcasecmp' : 'strcmp';
+                $posFunc = $ignoreCase ? 'stripos' : 'strpos';
+                switch ($criteria) {
+                    case '!=':
+                        return $cmpFunc($concernedField, $value) != 0;
+                    case '==':
+                        return $cmpFunc($concernedField, $value) == 0;
+                    case '>=':
+                        return $cmpFunc($concernedField, $value) >= 0;
+                    case '<=':
+                        return $cmpFunc($concernedField, $value) <= 0;
+                    case '<':
+                        return $cmpFunc($concernedField, $value) < 0;
+                    case '>':
+                        return $cmpFunc($concernedField, $value) > 0;
+                    case 'includes':
+                    case 'contains':
+                        return $value != '' ? ($posFunc($concernedField, $value) !== false) : true;
+                    case 'startsWith':
+                        return $value != '' ? ($posFunc($concernedField, $value) === 0) : true;
+                    case 'endsWith':
+                        $end = substr($concernedField, -strlen($value));
+                        return $value != '' ? ($cmpFunc($end, $value) === 0) : true;
+                    case 'in':
+                        $notFound = true;
+                        $a_i = 0;
+                        while ($a_i < count($value) && $notFound) {
+                            $notFound = $cmpFunc($concernedField, $value[$a_i]) != 0;
+                            $a_i++;
+                        }
+                        return !$notFound;
+                    default:
+                        return false;
+                }
+            case 'array':
+                switch ($criteria) {
+                    case 'array-contains':
+                        return array_contains($concernedField, $value, $ignoreCase);
+                    case 'array-contains-any':
+                        return array_contains_any($concernedField, $value, $ignoreCase);
+                    case 'array-length':
+                    case 'array-length-eq':
+                        return count($concernedField) == $value;
+                    case 'array-length-df':
+                        return count($concernedField) != $value;
+                    case 'array-length-gt':
+                        return count($concernedField) > $value;
+                    case 'array-length-lt':
+                        return count($concernedField) < $value;
+                    case 'array-length-ge':
+                        return count($concernedField) >= $value;
+                    case 'array-length-le':
+                        return count($concernedField) <= $value;
+                    default:
+                        return false;
+                }
+            default:
+                break;
+        }
     }
 
     public function search($conditions, $random = false) {
@@ -272,188 +361,58 @@ class JSONDatabase {
 
         $res = [];
 
-        foreach(array_keys($obj['content']) as $key) {
+        foreach (array_keys($obj['content']) as $key) {
             $el = $obj['content'][$key];
             $el_root = $el;
 
             $add = true;
-
-            $condition_index = 0;
-            while($condition_index < count($conditions) and $add) {
-                // get condition
-                $condition = $conditions[$condition_index];
+            foreach ($conditions as $condition) {
+                // cleaner than a million breaks inside the switch statement
+                if (!$add) break;
 
                 // extract field
                 $field = $condition['field'];
-                $field_path = explode(".", $field);
+                $field_path = explode('.', $field);
 
-                $field_ind = 0;
-
-                while($el != NULL && $field_ind + 1 < count($field_path)) {
+                for ($field_ind = 0; $el != NULL && $field_ind + 1 < count($field_path); $field_ind += 1) {
                     // don't crash if unknown nested key, break early
                     if (!array_key_exists($field_path[$field_ind], $el))
                         break;
 
                     $el = $el[$field_path[$field_ind]];
-                    $field_ind += 1;
-                    $field = $field_path[$field_ind];
+                    $field = $field_path[$field_ind + 1];
                 }
 
-                if ($el != NULL && array_key_exists($field, $el) && array_key_exists('criteria', $condition) && array_key_exists('value', $condition)) {
-                    $criteria = $condition['criteria'];
-                    $value = $condition['value'];
-
-                    // get field to compare
-                    $concernedField = $el[$field];
-
-                    // get concerned field type
-                    $fieldType = gettype($concernedField);
-
-                    if ($criteria == 'array-contains' || $criteria == 'array-contains-any') {
-                        $ignoreCase = array_key_exists('ignoreCase', $condition) && !!$condition['ignoreCase'];
-                    }
-
-                    switch($fieldType) {
-                        case 'boolean':
-                            switch($criteria) {
-                                case '!=':
-                                    $add = $concernedField != $value;
-                                    break;
-                                case '==':
-                                    $add = $concernedField == $value;
-                                    break;
-                                default:
-                                    $add = false;
-                                    break;
-                            }
-                            break;
-                        case 'integer':
-                        case 'double':
-                            switch($criteria) {
-                                case '!=':
-                                    $add = $concernedField != $value;
-                                    break;
-                                case '==':
-                                    $add = $concernedField == $value;
-                                    break;
-                                case '>=':
-                                    $add = $concernedField >= $value;
-                                    break;
-                                case '<=':
-                                    $add = $concernedField <= $value;
-                                    break;
-                                case '<':
-                                    $add = $concernedField < $value;
-                                    break;
-                                case '>':
-                                    $add = $concernedField > $value;
-                                    break;
-                                case 'in':
-                                    $add = in_array($concernedField, $value);
-                                    break;
-                                default:
-                                    $add = false;
-                                    break;
-                            }
-                            break;
-                        case 'string':
-                            $ignoreCase = array_key_exists('ignoreCase', $condition) && !!$condition['ignoreCase'];
-                            switch($criteria) {
-                                case '!=':
-                                    $add = ($ignoreCase ? strcasecmp($concernedField, $value) : strcmp($concernedField, $value)) != 0;
-                                    break;
-                                case '==':
-                                    $add = ($ignoreCase ? strcasecmp($concernedField, $value) : strcmp($concernedField, $value)) == 0;
-                                    break;
-                                case '>=':
-                                    $add = ($ignoreCase ? strcasecmp($concernedField, $value) : strcmp($concernedField, $value)) >= 0;
-                                    break;
-                                case '<=':
-                                    $add = ($ignoreCase ? strcasecmp($concernedField, $value) : strcmp($concernedField, $value)) <= 0;
-                                    break;
-                                case '<':
-                                    $add = ($ignoreCase ? strcasecmp($concernedField, $value) : strcmp($concernedField, $value)) < 0;
-                                    break;
-                                case '>':
-                                    $add = ($ignoreCase ? strcasecmp($concernedField, $value) : strcmp($concernedField, $value)) > 0;
-                                    break;
-                                case 'includes':
-                                case 'contains':
-                                    $add = $value != "" ? (($ignoreCase ? stripos($concernedField, $value) : strpos($concernedField, $value)) !== false) : true;
-                                    break;
-                                case 'startsWith':
-                                    $add = $value != "" ? (($ignoreCase ? stripos($concernedField, $value) : strpos($concernedField, $value)) === 0) : true;
-                                    break;
-                                case 'endsWith':
-                                    $end = substr($concernedField, -strlen($value));
-                                    $add = $value != "" ? (($ignoreCase ? strcasecmp($end, $value) : strcmp($end, $value)) === 0) : true;
-                                    break;
-                                case 'in':
-                                    $notfound = true;
-                                    $a_i = 0;
-                                    while($a_i < count($value) && $notfound) {
-                                        $notfound = ($ignoreCase ? strcasecmp($concernedField, $value[$a_i])  : strcmp($concernedField, $value[$a_i])) != 0;
-                                        $a_i++;
-                                    }
-                                    $add = !$notfound;
-                                    break;
-                                default:
-                                    $add = false;
-                                    break;
-                            }
-                            break;
-                        case 'array':
-                            switch($criteria) {
-                                case "array-contains":
-                                    $add = array_contains($concernedField, $value, $ignoreCase);
-                                    break;
-                                case "array-contains-any":
-                                    $add = array_contains_any($concernedField, $value, $ignoreCase);
-                                    break;
-                                case "array-length":
-                                case "array-length-eq":
-                                    $add = count($concernedField) == $value;
-                                    break;
-                                case "array-length-df":
-                                    $add = count($concernedField) != $value;
-                                    break;
-                                case "array-length-gt":
-                                    $add = count($concernedField) > $value;
-                                    break;
-                                case "array-length-lt":
-                                    $add = count($concernedField) < $value;
-                                    break;
-                                case "array-length-ge":
-                                    $add = count($concernedField) >= $value;
-                                    break;
-                                case "array-length-le":
-                                    $add = count($concernedField) <= $value;
-                                    break;
-                                default:
-                                    $add = false;
-                                    break;
-                            }
-                        default:
-                            break;
-                    }
-                } else {
+                if ($el == NULL ||
+                    !array_key_exists($field, $el) ||
+                    !array_key_exists('criteria', $condition) ||
+                    !array_key_exists('value', $condition)
+                ) {
                     $add = false;
+                    break;
                 }
 
-                $condition_index++;
+                $criteria = $condition['criteria'];
+                $value = $condition['value'];
+
+                // get field to compare
+                $concernedField = $el[$field];
+
+                $ignoreCase = array_key_exists('ignoreCase', $condition) && !!$condition['ignoreCase'];
+                $add = $this->__search($concernedField, $criteria, $value, $ignoreCase);
+
                 $el = $el_root;
             }
 
-            if ($add) {
-                $res[$key] = $el_root;
-            }
+            if ($add) $res[$key] = $el_root;
         }
 
         if ($random !== false) {
             $seed = false;
             if (is_array($random) && array_key_exists('seed', $random)) {
                 $rawSeed = sec($random['seed']);
-                if (!is_int($rawSeed)) throw new HTTPException("Seed not an integer value for random search result");
+                if (!is_int($rawSeed))
+                    throw new HTTPException('Seed not an integer value for random search result');
                 $seed = intval($rawSeed);
             }
             $res = chooseRandom($res, $seed);
@@ -469,7 +428,7 @@ class JSONDatabase {
         if (gettype($searchedKeys) != 'array')
             return $res;
 
-        foreach($searchedKeys as $key) {
+        foreach ($searchedKeys as $key) {
             $key = strval($key);
 
             if (array_key_exists($key, $obj['content'])) {
@@ -478,10 +437,6 @@ class JSONDatabase {
         }
 
         return $res;
-    }
-
-    public function editField($editObj) {
-        return $this->editFieldBulk(array($editObj))[0];
     }
 
     // MANDATORY REFERENCE to edit directly: PHP 5+
@@ -532,7 +487,7 @@ class JSONDatabase {
         if (!isset($obj['content'][$id][$field]) and ($operation != 'set' and $operation != 'remove' and $operation != 'array-push'))
             return false;
 
-        switch($operation) {
+        switch ($operation) {
             case 'set':
                 $obj['content'][$id][$field] = $value;
                 return true;
@@ -625,16 +580,19 @@ class JSONDatabase {
         return false;
     }
 
+    public function editField($editObj) {
+        return $this->editFieldBulk(array($editObj))[0];
+    }
+
     public function editFieldBulk($objArray) {
         // need sequential array
-        if (array_assoc($objArray))
-            return false;
+        if (array_assoc($objArray)) return false;
 
         $arrayResult = array();
 
         $fileObj = $this->read($this);
 
-        foreach($objArray as &$editObj) {
+        foreach ($objArray as &$editObj) {
             array_push($arrayResult, $this->__edit($fileObj, $editObj));
         }
 
@@ -644,21 +602,17 @@ class JSONDatabase {
     }
 
     public function select($selectObj) {
-        // check fields presence
-        // fields is required, a array of strings
-        $verif_fields = array_key_exists('fields', $selectObj);
-        if ($verif_fields === false) throw new HTTPException('Missing required fields field');
+        if (!array_key_exists('fields', $selectObj)) throw new HTTPException('Missing required fields field');
 
-        $verif_fields = gettype($selectObj['fields']) === 'array' && array_sequential($selectObj['fields']);
-        if ($verif_fields === false) throw new HTTPException('Incorrect fields type, expected an array');
+        if (!gettype($selectObj['fields']) === 'array' || !array_sequential($selectObj['fields']))
+            throw new HTTPException('Incorrect fields type, expected an array');
 
+        // all field arguments should be strings
         $fields = $selectObj['fields'];
-        $i = 0; $fields_count = count($fields);
-        while($i < $fields_count && $verif_fields) {
-            $verif_fields = gettype($fields[$i]) === 'string';
-            ++$i;
+        foreach ($fields as $field) {
+            if (gettype($field) !== 'string')
+                throw new HTTPException('fields field incorrect, expected a string array');
         }
-        if (!$verif_fields) throw new HTTPException('fields field incorrect, expected an array of string');
 
         $obj = $this->read();
 
@@ -695,7 +649,7 @@ class JSONDatabase {
 
         $json = $obj['content'];
         $result = [];
-        foreach ($json as $key => $value) {
+        foreach ($json as $value) {
             // get correct field and skip existing primitive values (faster)
             if (!array_key_exists($field, $value) || in_array($value, $result)) continue;
 
@@ -715,5 +669,3 @@ class JSONDatabase {
         return random($params, $this);
     }
 }
-
-?>

@@ -15,7 +15,7 @@ require_once('./log.php');
 
 $method = sec($_SERVER['REQUEST_METHOD']);
 if ($method !== 'GET' && $method !== 'POST' && $method !== 'DELETE') {
-    http_error(400, 'Incorrect request type, expected GET, POST or DELETE, not ' . $method);
+    http_error(400, "Incorrect request type, expected GET, POST or DELETE, not $method");
 }
 
 
@@ -57,7 +57,7 @@ if ($method === 'POST') {
 
     $extensionFound = false;
     $i = 0;
-    while($i < count($authorized_file_extension) && !$extensionFound) {
+    while ($i < count($authorized_file_extension) && !$extensionFound) {
         $extensionFound = str_ends_with($absolutePath, $authorized_file_extension[$i]);
         $i = $i + 1;
     }
@@ -75,7 +75,7 @@ if ($method === 'POST') {
 
     if (!$overwrite && file_exists($absolutePath)) http_error(403, 'File already exists');
 
-    $uploaddir = dirname($absolutePath);
+    $uploadDir = dirname($absolutePath);
 
     // Make sure you can write to this folder.
     // php default user is www-data
@@ -83,8 +83,8 @@ if ($method === 'POST') {
     // sudo chown -R www-data "/path/to/folder/"
 
     // mkdir(path, rw-r--r--, recursive=true)
-    if (!is_dir($uploaddir) && !mkdir($uploaddir, 0766, true)){
-        http_error(500, "PHP script can't create folder " . $uploaddir . ", check permission, group and owner.");
+    if (!is_dir($uploadDir) && !mkdir($uploadDir, 0766, true)) {
+        http_error(500, "PHP script can't create folder " . $uploadDir . ". Check permission, group and owner.");
     }
 
     if (!check($_FILES) || !check($_FILES['file'])) http_error(400, 'No actual file was given');
@@ -93,9 +93,9 @@ if ($method === 'POST') {
 
     // eventually write the file
     if (move_uploaded_file($tmpName, $absolutePath)) {
-        http_success('Written file successfully to ' . $relativePath);
+        http_success("Written file successfully to $relativePath");
     } else {
-        http_error(500, "PHP script can't write to file, check permission, group and owner.");
+        http_error(500, "PHP script can't write to file. Check permission, group and owner.");
     }
 
     die();
@@ -115,8 +115,8 @@ if ($method === 'POST') {
 
     try {
         // try to read the image
-        $imginfo = getimagesize($absolutePath);
-        header("Content-type: {$imginfo['mime']}");
+        $imgInfo = getimagesize($absolutePath);
+        header("Content-type: {$imgInfo['mime']}");
         header('Expires: 0');
         header('Cache-Control: must-revalidate, post-check=0, pre-check=0');
         header('Pragma: public');
@@ -128,7 +128,7 @@ if ($method === 'POST') {
     } catch (Throwable $th) {
         header('Content-Description: File Transfer');
         header('Content-Type: application/octet-stream');
-        header('Content-Disposition: attachment; filename='.basename($absolutePath));
+        header('Content-Disposition: attachment; filename=' . basename($absolutePath));
         header('Content-Transfer-Encoding: binary');
         header('Expires: 0');
         header('Cache-Control: must-revalidate, post-check=0, pre-check=0');

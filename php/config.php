@@ -3,7 +3,7 @@
 require_once('./utils.php');
 require_once('./classes/JSONDatabase.php');
 
-$log_path = "firestorm.log";
+$log_path = 'firestorm.log';
 $database_list = array();
 
 /**
@@ -15,7 +15,7 @@ $database_list = array();
 $db = new JSONDatabase;
 // This will be the name of the JSON file
 // It has to be the same as the actual file name (no extension)
-$db->fileName = "my_json_name";
+$db->fileName = 'my_json_name';
 // Whether to automatically generate the key name or to have explicit key names
 // - Default: true
 $db->autoKey = true;
@@ -24,12 +24,12 @@ $db->autoKey = true;
 // - Default: true
 $db->autoIncrement = true;
 // The database_list key is what the collection will be called in JavaScript
-$database_list["my_collection_name"] = $db;
+$database_list['my_collection_name'] = $db;
 
 // This can be simplified into the following constructor:
 // - Note: all of these arguments are optional and will fall back to their defaults if not provided
 // - Order: (fileName, autoKey, autoIncrement)
-$database_list["my_collection_name"] = new JSONDatabase("my_json_name", true, true);
+$database_list['my_collection_name'] = new JSONDatabase('my_json_name', true, true);
 
 /**
  * File handling:

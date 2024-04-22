@@ -381,7 +381,7 @@ $database_list['users'] = new JSONDatabase('users', false);
 
 ```js
 const userCollection = firestorm.collection("users");
-// Error: Autokey disabled
+// Error: Automatic key generation is disabled
 await userCollection.add({ name: "John Doe", age: 30 });
 ```
 

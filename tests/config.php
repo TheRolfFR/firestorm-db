@@ -23,6 +23,4 @@ $tmp->autoIncrement = true;
 $database_list[$tmp->fileName] = $tmp;
 
 
-$log_path = "firestorm.log";
-
-?>
+$log_path = 'firestorm.log';

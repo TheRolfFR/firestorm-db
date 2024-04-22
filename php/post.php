@@ -8,7 +8,7 @@ cors();
 
 $method = sec($_SERVER['REQUEST_METHOD']);
 if ($method === 'GET') {
-    http_error(400, 'Incorrect request type, expected POST, not ' . $method);
+    http_error(400, "Incorrect request type, expected POST, not $method");
 }
 
 $inputJSON = json_decode(file_get_contents('php://input'), true);
@@ -48,7 +48,7 @@ try {
 
 // checking good collection
 if (!array_key_exists($collection, $database_list))
-    http_error(404, 'Collection not found: ' . $collection);
+    http_error(404, "Collection not found: $collection");
 
 $db = $database_list[$collection];
 
@@ -56,21 +56,31 @@ $command = check_key_json('command', $inputJSON);
 if ($command === false)
     http_error(400, 'No command provided');
 
-$commands_available = ['write_raw', 'add', 'addBulk', 'remove', 'removeBulk', 'set', 'setBulk', 'editField', 'editFieldBulk'];
+$available_commands = [
+    'write_raw',
+    'add',
+    'addBulk',
+    'remove',
+    'removeBulk',
+    'set',
+    'setBulk',
+    'editField',
+    'editFieldBulk'
+];
 
-if (!in_array($command, $commands_available))
-    http_error(404, 'Command not found: ' . $command . '. Available commands: ' . join(', ', $commands_available));
+if (!in_array($command, $available_commands))
+    http_error(404, "Command not found: $command. Available commands: " . join(', ', $available_commands));
 
 $valueKeyName = ($command != 'setBulk' && $command != 'addBulk') ? 'value' : 'values';
 $value = check_key_json($valueKeyName, $inputJSON, false);
 
 if ($value === false)
-    http_error(400, 'No ' . $valueKeyName . ' provided');
+    http_error(400, "No $valueKeyName provided");
 
-switch($command) {
+switch ($command) {
     case 'write_raw':
         $db->write_raw($value);
-        http_success('Successful ' . $command . ' command');
+        http_success("Successful $command command");
         break;
     case 'add':
         $newId = $db->add($value);
@@ -82,11 +92,11 @@ switch($command) {
         break;
     case 'remove':
         $db->remove($value);
-        http_success('Successful ' . $command . ' command');
+        http_success("Successful $command command");
         break;
     case 'removeBulk':
         $db->removeBulk($value);
-        http_success('Successful ' . $command . ' command');
+        http_success("Successful $command command");
         break;
     case 'set':
         $dbKey = check_key_json('key', $inputJSON);
@@ -94,7 +104,7 @@ switch($command) {
             http_error(400, 'No key provided');
 
         $db->set($dbKey, $value);
-        http_success('Successful ' . $command . ' command');
+        http_success("Successful $command command");
         break;
     case 'setBulk':
         $dbKey = check_key_json('keys', $inputJSON, false);
@@ -102,7 +112,7 @@ switch($command) {
             http_error(400, 'No keys provided');
 
         $db->setBulk($dbKey, $value);
-        http_success('Successful ' . $command . ' command');
+        http_success("Successful $command command");
         break;
     case 'editField':
         $res = $db->editField($value);
@@ -122,7 +132,7 @@ switch($command) {
         break;
 }
 
-http_error(404, 'No request handler found for command ' . $command);
+http_error(404, "No request handler found for command $command");
 
 } catch(HTTPException $e) {
     http_error($e->getCode(), $e->getMessage());
