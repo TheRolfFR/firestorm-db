@@ -343,7 +343,9 @@ declare class Collection<T> {
 	 * @param options - The edit objects
 	 * @returns Edit confirmation
 	 */
-	public editFieldBulk(options: EditFieldOption<RemoveMethods<T>>[]): Promise<{ success: boolean[] }>;
+	public editFieldBulk(
+		options: EditFieldOption<RemoveMethods<T>>[],
+	): Promise<{ success: boolean[] }>;
 }
 
 /** Value for the ID field when searching content */

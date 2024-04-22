@@ -84,7 +84,7 @@ const __extract_data = (request) => {
 
 /**
  * Represents a Firestorm Collection
-* @template T
+ * @template T
  */
 class Collection {
 	/**
