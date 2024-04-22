@@ -513,7 +513,7 @@ describe("GET operations", () => {
 			// all incorrect values must catch
 			const incorrect = [undefined, null, false, 5, 12.5, "gg", { toto: "tata" }];
 			incorrect.forEach((unco) => {
-				it(`${JSON.stringify(unco)} value`, (done) => {
+				it(`${JSON.stringify(unco)} value rejects`, (done) => {
 					base
 						.select({ fields: unco })
 						.then((res) => done(`got ${JSON.stringify(res)} value`))
@@ -537,7 +537,7 @@ describe("GET operations", () => {
 			// incorrect arrays
 			incorrect = [undefined, null, false, 5, 12.5, {}];
 			incorrect.forEach(async (unco) => {
-				it(`[${JSON.stringify(unco)}] value`, (done) => {
+				it(`[${JSON.stringify(unco)}] value rejects`, (done) => {
 					base
 						.select({ fields: [unco] })
 						.then(() => done(`[${JSON.stringify(unco)}] value passed`))
@@ -591,6 +591,76 @@ describe("GET operations", () => {
 				.then(() => done("Did not expect it to succeed"))
 				.catch(() => done());
 		});
+
+		describe("needs string field value", () => {
+			const incorrect = [null, false, 5.5, -5, { key: "val" }, ["asdf"]];
+			incorrect.forEach((unco) => {
+				it(`${JSON.stringify(unco)} value rejects`, (done) => {
+					base
+						.values({ field: unco })
+						.then(() => done("Did not expect it to succeed"))
+						.catch(() => done());
+				});
+			});
+		});
+
+		describe("returns the right content", () => {
+			it("works on primitive without flattening", (done) => {
+				base
+					.values({ field: "age" })
+					.then((res) => {
+						// sort values to prevent possible ordering issues
+						const expected = Array.from(new Set(Object.values(content).map((v) => v.age)));
+						expect(res.sort()).to.deep.equal(expected.sort());
+						done();
+					})
+					.catch((err) => done(err));
+			});
+
+			it("works with an array with flattening", (done) => {
+				base
+					.values({ field: "friends", flatten: true })
+					.then((res) => {
+						const expected = Array.from(
+							new Set(
+								Object.values(content)
+									.map((v) => v.friends)
+									.flat(),
+							),
+						);
+						expect(res.sort()).to.deep.equal(expected.sort());
+						done();
+					})
+					.catch((err) => done(err));
+			});
+
+			it("works on primitive with flattening", (done) => {
+				base
+					.values({ field: "age", flatten: true })
+					.then((res) => {
+						// flatten field gets ignored on primitives (easier to handle)
+						const expected = Array.from(new Set(Object.values(content).map((v) => v.age)));
+						expect(res.sort()).to.deep.equal(expected.sort());
+						done();
+					})
+					.catch((err) => done(err));
+			});
+
+			it("works on an array without flattening", (done) => {
+				base
+					.values({ field: "friends" })
+					.then((res) => {
+						const values = Object.values(content).map((v) => v.friends);
+						const unique = values.filter(
+							(el, i) =>
+								i === values.findIndex((obj) => JSON.stringify(obj) === JSON.stringify(el)),
+						);
+						expect(res.sort()).to.deep.equal(unique.sort());
+						done();
+					})
+					.catch((err) => done(err));
+			});
+		});
 	});
 
 	describe("random(max, seed, offset)", () => {
@@ -609,7 +679,7 @@ describe("GET operations", () => {
 
 		describe("requires max parameter to be an integer >= -1", () => {
 			// all incorrect values must catch
-			let incorrect = [null, false, "gg", 5.5, -5, -2]; // undefined works because max is the whole collection then
+			const incorrect = [null, false, "gg", 5.5, -5, -2]; // undefined works because max is the whole collection then
 			incorrect.forEach((unco) => {
 				it(`${JSON.stringify(unco)} value`, (done) => {
 					base
