@@ -208,7 +208,7 @@ describe("GET operations", () => {
 					expect(res).deep.equals(content, "Content different");
 					done();
 				})
-				.catch((err) => done(err));
+				.catch(done);
 		});
 
 		it("sha1 content hash is the same", (done) => {
@@ -235,7 +235,7 @@ describe("GET operations", () => {
 					expect(res).deep.equals(content[0], "Content different");
 					done();
 				})
-				.catch((err) => done(err));
+				.catch(done);
 		});
 
 		it("number parameter should return the correct value", (done) => {
@@ -246,7 +246,7 @@ describe("GET operations", () => {
 					expect(res).deep.equals(content[0], "Content different");
 					done();
 				})
-				.catch((err) => done(err));
+				.catch(done);
 		});
 
 		it("string and number parameters gives the same result", (done) => {
@@ -256,7 +256,7 @@ describe("GET operations", () => {
 					expect(results[0]).deep.equals(results[1], "Content different");
 					done();
 				})
-				.catch((err) => done(err));
+				.catch(done);
 		});
 	});
 
@@ -398,7 +398,7 @@ describe("GET operations", () => {
 						expect(res.length).to.equal(0);
 						done();
 					})
-					.catch((err) => done(err));
+					.catch(done);
 			});
 			it("can find correct nested value", (done) => {
 				base
@@ -528,7 +528,7 @@ describe("GET operations", () => {
 					base
 						.select({ fields: val })
 						.then(() => done())
-						.catch((err) => done(err));
+						.catch(done);
 				});
 			});
 		});
@@ -566,7 +566,7 @@ describe("GET operations", () => {
 					expect(selectResult).to.be.deep.equal(raw, `contents are different`);
 					done();
 				})
-				.catch((err) => done(err));
+				.catch(done);
 		});
 	});
 
@@ -614,7 +614,7 @@ describe("GET operations", () => {
 						expect(res.sort()).to.deep.equal(expected.sort());
 						done();
 					})
-					.catch((err) => done(err));
+					.catch(done);
 			});
 
 			it("works with an array with flattening", (done) => {
@@ -631,7 +631,7 @@ describe("GET operations", () => {
 						expect(res.sort()).to.deep.equal(expected.sort());
 						done();
 					})
-					.catch((err) => done(err));
+					.catch(done);
 			});
 
 			it("works on primitive with flattening", (done) => {
@@ -643,7 +643,7 @@ describe("GET operations", () => {
 						expect(res.sort()).to.deep.equal(expected.sort());
 						done();
 					})
-					.catch((err) => done(err));
+					.catch(done);
 			});
 
 			it("works on an array without flattening", (done) => {
@@ -658,7 +658,7 @@ describe("GET operations", () => {
 						expect(res.sort()).to.deep.equal(unique.sort());
 						done();
 					})
-					.catch((err) => done(err));
+					.catch(done);
 			});
 		});
 	});
@@ -836,7 +836,7 @@ describe("POST operations", () => {
 					expect(id).to.equals(String(parseInt(last_id) + 1));
 					done();
 				})
-				.catch((err) => done(err));
+				.catch(done);
 		});
 
 		describe("It should not accept incorrect values", () => {
@@ -877,7 +877,7 @@ describe("POST operations", () => {
 					base
 						.add(co)
 						.then(() => done())
-						.catch((err) => done(err));
+						.catch(done);
 				});
 			});
 		});

@@ -261,15 +261,15 @@ class JSONDatabase {
         $this->write($obj);
     }
 
-    private function __search($concernedField, $criteria, $value, $ignoreCase) {
-        $fieldType = gettype($concernedField);
+    private function __search($field, $criteria, $value, $ignoreCase) {
+        $fieldType = gettype($field);
         switch ($fieldType) {
             case 'boolean':
                 switch ($criteria) {
                     case '!=':
-                        return $concernedField != $value;
+                        return $field != $value;
                     case '==':
-                        return $concernedField == $value;
+                        return $field == $value;
                     default:
                         return false;
                 }
@@ -277,19 +277,19 @@ class JSONDatabase {
             case 'double':
                 switch ($criteria) {
                     case '!=':
-                        return $concernedField != $value;
+                        return $field != $value;
                     case '==':
-                        return $concernedField == $value;
+                        return $field == $value;
                     case '>=':
-                        return $concernedField >= $value;
+                        return $field >= $value;
                     case '<=':
-                        return $concernedField <= $value;
+                        return $field <= $value;
                     case '<':
-                        return $concernedField < $value;
+                        return $field < $value;
                     case '>':
-                        return $concernedField > $value;
+                        return $field > $value;
                     case 'in':
-                        return in_array($concernedField, $value);
+                        return in_array($field, $value);
                     default:
                         return false;
                 }
@@ -299,30 +299,30 @@ class JSONDatabase {
                 $posFunc = $ignoreCase ? 'stripos' : 'strpos';
                 switch ($criteria) {
                     case '!=':
-                        return $cmpFunc($concernedField, $value) != 0;
+                        return $cmpFunc($field, $value) != 0;
                     case '==':
-                        return $cmpFunc($concernedField, $value) == 0;
+                        return $cmpFunc($field, $value) == 0;
                     case '>=':
-                        return $cmpFunc($concernedField, $value) >= 0;
+                        return $cmpFunc($field, $value) >= 0;
                     case '<=':
-                        return $cmpFunc($concernedField, $value) <= 0;
+                        return $cmpFunc($field, $value) <= 0;
                     case '<':
-                        return $cmpFunc($concernedField, $value) < 0;
+                        return $cmpFunc($field, $value) < 0;
                     case '>':
-                        return $cmpFunc($concernedField, $value) > 0;
+                        return $cmpFunc($field, $value) > 0;
                     case 'includes':
                     case 'contains':
-                        return $value != '' ? ($posFunc($concernedField, $value) !== false) : true;
+                        return $value != '' ? ($posFunc($field, $value) !== false) : true;
                     case 'startsWith':
-                        return $value != '' ? ($posFunc($concernedField, $value) === 0) : true;
+                        return $value != '' ? ($posFunc($field, $value) === 0) : true;
                     case 'endsWith':
-                        $end = substr($concernedField, -strlen($value));
+                        $end = substr($field, -strlen($value));
                         return $value != '' ? ($cmpFunc($end, $value) === 0) : true;
                     case 'in':
                         $notFound = true;
                         $a_i = 0;
                         while ($a_i < count($value) && $notFound) {
-                            $notFound = $cmpFunc($concernedField, $value[$a_i]) != 0;
+                            $notFound = $cmpFunc($field, $value[$a_i]) != 0;
                             $a_i++;
                         }
                         return !$notFound;
@@ -332,22 +332,22 @@ class JSONDatabase {
             case 'array':
                 switch ($criteria) {
                     case 'array-contains':
-                        return array_contains($concernedField, $value, $ignoreCase);
+                        return array_contains($field, $value, $ignoreCase);
                     case 'array-contains-any':
-                        return array_contains_any($concernedField, $value, $ignoreCase);
+                        return array_contains_any($field, $value, $ignoreCase);
                     case 'array-length':
                     case 'array-length-eq':
-                        return count($concernedField) == $value;
+                        return count($field) == $value;
                     case 'array-length-df':
-                        return count($concernedField) != $value;
+                        return count($field) != $value;
                     case 'array-length-gt':
-                        return count($concernedField) > $value;
+                        return count($field) > $value;
                     case 'array-length-lt':
-                        return count($concernedField) < $value;
+                        return count($field) < $value;
                     case 'array-length-ge':
-                        return count($concernedField) >= $value;
+                        return count($field) >= $value;
                     case 'array-length-le':
-                        return count($concernedField) <= $value;
+                        return count($field) <= $value;
                     default:
                         return false;
                 }
@@ -396,10 +396,10 @@ class JSONDatabase {
                 $value = $condition['value'];
 
                 // get field to compare
-                $concernedField = $el[$field];
+                $fieldValue = $el[$field];
 
                 $ignoreCase = array_key_exists('ignoreCase', $condition) && !!$condition['ignoreCase'];
-                $add = $this->__search($concernedField, $criteria, $value, $ignoreCase);
+                $add = $this->__search($fieldValue, $criteria, $value, $ignoreCase);
 
                 $el = $el_root;
             }
