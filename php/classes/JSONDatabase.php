@@ -261,7 +261,7 @@ class JSONDatabase {
         $this->write($obj);
     }
 
-    private function __search($field, $criteria, $value, $ignoreCase) {
+    private function _search($field, $criteria, $value, $ignoreCase) {
         $fieldType = gettype($field);
         switch ($fieldType) {
             case 'boolean':
@@ -392,14 +392,8 @@ class JSONDatabase {
                     break;
                 }
 
-                $criteria = $condition['criteria'];
-                $value = $condition['value'];
-
-                // get field to compare
-                $fieldValue = $el[$field];
-
                 $ignoreCase = array_key_exists('ignoreCase', $condition) && !!$condition['ignoreCase'];
-                $add = $this->__search($fieldValue, $criteria, $value, $ignoreCase);
+                $add = $this->_search($el[$field], $condition['criteria'], $condition['value'], $ignoreCase);
 
                 $el = $el_root;
             }
@@ -440,7 +434,7 @@ class JSONDatabase {
     }
 
     // MANDATORY REFERENCE to edit directly: PHP 5+
-    private function __edit(&$obj, $editObj) {
+    private function _edit(&$obj, $editObj) {
         if (!is_object($editObj))
             return false;
 
@@ -593,7 +587,7 @@ class JSONDatabase {
         $fileObj = $this->read($this);
 
         foreach ($objArray as &$editObj) {
-            array_push($arrayResult, $this->__edit($fileObj, $editObj));
+            array_push($arrayResult, $this->_edit($fileObj, $editObj));
         }
 
         $this->write($fileObj);
