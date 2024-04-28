@@ -5,7 +5,7 @@ function array_contains($array, $value, $ignoreCase = false) {
     $tmp_i = 0;
     while ($tmp_i < count($array) and !$tmp) {
         if ($ignoreCase) {
-            $tmp = ($ignoreCase ? strcasecmp($array[$tmp_i], $value)  : strcmp($array[$tmp_i], $value)) == 0;
+            $tmp = ($ignoreCase ? strcasecmp($array[$tmp_i], $value) : strcmp($array[$tmp_i], $value)) == 0;
         } else {
             $tmp = $array[$tmp_i] == $value;
         }

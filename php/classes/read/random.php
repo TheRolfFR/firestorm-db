@@ -1,6 +1,6 @@
 <?php
 
-require_once('./classes/HTTPException.php');
+require_once './classes/HTTPException.php';
 
 function make_seed() {
     list($usec, $sec) = explode(' ', microtime());
@@ -13,25 +13,25 @@ function make_seed() {
 function random($params, $class) {
     $hasMax = array_key_exists('max', $params);
     $max = $hasMax ? $params['max'] : -1;
-    if ($hasMax && (gettype($max) !== 'integer' || $max < -1)) throw new HTTPException('Expected integer >= -1 for the max');
+    if ($hasMax && (gettype($max) !== 'integer' || $max < -1))
+        throw new HTTPException('Expected integer >= -1 for the max');
 
     $hasSeed = array_key_exists('seed', $params);
     $hasOffset = array_key_exists('offset', $params);
 
     // offset is relevant only if you get the key
-    if ($hasOffset && !$hasSeed) throw new HTTPException('You can\'t put an offset without a seed');
+    if ($hasOffset && !$hasSeed)
+        throw new HTTPException('You can\'t put an offset without a seed');
 
     // offset validation
     $offset = $hasOffset ? $params['offset'] : 0;
-    if (
-        $hasOffset &&
-        (gettype($offset) !== 'integer' ||
-        $offset < 0)
-    ) throw new HTTPException('Expected integer >= 0 for the offset');
+    if ($hasOffset && (gettype($offset) !== 'integer' || $offset < 0))
+        throw new HTTPException('Expected integer >= 0 for the offset');
 
     // seed validation
     $seed = $hasSeed ? $params['seed'] : false;
-    if ($hasSeed && gettype($seed) !== 'integer') throw new HTTPException('Expected integer for the seed');
+    if ($hasSeed && gettype($seed) !== 'integer')
+        throw new HTTPException('Expected integer for the seed');
 
     $json = $class->read()['content'];
 
@@ -43,7 +43,8 @@ function chooseRandom($json, $seed = false, $max = -1, $offset = 0) {
     $keys_selected = array();
     $keys_length = count($keys);
 
-    if ($offset >= $keys_length) return array(); // return an empty array, there is no more elements you can get
+    // return an empty array, can't get more elements
+    if ($offset >= $keys_length) return array();
 
     if ($max == -1 || $max > $keys_length) $max = $keys_length;
 
@@ -62,8 +63,7 @@ function chooseRandom($json, $seed = false, $max = -1, $offset = 0) {
     // then while I can get new entries
     // -> I still have keys
     // -> I am not at maximum
-    $i = 0;
-    while ($keys_length > 0 && $i < $max) {
+    for ($i = 0; $keys_length > 0 && $i < $max; ++$i) {
         // get an index
         $index = mt_rand(0, $keys_length - 1);
 
@@ -72,15 +72,12 @@ function chooseRandom($json, $seed = false, $max = -1, $offset = 0) {
 
         // recompute keys left
         $keys_length = count($keys);
-
-        // next thing
-        ++$i;
     }
 
     // get objects from keys selected
     $result = array();
-    for ($i = 0; $i < count($keys_selected); ++$i) {
-        $key = strval($keys_selected[$i]);
+    foreach ($keys_selected as $k) {
+        $key = strval($k);
         $result[$key] = $json[$key];
     }
 

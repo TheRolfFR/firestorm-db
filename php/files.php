@@ -5,15 +5,15 @@ ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
 error_reporting(E_ALL - E_NOTICE);
 
-require_once('./config.php');
+require_once './config.php';
 
 if (!$STORAGE_LOCATION) http_error(501, 'Developer forgot the $STORAGE_LOCATION');
 
 // import useful functions
-require_once('./utils.php');
-require_once('./log.php');
+require_once './utils.php';
+require_once './log.php';
 
-$method = sec($_SERVER['REQUEST_METHOD']);
+$method = htmlspecialchars($_SERVER['REQUEST_METHOD']);
 if ($method !== 'GET' && $method !== 'POST' && $method !== 'DELETE') {
     http_error(400, "Incorrect request type, expected GET, POST or DELETE, not $method");
 }
@@ -28,7 +28,7 @@ if ($method === 'POST') {
      */
 
     // add tokens
-    require_once('./tokens.php');
+    require_once './tokens.php';
 
     if (!$db_tokens)
         http_error(501, 'Developer is dumb and forgot to create tokens');
@@ -46,9 +46,9 @@ if ($method === 'POST') {
     if ($path === false) http_error(400, 'No path provided');
 
     // check path lower than me
-    $relativePath = removeDots($path);
-    $absolutePath = removeDots($STORAGE_LOCATION . $relativePath);
-    $myPath = removeDots($STORAGE_LOCATION);
+    $relativePath = remove_dots($path);
+    $absolutePath = remove_dots($STORAGE_LOCATION . $relativePath);
+    $myPath = remove_dots($STORAGE_LOCATION);
 
     // avoid hacks to write script or files unauthorized
     if (strpos($absolutePath, $myPath) !== 0) http_error(403, 'Path not authorized');
@@ -104,8 +104,8 @@ if ($method === 'POST') {
     if ($path === false) http_error(400, 'No path provided');
 
     // check path lower than me
-    $absolutePath = removeDots($STORAGE_LOCATION . $path);
-    $myPath = removeDots($STORAGE_LOCATION);
+    $absolutePath = remove_dots($STORAGE_LOCATION . $path);
+    $myPath = remove_dots($STORAGE_LOCATION);
     // avoid hacks to write script or files unauthorized
     if (strpos($absolutePath, $myPath) !== 0) http_error(403, 'Path not authorized');
     // no php script allowed
@@ -148,7 +148,7 @@ if ($method === 'POST') {
      */
 
     // add tokens
-    require_once('./tokens.php');
+    require_once './tokens.php';
 
     if (!$db_tokens)
         http_error(501, 'Developer is dumb and forgot to create tokens');
@@ -170,9 +170,9 @@ if ($method === 'POST') {
     if ($path === false) http_error(400, 'No path provided');
 
     // check path lower than me
-    $relativePath = removeDots($path);
-    $absolutePath = removeDots($STORAGE_LOCATION . $relativePath);
-    $myPath = removeDots($STORAGE_LOCATION);
+    $relativePath = remove_dots($path);
+    $absolutePath = remove_dots($STORAGE_LOCATION . $relativePath);
+    $myPath = remove_dots($STORAGE_LOCATION);
 
     // avoid hacks to write script or files unauthorized
     if (strpos($absolutePath, $myPath) !== 0) http_error(403, 'Path not authorized');
@@ -194,7 +194,7 @@ function p($var) {
     } catch (Throwable $th) {
         return false;
     }
-    return sec($_POST[$var]);
+    return htmlspecialchars($_POST[$var]);
 }
 
 function g($var) {
@@ -204,5 +204,5 @@ function g($var) {
         return false;
     }
 
-    return sec($_GET[$var]);
+    return htmlspecialchars($_GET[$var]);
 }

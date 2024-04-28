@@ -1,12 +1,12 @@
 <?php
 
 // import useful functions
-require_once('./classes/HTTPException.php');
-require_once('./utils.php');
+require_once './classes/HTTPException.php';
+require_once './utils.php';
 
 cors();
 
-$method = sec($_SERVER['REQUEST_METHOD']);
+$method = htmlspecialchars($_SERVER['REQUEST_METHOD']);
 if ($method === 'GET') {
     http_error(400, "Incorrect request type, expected POST, not $method");
 }
@@ -24,7 +24,7 @@ if (file_exists('./tokens.php') == false)
     http_error(501, 'Developer didn\'t implement a tokens.php file');
 
 // add tokens
-require_once('./tokens.php');
+require_once './tokens.php';
 
 if (!$db_tokens)
     http_error(400, 'Developer is dumb and forgot to create tokens');
@@ -41,7 +41,7 @@ if (file_exists('./config.php') == false)
     http_error(501, 'Developer didn\'t implement a config.php file');
 
 // import db config
-require_once('./config.php');
+require_once './config.php';
 
 // trying things
 try {

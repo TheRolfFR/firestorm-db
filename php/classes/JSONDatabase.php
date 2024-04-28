@@ -1,10 +1,10 @@
 <?php
 
-require_once('./utils.php');
-require_once('./classes/FileAccess.php');
-require_once('./classes/HTTPException.php');
-require_once('./classes/read/random.php');
-require_once('./classes/read/searchArray.php');
+require_once './utils.php';
+require_once './classes/FileAccess.php';
+require_once './classes/HTTPException.php';
+require_once './classes/read/random.php';
+require_once './classes/read/searchArray.php';
 
 class JSONDatabase {
     public $folderPath = './files/';
@@ -56,7 +56,7 @@ class JSONDatabase {
             // we don't accept primitive keys as value
             $item_type = gettype($item);
             if (in_array($item_type, $incorrect_types)) {
-                throw new HTTPException("write_raw item with key $key item cannot be a $item_type", 400);
+                throw new HTTPException("write_raw item with key $key cannot be a $item_type", 400);
             }
 
             // we accept associative array as items because they may have an integer key
@@ -199,7 +199,9 @@ class JSONDatabase {
         // now the values inside this array must not be base values
         foreach ($values as $value) {
             $value_type = gettype($value);
-            if (is_primitive($value) or (is_array($value) and count($value) and !array_assoc($value))
+            if (
+                is_primitive($value) or
+                (is_array($value) and count($value) and !array_assoc($value))
             )
                 throw new HTTPException("array value must be an object not a $value_type", 400);
         }
@@ -404,7 +406,7 @@ class JSONDatabase {
         if ($random !== false) {
             $seed = false;
             if (is_array($random) && array_key_exists('seed', $random)) {
-                $rawSeed = sec($random['seed']);
+                $rawSeed = htmlspecialchars($random['seed']);
                 if (!is_int($rawSeed))
                     throw new HTTPException('Seed not an integer value for random search result');
                 $seed = intval($rawSeed);
@@ -426,7 +428,7 @@ class JSONDatabase {
             $key = strval($key);
 
             if (array_key_exists($key, $obj['content'])) {
-                $res[$key] = $el = $obj['content'][$key];
+                $res[$key] = $obj['content'][$key];
             }
         }
 
@@ -563,8 +565,10 @@ class JSONDatabase {
                 if (array_assoc($value) or count($value) < 2 or gettype($value[0]) != 'integer' or gettype($value[1]) != 'integer')
                     return false;
 
-                if (count($value) > 2) array_splice($obj['content'][$id][$field], $value[0], $value[1], $value[2]);
-                else array_splice($obj['content'][$id][$field], $value[0], $value[1]);
+                if (count($value) > 2)
+                    array_splice($obj['content'][$id][$field], $value[0], $value[1], $value[2]);
+                else
+                    array_splice($obj['content'][$id][$field], $value[0], $value[1]);
 
                 return true;
             default:

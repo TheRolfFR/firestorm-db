@@ -158,7 +158,7 @@ The server-side files to handle requests can be found and copied to your hosting
 ```php
 <?php
 // config.php
-require_once('./classes/JSONDatabase.php');
+require_once './classes/JSONDatabase.php';
 
 $database_list = array();
 
@@ -188,7 +188,7 @@ If you're working with multiple collections, it's probably easier to initialize 
 ```php
 // config.php
 <?php
-require_once('./classes/JSONDatabase.php');
+require_once './classes/JSONDatabase.php';
 $database_list = array(
     'orders' => new JSONDatabase('orders', true),
     'users' => new JSONDatabase('users', false),

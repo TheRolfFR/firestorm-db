@@ -1,5 +1,5 @@
 <?php
-require_once('./utils.php');
+require_once './utils.php';
 
 cors();
 
@@ -9,9 +9,9 @@ ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
 
 // import useful functions
-require_once('./log.php');
+require_once './log.php';
 
-$method = sec($_SERVER['REQUEST_METHOD']);
+$method = htmlspecialchars($_SERVER['REQUEST_METHOD']);
 if ($method !== 'GET' && $method !== 'POST') {
     http_error(400, "Incorrect request type, expected GET or POST, not $method");
 }
@@ -29,7 +29,7 @@ if (file_exists('./config.php') == false)
     http_error(501, 'Developer didn\'t implement a config.php file');
 
 // import db config
-require_once('./config.php');
+require_once './config.php';
 
 try {
 

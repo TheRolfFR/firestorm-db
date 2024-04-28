@@ -1,7 +1,7 @@
 <?php
 
-require_once('./utils.php');
-require_once('./classes/JSONDatabase.php');
+require_once './utils.php';
+require_once './classes/JSONDatabase.php';
 
 $log_path = 'firestorm.log';
 $database_list = array();

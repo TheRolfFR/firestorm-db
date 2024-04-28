@@ -56,6 +56,6 @@ class FileAccess {
         }
 
         $ret = file_put_contents($fileObj['filepath'], $fileObj['content'], LOCK_EX);
-	return $ret;
+        return $ret;
     }
 }

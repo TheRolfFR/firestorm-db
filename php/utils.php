@@ -10,11 +10,7 @@ function check($var) {
     return isset($var) and !empty($var);
 }
 
-function sec($var) {
-    return htmlspecialchars($var);
-}
-
-function http_response($body, $code=200) {
+function http_response($body, $code = 200) {
     header('Content-Type: application/json');
     http_response_code($code);
     echo $body;
@@ -49,7 +45,9 @@ function http_success($message) {
 }
 
 function check_key_json($key, $arr, $parse = false) {
-    return array_key_exists($key, $arr) ? ($parse ? sec($arr[$key]) : $arr[$key]) : false;
+    if (array_key_exists($key, $arr))
+        return $parse ? htmlspecialchars($arr[$key]) : $arr[$key];
+    return false;
 }
 
 function array_assoc(array $arr) {
@@ -62,7 +60,7 @@ function array_sequential(array $arr) {
 }
 
 function stringifier($obj, $depth = 1) {
-	if ($depth == 0) return json_encode($obj);
+    if ($depth == 0) return json_encode($obj);
 
     $res = "{";
 
@@ -98,7 +96,7 @@ function cors() {
     }
 }
 
-function removeDots($path) {
+function remove_dots($path) {
     $root = ($path[0] === '/') ? '/' : '';
 
     $segments = explode('/', trim($path, '/'));
@@ -114,6 +112,6 @@ function removeDots($path) {
 if (!function_exists('str_ends_with')) {
     function str_ends_with(string $haystack, string $needle): bool {
         $needle_len = strlen($needle);
-        return ($needle_len === 0 || 0 === substr_compare($haystack, $needle, - $needle_len));
+        return $needle_len === 0 || 0 === substr_compare($haystack, $needle, -$needle_len);
     }
 }

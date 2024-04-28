@@ -1,7 +1,7 @@
 <?php
 
-require_once('./utils.php');
-require_once('./classes/JSONDatabase.php');
+require_once './utils.php';
+require_once './classes/JSONDatabase.php';
 
 // whitelist of correct extensions
 $authorized_file_extension = array('.txt', '.png', '.jpg', '.jpeg');
@@ -9,10 +9,10 @@ $authorized_file_extension = array('.txt', '.png', '.jpg', '.jpeg');
 // to force a subfolder of firestorm installation
 $STORAGE_LOCATION = dirname($_SERVER['SCRIPT_FILENAME']) . '/uploads/';
 
-$database_list = array();
-
-// test with constructor/optional args
-$database_list['house'] = new JSONDatabase('house', false);
+$database_list = array(
+	// test with constructor/optional args
+	"house" => new JSONDatabase('house', false)
+);
 
 // test without constructor
 $tmp = new JSONDatabase;
