@@ -33,6 +33,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `Collection` class being exported in TypeScript despite the actual class being private.
 - `array-splice` edit fields being incorrectly typed as `array-slice`.
 - Platform-specific PHP error when searching nested keys.
+- `Collection.remove` rejecting numeric keys, despite `Collection.removeBulk` not doing so.
 
 ## [1.12.0] - 2024-02-22
 

@@ -35,10 +35,10 @@ function random($params, $class) {
 
     $json = $class->read()['content'];
 
-    return chooseRandom($json, $seed, $max, $offset);
+    return choose_random($json, $seed, $max, $offset);
 }
 
-function chooseRandom($json, $seed = false, $max = -1, $offset = 0) {
+function choose_random($json, $seed = false, $max = -1, $offset = 0) {
     $keys = array_keys($json);
     $keys_selected = array();
     $keys_length = count($keys);

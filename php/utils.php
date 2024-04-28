@@ -40,6 +40,15 @@ function is_primitive($value) {
         $value_type == 'string';
 }
 
+function is_number_like($value) {
+    $value_type = gettype($value);
+    return in_array($value_type, ['integer', 'double']);
+}
+
+function is_keyable($value) {
+    return in_array(gettype($value), ['integer', 'string']);
+}
+
 function http_success($message) {
     http_message($message, 'message', 200);
 }
@@ -51,7 +60,7 @@ function check_key_json($key, $arr, $parse = false) {
 }
 
 function array_assoc(array $arr) {
-    if (array() === $arr) return false;
+    if (array() === $arr || !is_array($arr)) return false;
     return array_keys($arr) !== range(0, count($arr) - 1);
 }
 

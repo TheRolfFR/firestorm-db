@@ -7,16 +7,23 @@ require_once './classes/read/random.php';
 require_once './classes/read/searchArray.php';
 
 class JSONDatabase {
+    /** Folder to get the JSON file from */
     public $folderPath = './files/';
+    /** Name of the JSON file */
     public $fileName = 'db';
+    /** File extension used in collection name */
     public $fileExt = '.json';
 
-    public $default = array();
-
+    /** Whether to automatically generate the key name or to have explicit key names */
     public $autoKey = true;
+    /** Whether to simply start at 0 and increment or to use a random ID name */
     public $autoIncrement = true;
 
-    public function __construct(string $fileName = 'db', bool $autoKey = true, bool $autoIncrement = true) {
+    public function __construct(
+        string $fileName = 'db',
+        bool $autoKey = true,
+        bool $autoIncrement = true
+    ) {
         // if no/some args provided they just fall back to their defaults
         $this->fileName = $fileName;
         $this->autoKey = $autoKey;
@@ -82,7 +89,8 @@ class JSONDatabase {
     }
 
     public function read_raw($waitLock = false) {
-        return FileAccess::read($this->fullPath(), $waitLock, json_encode($this->default));
+        // fall back to empty array if failed
+        return FileAccess::read($this->fullPath(), $waitLock, json_encode(array()));
     }
 
     public function read($waitLock = false) {
@@ -93,7 +101,11 @@ class JSONDatabase {
 
     public function get($key) {
         $obj = $this->read();
-        if (!$obj || array_key_exists('content', $obj) == false || array_key_exists(strval($key), $obj['content']) == false)
+        if (
+            !$obj ||
+            array_key_exists('content', $obj) == false ||
+            array_key_exists(strval($key), $obj['content']) == false
+        )
             return null;
 
         $res = array($key => $obj['content'][$key]);
@@ -107,11 +119,11 @@ class JSONDatabase {
         }
 
         $key_var_type = gettype($key);
-        if ($key_var_type != 'string' and $key_var_type != 'integer')
-            throw new HTTPException('Incorrect key', 400);
+        if (!is_keyable($key))
+            throw new HTTPException("Incorrect key type, got $key_var_type, expected string or integer", 400);
 
         $value_var_type = gettype($value);
-        if ($value_var_type == 'double' or $value_var_type == 'integer' or $value_var_type == 'string')
+        if (is_primitive($value))
             throw new HTTPException("Invalid value type, got $value_var_type, expected object", 400);
 
         if ($value !== array() and !array_assoc($value))
@@ -129,7 +141,7 @@ class JSONDatabase {
         // we verify that our keys are in an array
         $key_var_type = gettype($keys);
         if ($key_var_type != 'array')
-            throw new Exception('Incorrect keys type');
+            throw new HTTPException('Incorrect keys type');
 
         // else set it at the corresponding value
         $obj = $this->read(true);
@@ -137,10 +149,12 @@ class JSONDatabase {
         // decode and add all values
         $value_decoded = json_decode(json_encode($values), true);
         $keys_decoded = json_decode(json_encode($keys), true);
+
+        // regular for loop to join keys and values together
         for ($i = 0; $i < count($value_decoded); $i++) {
             $key_var_type = gettype($keys_decoded[$i]);
-            if ($key_var_type != 'string' and $key_var_type != 'double' and $key_var_type != 'integer')
-                throw new Exception('Incorrect key');
+            if (!is_keyable($keys_decoded[$i]))
+                throw new HTTPException("Incorrect key type, got $key_var_type, expected string or integer");
 
             $key = strval($keys_decoded[$i]);
 
@@ -157,7 +171,8 @@ class JSONDatabase {
             $last_key = count($int_keys) > 0 ? $int_keys[count($int_keys) - 1] + 1 : 0;
         } else {
             $last_key = uniqid();
-            while (array_key_exists($last_key, $arr)) $last_key = uniqid();
+            while (array_key_exists($last_key, $arr))
+                $last_key = uniqid();
         }
 
         return strval($last_key);
@@ -165,7 +180,7 @@ class JSONDatabase {
 
     public function add($value) {
         if ($this->autoKey == false)
-            throw new Exception('Automatic key generation is disabled');
+            throw new HTTPException('Automatic key generation is disabled');
 
         // restricts types to objects only
         $value_type = gettype($value);
@@ -185,7 +200,7 @@ class JSONDatabase {
 
     public function addBulk($values) {
         if (!$this->autoKey)
-            throw new Exception('Automatic key generation is disabled');
+            throw new HTTPException('Automatic key generation is disabled');
 
         if ($values !== array() and $values == NULL)
             throw new HTTPException('null-like value not accepted', 400);
@@ -199,16 +214,13 @@ class JSONDatabase {
         // now the values inside this array must not be base values
         foreach ($values as $value) {
             $value_type = gettype($value);
-            if (
-                is_primitive($value) or
-                (is_array($value) and count($value) and !array_assoc($value))
-            )
+            if (is_primitive($value) or (array_sequential($value) and count($value)))
                 throw new HTTPException("array value must be an object not a $value_type", 400);
         }
 
         // verify that values is an array with number indices
         if (array_assoc($values))
-            throw new Exception('Wanted sequential array');
+            throw new HTTPException('Wanted sequential array');
 
         // else set it at the corresponding value
         $obj = $this->read(true);
@@ -230,8 +242,9 @@ class JSONDatabase {
     }
 
     public function remove($key) {
-        if (gettype($key) != 'string')
-            throw new HTTPException('remove value must be a string', 400);
+        $key_var_type = gettype($key);
+        if (!is_keyable($key))
+            throw new HTTPException("Incorrect key type, got $key_var_type, expected string or integer", 400);
 
         $obj = $this->read(true);
         unset($obj['content'][$key]);
@@ -247,8 +260,8 @@ class JSONDatabase {
 
         for ($i = 0; $i < count($keys); $i++) {
             $key_var_type = gettype($keys[$i]);
-            if ($key_var_type != 'string' and $key_var_type != 'double' and $key_var_type != 'integer')
-                throw new HTTPException('Incorrect key type', 400);
+            if (!is_keyable($keys[$i]))
+                throw new HTTPException("Incorrect key type, got $key_var_type, expected string or integer", 400);
             else
                 $keys[$i] = strval($keys[$i]);
         }
@@ -256,14 +269,13 @@ class JSONDatabase {
         $obj = $this->read(true);
 
         // remove all keys
-        foreach ($keys as $key_decoded) {
+        foreach ($keys as $key_decoded)
             unset($obj['content'][$key_decoded]);
-        }
 
         $this->write($obj);
     }
 
-    private function _search($field, $criteria, $value, $ignoreCase) {
+    private function _search($field, $criteria, $value, $ignoreCase): bool {
         $fieldType = gettype($field);
         switch ($fieldType) {
             case 'boolean':
@@ -321,13 +333,13 @@ class JSONDatabase {
                         $end = substr($field, -strlen($value));
                         return $value != '' ? ($cmpFunc($end, $value) === 0) : true;
                     case 'in':
-                        $notFound = true;
-                        $a_i = 0;
-                        while ($a_i < count($value) && $notFound) {
-                            $notFound = $cmpFunc($field, $value[$a_i]) != 0;
-                            $a_i++;
+                        $found = false;
+                        foreach ($value as $val) {
+                            $found = $cmpFunc($field, $val) == 0;
+                            if ($found)
+                                break;
                         }
-                        return !$notFound;
+                        return $found;
                     default:
                         return false;
                 }
@@ -356,27 +368,29 @@ class JSONDatabase {
             default:
                 break;
         }
+
+        // unknown type
+        return false;
     }
 
     public function search($conditions, $random = false) {
         $obj = $this->read();
-
         $res = [];
 
-        foreach (array_keys($obj['content']) as $key) {
-            $el = $obj['content'][$key];
+        foreach ($obj['content'] as $key => $el) {
             $el_root = $el;
 
             $add = true;
             foreach ($conditions as $condition) {
-                // cleaner than a million breaks inside the switch statement
-                if (!$add) break;
+                if (!$add)
+                    break;
 
                 // extract field
                 $field = $condition['field'];
                 $field_path = explode('.', $field);
 
-                for ($field_ind = 0; $el != NULL && $field_ind + 1 < count($field_path); $field_ind += 1) {
+                // get nested fields if needed
+                for ($field_ind = 0; $el != NULL && $field_ind + 1 < count($field_path); ++$field_ind) {
                     // don't crash if unknown nested key, break early
                     if (!array_key_exists($field_path[$field_ind], $el))
                         break;
@@ -385,7 +399,8 @@ class JSONDatabase {
                     $field = $field_path[$field_ind + 1];
                 }
 
-                if ($el == NULL ||
+                if (
+                    $el == NULL ||
                     !array_key_exists($field, $el) ||
                     !array_key_exists('criteria', $condition) ||
                     !array_key_exists('value', $condition)
@@ -395,12 +410,19 @@ class JSONDatabase {
                 }
 
                 $ignoreCase = array_key_exists('ignoreCase', $condition) && !!$condition['ignoreCase'];
-                $add = $this->_search($el[$field], $condition['criteria'], $condition['value'], $ignoreCase);
+                $add = $this->_search(
+                    $el[$field],
+                    $condition['criteria'],
+                    $condition['value'],
+                    $ignoreCase
+                );
 
                 $el = $el_root;
             }
 
-            if ($add) $res[$key] = $el_root;
+            // if all conditions are met, we can add the value to our output
+            if ($add)
+                $res[$key] = $el_root;
         }
 
         if ($random !== false) {
@@ -411,7 +433,7 @@ class JSONDatabase {
                     throw new HTTPException('Seed not an integer value for random search result');
                 $seed = intval($rawSeed);
             }
-            $res = chooseRandom($res, $seed);
+            $res = choose_random($res, $seed);
         }
 
         return $res;
@@ -447,7 +469,7 @@ class JSONDatabase {
         $id = $editObj['id'];
 
         // id string or integer
-        if (gettype($id) != 'string' and gettype($id) != 'integer')
+        if (!is_keyable($id))
             return false;
 
         // object not found
@@ -473,14 +495,20 @@ class JSONDatabase {
         $value = null;
         // return if operation has no value
         // set, append, array-push, array-delete, array-splice
-        if (in_array($operation, ['set', 'append', 'array-push', 'array-delete', 'array-splice']) and !isset($editObj['value']))
+        if (
+            in_array($operation, ['set', 'append', 'array-push', 'array-delete', 'array-splice']) and
+            !isset($editObj['value'])
+        )
             return false;
         else
             $value = $editObj['value'];
 
         // field not found for other than set or push operation
         // for the remove operation it is still a success because at the end the field doesn't exist
-        if (!isset($obj['content'][$id][$field]) and ($operation != 'set' and $operation != 'remove' and $operation != 'array-push'))
+        if (
+            !isset($obj['content'][$id][$field]) and
+            ($operation != 'set' and $operation != 'remove' and $operation != 'array-push')
+        )
             return false;
 
         switch ($operation) {
@@ -507,19 +535,19 @@ class JSONDatabase {
             case 'increment':
             case 'decrement':
                 // check type number
-                if (gettype($obj['content'][$id][$field]) != 'integer' and gettype($obj['content'][$id][$field]) != 'double')
+                if (!is_number_like($obj['content'][$id][$field]))
                     return false;
 
-                $change = $operation == 'increment' ? +1 : -1;
+                $change = $operation == 'increment' ? 1 : -1;
 
                 // check if value
                 if (isset($editObj['value'])) {
-                    if (gettype($editObj['value']) == 'integer' or gettype($editObj['value']) == 'double') { // error here
+                    // error here
+                    if (is_number_like($editObj['value']))
                         $change *= $editObj['value'];
-                    } else {
-                        // incorrect value provided, no operation done
+                    // incorrect value provided, no operation done
+                    else
                         return false;
-                    }
                 }
 
                 $obj['content'][$id][$field] += $change;
@@ -562,7 +590,12 @@ class JSONDatabase {
                     return false;
 
                 // value must be an array starting with two integers
-                if (array_assoc($value) or count($value) < 2 or gettype($value[0]) != 'integer' or gettype($value[1]) != 'integer')
+                if (
+                    array_assoc($value) or
+                    count($value) < 2 or
+                    gettype($value[0]) != 'integer' or
+                    gettype($value[1]) != 'integer'
+                )
                     return false;
 
                 if (count($value) > 2)
@@ -584,7 +617,8 @@ class JSONDatabase {
 
     public function editFieldBulk($objArray) {
         // need sequential array
-        if (array_assoc($objArray)) return false;
+        if (array_assoc($objArray))
+            return false;
 
         $arrayResult = array();
 
@@ -600,7 +634,8 @@ class JSONDatabase {
     }
 
     public function select($selectObj) {
-        if (!array_key_exists('fields', $selectObj)) throw new HTTPException('Missing required fields field');
+        if (!array_key_exists('fields', $selectObj))
+            throw new HTTPException('Missing required fields field');
 
         if (!gettype($selectObj['fields']) === 'array' || !array_sequential($selectObj['fields']))
             throw new HTTPException('Incorrect fields type, expected an array');
@@ -614,12 +649,12 @@ class JSONDatabase {
 
         $obj = $this->read();
 
-        $json = $obj['content'];
         $result = array();
-        foreach ($json as $key => $value) {
+        foreach ($obj['content'] as $key => $value) {
             $result[$key] = array();
             foreach ($fields as $field) {
-                if (array_key_exists($field, $value)) $result[$key][$field] = $value[$field];
+                if (array_key_exists($field, $value))
+                    $result[$key][$field] = $value[$field];
             }
         }
 
@@ -645,16 +680,17 @@ class JSONDatabase {
 
         $obj = $this->read();
 
-        $json = $obj['content'];
         $result = [];
-        foreach ($json as $value) {
+        foreach ($obj['content'] as $value) {
             // get correct field and skip existing primitive values (faster)
-            if (!array_key_exists($field, $value) || in_array($value, $result)) continue;
+            if (!array_key_exists($field, $value) || in_array($value, $result))
+                continue;
 
             // flatten array results if array field
             if ($flatten === true && is_array($value[$field]))
                 $result = array_merge($result, $value[$field]);
-            else array_push($result, $value[$field]);
+            else
+                array_push($result, $value[$field]);
         }
 
         // remove complex duplicates

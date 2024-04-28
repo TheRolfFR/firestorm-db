@@ -56,8 +56,8 @@ const resetDatabaseContent = async () => {
 	await base.writeRaw(content).catch((err) => console.error(err));
 
 	houseCollection = firestorm.collection(HOUSE_DATABASE_NAME);
-	const raw_house = JSON.parse(fs.readFileSync(HOUSE_DATABASE_FILE).toString());
-	await houseCollection.writeRaw(raw_house);
+	const rawHouse = JSON.parse(fs.readFileSync(HOUSE_DATABASE_FILE).toString());
+	await houseCollection.writeRaw(rawHouse);
 };
 
 describe("File upload, download and delete", () => {
@@ -179,8 +179,8 @@ describe("GET operations", () => {
 	before(async () => {
 		base = firestorm.collection(DATABASE_NAME);
 
-		const raw_content = fs.readFileSync(DATABASE_FILE).toString();
-		content = JSON.parse(raw_content);
+		const rawContent = fs.readFileSync(DATABASE_FILE).toString();
+		content = JSON.parse(rawContent);
 
 		await resetDatabaseContent();
 	});
@@ -215,8 +215,8 @@ describe("GET operations", () => {
 			base
 				.sha1()
 				.then((res) => {
-					const file_sha1 = crypto.createHash("sha1").update(JSON.stringify(content)).digest("hex");
-					expect(res).equals(file_sha1, "Content hash different");
+					const sha1 = crypto.createHash("sha1").update(JSON.stringify(content)).digest("hex");
+					expect(res).equals(sha1, "Content hash different");
 					done();
 				})
 				.catch((err) => {
@@ -301,7 +301,7 @@ describe("GET operations", () => {
 
 	describe("search(searchOptions)", () => {
 		// [criteria, field, value, idsFound]
-		const test_array = [
+		const testArray = [
 			["!=", "age", 13, ["0", "2"]],
 			["==", "age", 13, ["1"]],
 			["==", "age", 25, []],
@@ -344,32 +344,28 @@ describe("GET operations", () => {
 			["array-length-ge", "friends", 7, []],
 		];
 
-		test_array.forEach((test_item) => {
-			const criteria = test_item[0];
-			const field = test_item[1];
-			const value = test_item[2];
-			const ids_found = test_item[3];
-			const ignore_case = !!test_item[4];
-			it(`${criteria} criteria${ids_found.length == 0 ? " (empty result)" : ""}${
-				ignore_case ? " (case insensitive)" : ""
+		testArray.forEach(([criteria, field, value, idsFound, ignoreCase]) => {
+			ignoreCase = !!ignoreCase
+			it(`${criteria} criteria${idsFound.length == 0 ? " (empty result)" : ""}${
+				ignoreCase ? " (case insensitive)" : ""
 			}`, (done) => {
 				base
 					.search([
 						{
-							criteria: criteria,
-							field: field,
-							value: value,
-							ignoreCase: ignore_case,
+							criteria,
+							field,
+							value,
+							ignoreCase,
 						},
 					])
 					.then((res) => {
 						expect(res).to.be.an("array", "Search result must be an array");
 						expect(res).to.have.lengthOf(
-							ids_found.length,
+							idsFound.length,
 							"Expected result have not correct length",
 						);
 						expect(res.map((el) => el[firestorm.ID_FIELD])).to.deep.equal(
-							ids_found,
+							idsFound,
 							"Incorrect result search",
 						);
 						done();
@@ -466,7 +462,7 @@ describe("GET operations", () => {
 					],
 					true,
 				)
-				.then((_) => done())
+				.then(() => done())
 				.catch((err) => {
 					console.error(err);
 					done("Should not reject with error " + JSON.stringify(err));
@@ -547,18 +543,16 @@ describe("GET operations", () => {
 		});
 
 		it("Gives correct value", (done) => {
-			const fields_chosen = ["name", "age"];
-			Promise.all([base.readRaw(), base.select({ fields: fields_chosen })])
-				.then((results) => {
-					let raw = results[0];
+			const chosenFields = ["name", "age"];
+			Promise.all([base.readRaw(), base.select({ fields: chosenFields })])
+				.then(([raw, selectResult]) => {
 					Object.keys(raw).forEach((k) => {
-						Object.keys(raw[k]).forEach((el_k) => {
-							if (!fields_chosen.includes(el_k) || typeof raw[k][el_k] === "function") {
-								delete raw[k][el_k];
+						Object.keys(raw[k]).forEach((el) => {
+							if (!chosenFields.includes(el) || typeof raw[k][el] === "function") {
+								delete raw[k][el];
 							}
 						});
 					});
-					const selectResult = results[1];
 					Object.keys(selectResult).forEach((k) => {
 						delete selectResult[k][firestorm.ID_FIELD];
 					});
@@ -744,7 +738,7 @@ describe("POST operations", () => {
 		});
 
 		describe("You must give a correct value", () => {
-			const incorrect_bodies = [
+			const incorrectBodies = [
 				undefined,
 				null,
 				false,
@@ -756,7 +750,7 @@ describe("POST operations", () => {
 				{ 5: "is" },
 			];
 
-			incorrect_bodies.forEach((body, index) => {
+			incorrectBodies.forEach((body, index) => {
 				it(`${JSON.stringify(body)} value rejects`, (done) => {
 					base
 						.writeRaw(body)
@@ -823,7 +817,7 @@ describe("POST operations", () => {
 		});
 
 		it("must give incremented key when adding on a auto key auto increment", (done) => {
-			const last_id = Object.keys(content).pop();
+			const lastID = Object.keys(content).pop();
 			base
 				.add({
 					name: "Elliot Alderson",
@@ -833,17 +827,17 @@ describe("POST operations", () => {
 				})
 				.then((id) => {
 					expect(id).to.be.a("string");
-					expect(id).to.equals(String(parseInt(last_id) + 1));
+					expect(id).to.equals(String(parseInt(lastID) + 1));
 					done();
 				})
 				.catch(done);
 		});
 
 		describe("It should not accept incorrect values", () => {
-			const incorrect_values = [undefined, null, false, 16, "Muse", [1, 2, 3]];
+			const incorrectValues = [undefined, null, false, 16, "Muse", [1, 2, 3]];
 			// I wanted to to test [] but serialized it's the same as an empty object which must be accepted
 
-			incorrect_values.forEach((unco) => {
+			incorrectValues.forEach((unco) => {
 				it(`${JSON.stringify(unco)} value rejects`, (done) => {
 					base
 						.add(unco)
@@ -862,7 +856,7 @@ describe("POST operations", () => {
 		});
 
 		describe("It should accept correct values", () => {
-			const correct_values = [
+			const correctValues = [
 				{},
 				{
 					name: "Elliot Alderson",
@@ -872,7 +866,7 @@ describe("POST operations", () => {
 				},
 			];
 
-			correct_values.forEach((co, index) => {
+			correctValues.forEach((co, index) => {
 				it(`${index === 0 ? "Empty object" : "Complex object"} should fulfill`, (done) => {
 					base
 						.add(co)
@@ -900,20 +894,15 @@ describe("POST operations", () => {
 		});
 
 		describe("must reject with incorrect base values", () => {
-			const incorrect_values = [undefined, null, false, 16, "Muse", [1, 2, 3]];
+			const incorrectValues = [undefined, null, false, 16, "Muse", [1, 2, 3]];
 
-			incorrect_values.forEach((unco) => {
+			incorrectValues.forEach((unco) => {
 				it(`${JSON.stringify(unco)} value rejects`, (done) => {
 					base
 						.addBulk(unco)
-						.then((res) => {
-							done(new Error(`Should not fulfill with res ${res}`));
-						})
+						.then((res) => done(new Error(`Should not fulfill with res ${res}`)))
 						.catch((err) => {
-							if ("response" in err && err.response.status == 400) {
-								done();
-								return;
-							}
+							if ("response" in err && err.response.status == 400) return done();
 							done(new Error(`Should return 400 not ${JSON.stringify(err)}`));
 						});
 				});
@@ -921,9 +910,9 @@ describe("POST operations", () => {
 		});
 
 		describe("must reject with incorrect array", () => {
-			const incorrect_values = [undefined, null, false, 16, "Muse", [1, 2, 3]];
+			const incorrectValues = [undefined, null, false, 16, "Muse", [1, 2, 3]];
 
-			incorrect_values.forEach((unco) => {
+			incorrectValues.forEach((unco) => {
 				it(`[${JSON.stringify(unco)}] value rejects`, (done) => {
 					base
 						.addBulk([unco])
@@ -961,9 +950,9 @@ describe("POST operations", () => {
 			});
 
 			it("should accept correct array value", (done) => {
-				const in_value = [{ a: 1 }, { b: 2 }, { c: 3 }];
+				const inValue = [{ a: 1 }, { b: 2 }, { c: 3 }];
 				base
-					.addBulk(in_value)
+					.addBulk(inValue)
 					.then((res) => {
 						expect(res).to.be.an("array");
 						expect(res).to.have.length(3);
@@ -973,19 +962,18 @@ describe("POST operations", () => {
 						return Promise.all([res, base.searchKeys(res)]);
 					})
 					.then((results) => {
-						const search_results = results[1];
-						expect(search_results).to.be.an("array");
-						expect(search_results).to.have.length(3);
+						const searchResults = results[1];
+						expect(searchResults).to.be.an("array");
+						expect(searchResults).to.have.length(3);
 
-						const ids_generated = results[0];
+						const idsGenerated = results[0];
 						// modify results and add ID
-						in_value.map((el, index) => {
-							el[firestorm.ID_FIELD] = ids_generated[index];
-
+						inValue.map((el, index) => {
+							el[firestorm.ID_FIELD] = idsGenerated[index];
 							return el;
 						});
 
-						expect(search_results).to.be.deep.equals(in_value);
+						expect(searchResults).to.be.deep.equals(inValue);
 						done();
 					})
 					.catch((err) => {
@@ -997,12 +985,11 @@ describe("POST operations", () => {
 	});
 
 	describe("remove operations", () => {
-		describe("must accept only string keys", () => {
-			const incorrect_values = [
+		describe("must reject non-keyable values", () => {
+			const incorrectValues = [
 				undefined,
 				null,
 				false,
-				16,
 				22.2,
 				[],
 				[1, 2, 3],
@@ -1010,7 +997,7 @@ describe("POST operations", () => {
 				{ "i'm": "batman" },
 			];
 
-			incorrect_values.forEach((unco) => {
+			incorrectValues.forEach((unco) => {
 				it(`${JSON.stringify(unco)} value rejects`, (done) => {
 					base
 						.remove(unco)
@@ -1060,9 +1047,9 @@ describe("POST operations", () => {
 
 	describe("removeBulk operations", () => {
 		describe("must accept only string array", () => {
-			const incorrect_values = [undefined, null, false, [], [1, 2, 3], {}, { "i'm": "batman" }];
+			const incorrectValues = [undefined, null, false, [], [1, 2, 3], {}, { "i'm": "batman" }];
 
-			incorrect_values.forEach((unco) => {
+			incorrectValues.forEach((unco) => {
 				it(`[${JSON.stringify(unco)}] value rejects`, (done) => {
 					base
 						.removeBulk([unco])
@@ -1125,15 +1112,13 @@ describe("POST operations", () => {
 		});
 
 		describe("0 values fulfill", () => {
-			const correct_values = ["0", 0, 0.0];
+			const correctValues = ["0", 0, 0.0];
 
-			correct_values.forEach((unco) => {
+			correctValues.forEach((unco) => {
 				it(`${JSON.stringify(unco)} value fulfills`, (done) => {
 					base
 						.set(unco, tmp)
-						.then((res) => {
-							done();
-						})
+						.then(() => done())
 						.catch((err) => {
 							if ("response" in err) console.log(err.response.data);
 							done(new Error(err));
@@ -1143,9 +1128,9 @@ describe("POST operations", () => {
 		});
 
 		describe("Key must be a string or an integer", () => {
-			const incorrect_values = [undefined, null, false, [], [1, 2, 3], {}, { "i'm": "batman" }];
+			const incorrectValues = [undefined, null, false, [], [1, 2, 3], {}, { "i'm": "batman" }];
 
-			incorrect_values.forEach((unco) => {
+			incorrectValues.forEach((unco) => {
 				it(`${JSON.stringify(unco)} value rejects`, (done) => {
 					base
 						.set(unco, tmp)
@@ -1163,9 +1148,9 @@ describe("POST operations", () => {
 		});
 
 		describe("Value must be an object", () => {
-			const incorrect_values = [undefined, null, false, 16, 22.2, [1, 2, 3]];
+			const incorrectValues = [undefined, null, false, 16, 22.2, [1, 2, 3]];
 
-			incorrect_values.forEach((unco) => {
+			incorrectValues.forEach((unco) => {
 				it(`${JSON.stringify(unco)} value rejects`, (done) => {
 					base
 						.set("1", unco)
@@ -1253,9 +1238,9 @@ describe("POST operations", () => {
 		});
 
 		describe("keys should be an array of string", () => {
-			const incorrect_values = [undefined, null, false, [], [1, 2, 3], {}, { "i'm": "batman" }];
+			const incorrectValues = [undefined, null, false, [], [1, 2, 3], {}, { "i'm": "batman" }];
 
-			incorrect_values.forEach((unco) => {
+			incorrectValues.forEach((unco) => {
 				it(`[${JSON.stringify(unco)}] value rejects`, (done) => {
 					base
 						.setBulk([unco], [tmp])
@@ -1297,9 +1282,9 @@ describe("POST operations", () => {
 		});
 
 		describe("Reject with incorrect values", () => {
-			const incorrect_values = [undefined, null, false, 16, 0.5, "", "gg", [], {}];
+			const incorrectValues = [undefined, null, false, 16, 0.5, "", "gg", [], {}];
 
-			incorrect_values.forEach((unco) => {
+			incorrectValues.forEach((unco) => {
 				it(`'${JSON.stringify(unco)}' value rejects`, (done) => {
 					base
 						.editField(unco)
