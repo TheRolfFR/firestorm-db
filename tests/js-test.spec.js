@@ -300,7 +300,7 @@ describe("GET operations", () => {
 	});
 
 	describe("search(searchOptions)", () => {
-		// [criteria, field, value, idsFound]
+		// [criteria, field, value, idsFound, ignoreCase]
 		const testArray = [
 			["!=", "age", 13, ["0", "2"]],
 			["==", "age", 13, ["1"]],
@@ -328,6 +328,9 @@ describe("GET operations", () => {
 			["array-contains", "qualities", "strong", ["0", "1"]],
 			["array-contains", "qualities", "sTRoNG", ["0", "1"], true],
 			["array-contains", "qualities", "handsome", []],
+			["array-contains-none", "qualities", ["strong"], ["2"]],
+			["array-contains-none", "qualities", ["sTrOnG"], ["2"], true],
+			["array-contains-none", "qualities", ["strong", "calm"], []],
 			["array-contains-any", "qualities", ["intelligent", "calm"], ["0", "2"]],
 			["array-contains-any", "qualities", ["intELLIGent", "CALm"], ["0", "2"], true],
 			["array-contains-any", "qualities", ["fast", "flying"], []],
@@ -944,7 +947,7 @@ describe("POST operations", () => {
 						done();
 					})
 					.catch((err) => {
-						console.log(err);
+						console.error(err);
 						done(err);
 					});
 			});
@@ -1120,7 +1123,7 @@ describe("POST operations", () => {
 						.set(unco, tmp)
 						.then(() => done())
 						.catch((err) => {
-							if ("response" in err) console.log(err.response.data);
+							if ("response" in err) console.error(err.response.data);
 							done(new Error(err));
 						});
 				});

@@ -24,6 +24,7 @@ export type StringCriteria =
 
 export type ArrayCriteria =
 	| "array-contains" /** Value is in the given array */
+	| "array-contains-none" /** No value of the array is in the given array */
 	| "array-contains-any" /** Any value of the array is in the given array */
 	| "array-length-eq" /** Array length is equal to the provided value */
 	| "array-length-df" /** Array length is different from the provided value */

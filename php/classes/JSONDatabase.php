@@ -347,6 +347,8 @@ class JSONDatabase {
                 switch ($criteria) {
                     case 'array-contains':
                         return array_contains($field, $value, $ignoreCase);
+                    case 'array-contains-none':
+                        return !array_contains_any($field, $value, $ignoreCase);
                     case 'array-contains-any':
                         return array_contains_any($field, $value, $ignoreCase);
                     case 'array-length':

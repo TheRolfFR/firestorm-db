@@ -91,26 +91,27 @@ There are more options available than the firestore `where` command, allowing yo
 
 The search method can take one or more options to filter entries in a collection. A search option takes a `field` with a `criteria` and compares it to a `value`. You can also use the boolean `ignoreCase` option for string values. Available criteria depends on the field type.
 
-| Criteria               | Types allowed                 | Description                                                     |
-| ---------------------- | ----------------------------- | --------------------------------------------------------------- |
-| `'!='`                 | `boolean`, `number`, `string` | Entry field's value is different from yours                     |
-| `'=='`                 | `boolean`, `number`, `string` | Entry field's value is equal to yours                           |
-| `'>='`                 | `number`, `string`            | Entry field's value is greater or equal than yours              |
-| `'<='`                 | `number`, `string`            | Entry field's value is equal to than yours                      |
-| `'>'`                  | `number`, `string`            | Entry field's value is greater than yours                       |
-| `'<'`                  | `number`, `string`            | Entry field's value is lower than yours                         |
-| `'in'`                 | `number`, `string`            | Entry field's value is in the array of values you gave          |
-| `'includes'`           | `string`                      | Entry field's value includes your substring                     |
-| `'startsWith'`         | `string`                      | Entry field's value starts with your substring                  |
-| `'endsWith'`           | `string`                      | Entry field's value ends with your substring                    |
-| `'array-contains'`     | `Array`                       | Entry field's array contains your value                         |
-| `'array-contains-any'` | `Array`                       | Entry field's array contains at least one value from your array |
-| `'array-length-eq'`    | `number`                      | Entry field's array size is equal to your value                 |
-| `'array-length-df'`    | `number`                      | Entry field's array size is different from your value           |
-| `'array-length-lt'`    | `number`                      | Entry field's array size is lower than your value               |
-| `'array-length-gt'`    | `number`                      | Entry field's array size is greater than your value             |
-| `'array-length-le'`    | `number`                      | Entry field's array size is lower or equal to your value        |
-| `'array-length-ge'`    | `number`                      | Entry field's array size is greater or equal to your value      |
+| Criteria                | Types allowed                 | Description                                                     |
+| ----------------------- | ----------------------------- | --------------------------------------------------------------- |
+| `'!='`                  | `boolean`, `number`, `string` | Entry field's value is different from yours                     |
+| `'=='`                  | `boolean`, `number`, `string` | Entry field's value is equal to yours                           |
+| `'>='`                  | `number`, `string`            | Entry field's value is greater or equal than yours              |
+| `'<='`                  | `number`, `string`            | Entry field's value is equal to than yours                      |
+| `'>'`                   | `number`, `string`            | Entry field's value is greater than yours                       |
+| `'<'`                   | `number`, `string`            | Entry field's value is lower than yours                         |
+| `'in'`                  | `number`, `string`            | Entry field's value is in the array of values you gave          |
+| `'includes'`            | `string`                      | Entry field's value includes your substring                     |
+| `'startsWith'`          | `string`                      | Entry field's value starts with your substring                  |
+| `'endsWith'`            | `string`                      | Entry field's value ends with your substring                    |
+| `'array-contains'`      | `Array`                       | Entry field's array contains your value                         |
+| `'array-contains-none'` | `Array`                       | Entry field's array contains no values from your array          |
+| `'array-contains-any'`  | `Array`                       | Entry field's array contains at least one value from your array |
+| `'array-length-eq'`     | `number`                      | Entry field's array size is equal to your value                 |
+| `'array-length-df'`     | `number`                      | Entry field's array size is different from your value           |
+| `'array-length-lt'`     | `number`                      | Entry field's array size is lower than your value               |
+| `'array-length-gt'`     | `number`                      | Entry field's array size is greater than your value             |
+| `'array-length-le'`     | `number`                      | Entry field's array size is lower or equal to your value        |
+| `'array-length-ge'`     | `number`                      | Entry field's array size is greater or equal to your value      |
 
 ## Write operations
 

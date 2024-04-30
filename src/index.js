@@ -6,7 +6,7 @@ try {
 /**
  * @typedef {Object} SearchOption
  * @property {string} field - The field to be searched for
- * @property {"!=" | "==" | ">=" | "<=" | "<" | ">" | "in" | "includes" | "startsWith" | "endsWith" | "array-contains" | "array-contains-any" | "array-length-(eq|df|gt|lt|ge|le)"} criteria - Search criteria to filter results
+ * @property {"!=" | "==" | ">=" | "<=" | "<" | ">" | "in" | "includes" | "startsWith" | "endsWith" | "array-contains" | "array-contains-none" | "array-contains-any" | "array-length-(eq|df|gt|lt|ge|le)"} criteria - Search criteria to filter results
  * @property {string | number | boolean | Array} value - The value to be searched for
  * @property {boolean} [ignoreCase] - Is it case sensitive? (default true)
  */

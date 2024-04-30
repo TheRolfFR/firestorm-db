@@ -12,6 +12,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Exposed `Collection.collectionName` as a readonly property for TypeScript usage.
 - TypeScript overview to README.md.
 - Optional replacement argument for `array-splice` edit fields.
+- `array-contains-none` option for array fields.
 - Optional constructor for the `JSONDatabase` PHP class to reduce repetitive code.
 - "Advanced" section to the README for previously undocumented features.
 
@@ -26,8 +27,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - PHP-level errors not being rejected properly in GET requests.
 - Certain write commands mutating data internally and affecting parameters outside Firestorm.
-- `Collection.searchKeys` and `Collection.values` not returning proper `Error`s sometimes.
-- `files.upload` not allowing the `form-data` package's typing of `FormData`.
+- `Collection.searchKeys` and `Collection.values` not returning proper `Error` objects sometimes.
+- `files.upload` not allowing the `form-data` package's typing of `FormData` in TypeScript.
 - Inconsistent use of indentation and formatting in PHP files.
 - Various typos in PHP files.
 - `Collection` class being exported in TypeScript despite the actual class being private.
