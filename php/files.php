@@ -13,7 +13,7 @@ if (!$STORAGE_LOCATION) http_error(501, 'Developer forgot the $STORAGE_LOCATION'
 require_once './utils.php';
 require_once './log.php';
 
-$method = htmlspecialchars($_SERVER['REQUEST_METHOD']);
+$method = sec($_SERVER['REQUEST_METHOD']);
 if ($method !== 'GET' && $method !== 'POST' && $method !== 'DELETE') {
     http_error(400, "Incorrect request type, expected GET, POST or DELETE, not $method");
 }
@@ -194,7 +194,7 @@ function p($var) {
     } catch (Throwable $th) {
         return false;
     }
-    return htmlspecialchars($_POST[$var]);
+    return sec($_POST[$var]);
 }
 
 function g($var) {
@@ -204,5 +204,5 @@ function g($var) {
         return false;
     }
 
-    return htmlspecialchars($_GET[$var]);
+    return sec($_GET[$var]);
 }

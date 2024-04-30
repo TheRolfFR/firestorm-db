@@ -10,6 +10,10 @@ function check($var) {
     return isset($var) and !empty($var);
 }
 
+function sec($var) {
+    return htmlspecialchars($var);
+}
+
 function http_response($body, $code = 200) {
     header('Content-Type: application/json');
     http_response_code($code);
@@ -55,7 +59,7 @@ function http_success($message) {
 
 function check_key_json($key, $arr, $parse = false) {
     if (array_key_exists($key, $arr))
-        return $parse ? htmlspecialchars($arr[$key]) : $arr[$key];
+        return $parse ? sec($arr[$key]) : $arr[$key];
     return false;
 }
 

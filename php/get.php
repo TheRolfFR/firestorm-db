@@ -11,7 +11,7 @@ error_reporting(E_ALL);
 // import useful functions
 require_once './log.php';
 
-$method = htmlspecialchars($_SERVER['REQUEST_METHOD']);
+$method = sec($_SERVER['REQUEST_METHOD']);
 if ($method !== 'GET' && $method !== 'POST') {
     http_error(400, "Incorrect request type, expected GET or POST, not $method");
 }

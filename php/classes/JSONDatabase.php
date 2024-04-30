@@ -428,7 +428,7 @@ class JSONDatabase {
         if ($random !== false) {
             $seed = false;
             if (is_array($random) && array_key_exists('seed', $random)) {
-                $rawSeed = htmlspecialchars($random['seed']);
+                $rawSeed = sec($random['seed']);
                 if (!is_int($rawSeed))
                     throw new HTTPException('Seed not an integer value for random search result');
                 $seed = intval($rawSeed);
