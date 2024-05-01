@@ -1,6 +1,8 @@
-// browser check
+const IS_NODE = typeof process === "object";
+
 try {
-	if (typeof process === "object") var axios = require("axios").default;
+	// ambient axios context in browser
+	if (IS_NODE) var axios = require("axios").default;
 } catch {}
 
 /**
@@ -144,12 +146,9 @@ class Collection {
 			command: command,
 			...data,
 		};
-		const request =
-			typeof process === "object"
-				? axios.get(readAddress(), {
-						data: obj,
-					})
-				: axios.post(readAddress(), obj);
+		const request = IS_NODE
+			? axios.get(readAddress(), { data: obj })
+			: axios.post(readAddress(), obj);
 		return this.__extract_data(request).then((res) => {
 			// reject php error strings if enforcing return type
 			if (objectLike && typeof res !== "object") return Promise.reject(res);
@@ -251,20 +250,16 @@ class Collection {
 		if (!Array.isArray(options))
 			return Promise.reject(new TypeError("searchOptions shall be an array"));
 
-		options.forEach((searchOption) => {
-			if (
-				searchOption.field === undefined ||
-				searchOption.criteria === undefined ||
-				searchOption.value === undefined
-			)
+		options.forEach((option) => {
+			if (option.field === undefined || option.criteria === undefined || option.value === undefined)
 				return Promise.reject(new TypeError("Missing fields in searchOptions array"));
 
-			if (typeof searchOption.field !== "string")
+			if (typeof option.field !== "string")
 				return Promise.reject(
-					new TypeError(`${JSON.stringify(searchOption)} search option field is not a string`),
+					new TypeError(`${JSON.stringify(option)} search option field is not a string`),
 				);
 
-			if (searchOption.criteria == "in" && !Array.isArray(searchOption.value))
+			if (option.criteria == "in" && !Array.isArray(option.value))
 				return Promise.reject(new TypeError("in takes an array of values"));
 
 			// TODO: add more strict value field warnings in JS and PHP
@@ -637,5 +632,5 @@ const firestorm = {
 
 // browser check
 try {
-	if (typeof process === "object") module.exports = firestorm;
+	if (IS_NODE) module.exports = firestorm;
 } catch {}

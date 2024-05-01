@@ -11,7 +11,7 @@
     "full": "npm run php_stop ; npm run php_start && npm run test ; npm run php_stop",
     "local_tests": "sudo act -P ubuntu-latest=shivammathur/node:latest -j js-wrapper-test",
     "jsdoc": "jsdoc src/index.js -c jsdoc.json -R README.md -t ./node_modules/docdash -d out",
-    "nodemon_jsdoc": "nodemon -x npm run jsdoc --watch src/index.js --watch jsdoc.json",
+    "nodemon_jsdoc": "nodemon -x npm run jsdoc --watch src/index.js --watch jsdoc.json --watch README.md",
     "types": "npx tsc",
     "prettier": "prettier \"{,!(node_modules)/**/}*.{js,ts}\" --config .prettierrc --write",
     "cov": "npm run php_stop ; npm run php_start && nyc --reporter=text mocha tests/**/*.spec.js; npm run php_stop"

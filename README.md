@@ -15,7 +15,7 @@
 </a>
 </div>
 
-_Self hosted Firestore-like database with API endpoints based on micro bulk operations_
+*Self hosted Firestore-like database with API endpoints based on micro bulk operations*
 
 # Installation
 
@@ -29,7 +29,7 @@ Information about installing Firestorm server-side is given in the [PHP](#php-ba
 
 # JavaScript Client
 
-The JavaScript [index.js](./src/index.js) file is simply an [Axios](https://www.npmjs.com/package/axios) wrapper of the PHP API.
+The JavaScript [index.js](./src/index.js) file is simply an [Axios](https://www.npmjs.com/package/axios) wrapper of the PHP backend.
 
 ## JavaScript setup
 
@@ -50,10 +50,10 @@ Now you can use Firestorm to its full potential.
 
 ## Create your first collection
 
-Firestorm is based around the concept of a `Collection`, which is akin to an SQL table or Firestore document. A Firestorm collection takes one required argument and one optional argument in its constructor:
+Firestorm is based around the concept of a `Collection`, which is akin to an SQL table or Firestore document. The Firestorm collection constructor takes one required argument and one optional argument:
 
 - The name of the collection as a `string`.
-- The method adder, which lets you inject methods to query results. It's implemented similarly to [`Array.prototype.map`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/map), taking an outputted element as an argument, modifying the element with methods and data inside a callback, and returning the modified element at the end.
+- A method adder, which lets you inject methods to query results. It's implemented similarly to [`Array.prototype.map`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/map), taking a queried element as an argument, modifying the element with methods and data inside a callback, and returning the modified element at the end.
 
 ```js
 const firestorm = require("firestorm-db");
@@ -87,7 +87,7 @@ johnDoe.hello(); // "John Doe says hello!"
 
 ## Search options
 
-There are more options available than the firestore `where` command, allowing you to get better and faster search results.
+There are more options available than the Firestore `where` command, allowing you to get better and faster search results.
 
 The search method can take one or more options to filter entries in a collection. A search option takes a `field` with a `criteria` and compares it to a `value`. You can also use the boolean `ignoreCase` option for string values. Available criteria depends on the field type.
 
@@ -127,20 +127,20 @@ The search method can take one or more options to filter entries in a collection
 | editField(obj)          | option: `EditFieldOption`                        | Edit an element's field in the collection.                                                |
 | editFieldBulk(objArray) | options: `EditFieldOption[]`                     | Edit multiple elements' fields in the collection.                                         |
 
-## Edit field operations
+## Edit field options
 
 Edit objects have an `id` of the element, a `field` to edit, an `operation` with what to do to this field, and a possible `value`. Here is a list of operations:
 
 | Operation      | Needs value | Allowed value types      | Description                                                                                                                                    |
 | -------------- | ----------- | ------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------- |
-| `set`          | Yes         | `any`                    | Sets a field to a given value.                                                                                                                 |
-| `remove`       | No          | `any`                    | Removes a field from the element.                                                                                                              |
-| `append`       | Yes         | `string`                 | Appends a new string at the end of the string field.                                                                                           |
-| `invert`       | No          | `any`                    | Inverts the state of a boolean field.                                                                                                          |
-| `increment`    | No          | `number`                 | Adds a number to the field, default is 1.                                                                                                      |
-| `decrement`    | No          | `number`                 | Removes a number from the field, default is 1.                                                                                                 |
-| `array-push `  | Yes         | `any`                    | Push an element to the end of an array field.                                                                                                  |
-| `array-delete` | Yes         | `number`                 | Removes an array element by index. Check the PHP [array_splice](https://www.php.net/manual/function.array-splice) documentation for more info. |
+| `set`          | Yes         | `any`                    | Sets a value to a given field.                                                                                                                 |
+| `remove`       | No          | *N/A*                    | Removes a field from the element.                                                                                                              |
+| `append`       | Yes         | `string`                 | Appends a string to the end of a string field.                                                                                                 |
+| `invert`       | No          | *N/A*                    | Inverts the state of a boolean field.                                                                                                          |
+| `increment`    | No          | `number`                 | Adds a number to the field (default: 1).                                                                                                       |
+| `decrement`    | No          | `number`                 | Removes a number from the field (default: 1).                                                                                                  |
+| `array-push `  | Yes         | `any`                    | Pushes an element to the end of an array field.                                                                                                |
+| `array-delete` | Yes         | `number`                 | Removes an array element by index.                                                                                                             |
 | `array-splice` | Yes         | `[number, number, any?]` | Last argument is optional. Check the PHP [array_splice](https://www.php.net/manual/function.array-splice) documentation for more info.         |
 
 Various other methods and constants exist in the JavaScript client, which will make more sense once you learn what's actually happening behind the scenes.
@@ -182,7 +182,7 @@ $database_list[$tmp->fileName] = $tmp;
 - The database will be stored in `<folderPath>/<filename>.json` (default folder: `./files/`).
 - `autoKey` controls whether to automatically generate the key name or to have explicit key names (default: `true`).
 - `autoIncrement` controls whether to simply start generating key names from zero or to use a [random ID](https://www.php.net/manual/en/function.uniqid.php) each time (default: `true`).
-- The key in the `$database_list` array is what the collection will be called in JavaScript in the Collection constructor (this can be different from the JSON filename if needed).
+- The key in the `$database_list` array is what the collection should be referred to in the JavaScript collection constructor. This can be different from the JSON filename if needed.
 
 If you're working with multiple collections, it's probably easier to initialize them all in the array constructor directly:
 
@@ -374,7 +374,7 @@ As it's entirely a JavaScript construct, `ID_FIELD` values will never be in your
 
 You may have noticed two different methods that seem to do the same thing: `add` and `set` (and their corresponding bulk variants). The key difference is that `add` is used on collections where `autoKey` is enabled, and `set` is used on collections where `autoKey` is disabled. `autoIncrement` doesn't affect this behavior.
 
-For instance, the following configuration will disable `add` operations:
+For instance, the following PHP configuration will disable add operations:
 
 ```php
 $database_list['users'] = new JSONDatabase('users', false);
@@ -419,6 +419,8 @@ const johnDoe = await customers.get(123456789);
 // returns orders where the customer field is John Doe's ID
 await johnDoe.getOrders();
 ```
+
+This functionality is particularly useful for complex data hierarchies that store fields as ID values to other collections, and is the main reason why add methods exist in the first place. It can also be used to split deeply nested data structures to increase server-side performance by only loading collections when necessary.
 
 ## Manually sending data
 
