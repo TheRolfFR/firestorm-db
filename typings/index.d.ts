@@ -228,10 +228,10 @@ declare class Collection<T> {
 
 	/**
 	 * Read the entire collection
-	 * - ID values are injected for easier iteration, so this may be different from {@link sha1}
+	 * @param original - Disable ID field injection for easier iteration (default false)
 	 * @returns The entire collection
 	 */
-	public readRaw(): Promise<Record<string, T>>;
+	public readRaw(original?: boolean): Promise<Record<string, T>>;
 
 	/**
 	 * Read the entire collection

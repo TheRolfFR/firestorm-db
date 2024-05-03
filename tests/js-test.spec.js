@@ -200,17 +200,32 @@ describe("GET operations", () => {
 				});
 		});
 
-		it("returns the exact content of the file", (done) => {
+		it("returns the exact contents of the file", (done) => {
 			base
-				.readRaw()
+				.readRaw(true)
 				.then((res) => {
-					Object.keys(res).forEach((key) => delete res[key][firestorm.ID_FIELD]);
 					expect(res).deep.equals(content, "Content different");
 					done();
 				})
 				.catch(done);
 		});
 
+		it("injects ID values into every item", (done) => {
+			base
+				.readRaw()
+				.then((res) => {
+					Object.entries(res).forEach(([k, v]) =>
+						expect(v).to.have.property(firestorm.ID_FIELD, k, "Missing ID field"),
+					);
+					Object.keys(res).forEach((key) => delete res[key][firestorm.ID_FIELD]);
+					expect(res).deep.equals(content, "Content different");
+					done();
+				})
+				.catch(done);
+		});
+	});
+
+	describe("sha1()", () => {
 		it("sha1 content hash is the same", (done) => {
 			base
 				.sha1()
@@ -348,7 +363,7 @@ describe("GET operations", () => {
 		];
 
 		testArray.forEach(([criteria, field, value, idsFound, ignoreCase]) => {
-			ignoreCase = !!ignoreCase
+			ignoreCase = !!ignoreCase;
 			it(`${criteria} criteria${idsFound.length == 0 ? " (empty result)" : ""}${
 				ignoreCase ? " (case insensitive)" : ""
 			}`, (done) => {

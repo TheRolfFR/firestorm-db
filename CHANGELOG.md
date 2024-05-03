@@ -10,11 +10,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - Exposed `Collection.collectionName` as a readonly property for TypeScript usage.
-- TypeScript overview to README.md.
+- TypeScript overview to the README.
 - Optional replacement argument for `array-splice` edit fields.
 - `array-contains-none` option for array fields.
 - Optional constructor for the `JSONDatabase` PHP class to reduce repetitive code.
 - "Advanced" section to the README for previously undocumented features.
+- `original` option for `readRaw` to not insert ID fields, for easier non-relational collection usage.
 
 ### Changed
 

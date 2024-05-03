@@ -74,16 +74,16 @@ johnDoe.hello(); // "John Doe says hello!"
 
 ## Read operations
 
-| Name                      | Parameters                                                  | Description                                                                                                  |
-| ------------------------- | ----------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------ |
-| sha1()                    | none                                                        | Get the sha1 hash of the file. Can be used to compare file content without downloading the JSON.             |
-| readRaw()                 | none                                                        | Read the entire collection. ID values are injected for easier iteration, so this may be different from sha1. |
-| get(key)                  | key: `string \| number`                                     | Get an element from the collection by its key.                                                               |
-| searchKeys(keys)          | keys: `string[] \| number[]`                                | Get multiple elements from the collection by their keys.                                                     |
-| search(options, random)   | options: `SearchOption[]` random?:`boolean \| number`       | Search through the collection. You can randomize the output order with random as true or a given seed.       |
-| select(option)            | option: `SelectOption`                                      | Get only selected fields from the collection. Essentially an upgraded version of readRaw.                    |
-| values(option)            | option: `ValueOption`                                       | Get all distinct non-null values for a given key across a collection.                                        |
-| random(max, seed, offset) | max?: `number >= -1` seed?: `number` offset?: `number >= 0` | Read random elements of the collection.                                                                      |
+| Name                      | Parameters                                                  | Description                                                                                            |
+| ------------------------- | ----------------------------------------------------------- | ------------------------------------------------------------------------------------------------------ |
+| sha1()                    | none                                                        | Get the sha1 hash of the file. Can be used to compare file content without downloading the JSON.       |
+| readRaw(original)         | original?: `boolean`                                        | Read the entire collection. `original` disables ID field injection, for non-relational collections.    |
+| get(key)                  | key: `string \| number`                                     | Get an element from the collection by its key.                                                         |
+| searchKeys(keys)          | keys: `string[] \| number[]`                                | Get multiple elements from the collection by their keys.                                               |
+| search(options, random)   | options: `SearchOption[]` random?:`boolean \| number`       | Search through the collection. You can randomize the output order with random as true or a given seed. |
+| select(option)            | option: `SelectOption`                                      | Get only selected fields from the collection. Essentially an upgraded version of readRaw.              |
+| values(option)            | option: `ValueOption`                                       | Get all distinct non-null values for a given key across a collection.                                  |
+| random(max, seed, offset) | max?: `number >= -1` seed?: `number` offset?: `number >= 0` | Read random elements of the collection.                                                                |
 
 ## Search options
 
@@ -131,17 +131,17 @@ The search method can take one or more options to filter entries in a collection
 
 Edit objects have an `id` of the element, a `field` to edit, an `operation` with what to do to this field, and a possible `value`. Here is a list of operations:
 
-| Operation      | Needs value | Allowed value types      | Description                                                                                                                                    |
-| -------------- | ----------- | ------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------- |
-| `set`          | Yes         | `any`                    | Sets a value to a given field.                                                                                                                 |
-| `remove`       | No          | *N/A*                    | Removes a field from the element.                                                                                                              |
-| `append`       | Yes         | `string`                 | Appends a string to the end of a string field.                                                                                                 |
-| `invert`       | No          | *N/A*                    | Inverts the state of a boolean field.                                                                                                          |
-| `increment`    | No          | `number`                 | Adds a number to the field (default: 1).                                                                                                       |
-| `decrement`    | No          | `number`                 | Removes a number from the field (default: 1).                                                                                                  |
-| `array-push `  | Yes         | `any`                    | Pushes an element to the end of an array field.                                                                                                |
-| `array-delete` | Yes         | `number`                 | Removes an array element by index.                                                                                                             |
-| `array-splice` | Yes         | `[number, number, any?]` | Last argument is optional. Check the PHP [array_splice](https://www.php.net/manual/function.array-splice) documentation for more info.         |
+| Operation      | Needs value | Allowed value types      | Description                                                                                                                            |
+| -------------- | ----------- | ------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------|
+| `set`          | Yes         | `any`                    | Sets a value to a given field.                                                                                                         |
+| `remove`       | No          | *N/A*                    | Removes a field from the element.                                                                                                      |
+| `append`       | Yes         | `string`                 | Appends a string to the end of a string field.                                                                                         |
+| `invert`       | No          | *N/A*                    | Inverts the state of a boolean field.                                                                                                  |
+| `increment`    | No          | `number`                 | Adds a number to the field (default: 1).                                                                                               |
+| `decrement`    | No          | `number`                 | Removes a number from the field (default: 1).                                                                                          |
+| `array-push `  | Yes         | `any`                    | Pushes an element to the end of an array field.                                                                                        |
+| `array-delete` | Yes         | `number`                 | Removes an array element by index.                                                                                                     |
+| `array-splice` | Yes         | `[number, number, any?]` | Last argument is optional. Check the PHP [array_splice](https://www.php.net/manual/function.array-splice) documentation for more info. |
 
 Various other methods and constants exist in the JavaScript client, which will make more sense once you learn what's actually happening behind the scenes.
 

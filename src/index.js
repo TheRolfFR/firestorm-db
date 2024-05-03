@@ -95,9 +95,9 @@ class Collection {
 	 * @param {Function} [addMethods] - Additional methods and data to add to the objects
 	 */
 	constructor(name, addMethods = (el) => el) {
-		if (name === undefined) throw new SyntaxError("Collection must have a name");
+		if (!name) throw new SyntaxError("Collection must have a name");
 		if (typeof addMethods !== "function")
-			throw new TypeError("Collection must have an addMethods of type Function");
+			throw new TypeError("Collection add methods must be a function");
 		this.addMethods = addMethods;
 		this.collectionName = name;
 	}
@@ -106,19 +106,24 @@ class Collection {
 	 * Add user methods to returned data
 	 * @private
 	 * @ignore
-	 * @param {AxiosPromise} req - Incoming request
-	 * @returns {Promise<any>}
+	 * @param {any} el - Value to add methods to
+	 * @param {boolean} [nested] - Nest the methods inside an object
+	 * @returns {any}
 	 */
-	__add_methods(req) {
-		if (!(req instanceof Promise)) req = Promise.resolve(req);
-		return req.then((el) => {
-			if (Array.isArray(el)) return el.map((el) => this.addMethods(el));
-			el[Object.keys(el)[0]][ID_FIELD_NAME] = Object.keys(el)[0];
-			el = el[Object.keys(el)[0]];
+	__add_methods(el, nested = true) {
+		// can't add properties on falsy values
+		if (!el) return el;
+		if (Array.isArray(el)) return el.map((el) => this.addMethods(el));
+		// nested objects
+		if (nested && typeof el === "object") {
+			Object.keys(el).forEach((k) => {
+				el[k] = this.addMethods(el[k]);
+			});
+			return el;
+		}
 
-			// else on the object itself
-			return this.addMethods(el);
-		});
+		// add directly to single object
+		return this.addMethods(el);
 	}
 
 	/**
@@ -217,7 +222,12 @@ class Collection {
 	get(key) {
 		return this.__get_request("get", {
 			id: key,
-		}).then((res) => this.__add_methods(res));
+		}).then((res) => {
+			const firstKey = Object.keys(res)[0];
+			res[firstKey][ID_FIELD_NAME] = firstKey;
+			res = res[firstKey];
+			return this.__add_methods(res, false);
+		});
 	}
 
 	/**
@@ -294,18 +304,19 @@ class Collection {
 
 	/**
 	 * Read the entire collection
-	 * - ID values are injected for easier iteration, so this may be different from {@link sha1}
+	 * @param {boolean} [original] - Disable ID field injection for easier iteration (default false)
 	 * @returns {Promise<Record<string, T>>} The entire collection
 	 */
-	readRaw() {
+	readRaw(original = false) {
 		return this.__get_request("read_raw").then((data) => {
+			if (original) return this.__add_methods(data);
+
 			// preserve as object
 			Object.keys(data).forEach((key) => {
 				data[key][ID_FIELD_NAME] = key;
-				this.addMethods(data[key]);
 			});
 
-			return data;
+			return this.__add_methods(data);
 		});
 	}
 
@@ -332,9 +343,8 @@ class Collection {
 		}).then((data) => {
 			Object.keys(data).forEach((key) => {
 				data[key][ID_FIELD_NAME] = key;
-				this.addMethods(data[key]);
 			});
-			return data;
+			return this.__add_methods(data);
 		});
 	}
 
@@ -395,10 +405,9 @@ class Collection {
 		}).then((data) => {
 			Object.keys(data).forEach((key) => {
 				data[key][ID_FIELD_NAME] = key;
-				this.addMethods(data[key]);
 			});
 
-			return data;
+			return this.__add_methods(data);
 		});
 	}
 
