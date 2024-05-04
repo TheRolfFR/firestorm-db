@@ -460,58 +460,61 @@ class JSONDatabase {
     }
 
     // MANDATORY REFERENCE to edit directly: PHP 5+
-    private function _edit(&$obj, $editObj) {
-        if (!is_object($editObj))
-            return false;
+    private function _edit(&$obj, $editObj): bool {
+        // must be associative array
+        $editObjType = gettype($editObj);
+        if (is_primitive($editObj) || array_sequential($editObj))
+            throw new HTTPException("Edit object has wrong type $editObjType, expected object", 400);
 
         // id required
-        if (!check($editObj['id']))
-            return false;
+        if (!array_key_exists('id', $editObj) || !check($editObj['id']))
+            throw new HTTPException('Missing ID field', 400);
 
         $id = $editObj['id'];
 
         // id string or integer
         if (!is_keyable($id))
-            return false;
+            throw new HTTPException('ID must be a string or number', 400);
 
         // object not found
         if (!array_key_exists($id, $obj['content']) || !check($obj['content'][$id]))
-            return false;
+            throw new HTTPException('ID doesn\'t exist in collection', 400);
 
         // field required
-        if (!check($editObj['field']))
-            return false;
+        if (!array_key_exists('field', $editObj) || !check($editObj['field']))
+            throw new HTTPException('Missing field field', 400);
 
         $field = $editObj['field'];
 
         // field is a string
         if (gettype($field) != 'string')
-            return false;
+            throw new HTTPException('field must be a string', 400);
 
         // operation required
-        if (!check($editObj['operation']))
-            return false;
+        if (!array_key_exists('operation', $editObj) || !check($editObj['operation']))
+            throw new HTTPException('Missing operation field', 400);
 
         $operation = $editObj['operation'];
 
         $value = null;
+
         // return if operation has no value
         // set, append, array-push, array-delete, array-splice
         if (
             in_array($operation, ['set', 'append', 'array-push', 'array-delete', 'array-splice']) and
-            !isset($editObj['value'])
+            (!array_key_exists('value', $editObj) or !isset($editObj['value']))
         )
-            return false;
-        else
+            throw new HTTPException("A value is required for operation $operation", 400);
+        else if (array_key_exists('value', $editObj))
             $value = $editObj['value'];
 
-        // field not found for other than set or push operation
-        // for the remove operation it is still a success because at the end the field doesn't exist
+        // field not needed for set or push operation (can create fields)
+        // missing field in remove doesn't matter since it's gone either way
         if (
             !isset($obj['content'][$id][$field]) and
             ($operation != 'set' and $operation != 'remove' and $operation != 'array-push')
         )
-            return false;
+            throw new HTTPException("Field $field doesn't exist in ID $id", 400);
 
         switch ($operation) {
             case 'set':
@@ -523,14 +526,14 @@ class JSONDatabase {
             case 'append':
                 // check type string
                 if (gettype($obj['content'][$id][$field]) != 'string' or gettype($value) != 'string')
-                    return false;
+                    throw new HTTPException('append requires string values', 400);
 
                 $obj['content'][$id][$field] .= $value;
                 return true;
             case 'invert':
                 // check type boolean
                 if (gettype($obj['content'][$id][$field]) != 'boolean')
-                    return false;
+                    throw new HTTPException('invert field must be a boolean', 400);
 
                 $obj['content'][$id][$field] = !$obj['content'][$id][$field];
                 return true;
@@ -538,7 +541,7 @@ class JSONDatabase {
             case 'decrement':
                 // check type number
                 if (!is_number_like($obj['content'][$id][$field]))
-                    return false;
+                    throw new HTTPException('increment and decrement fields must be numbers', 400);
 
                 $change = $operation == 'increment' ? 1 : -1;
 
@@ -549,7 +552,7 @@ class JSONDatabase {
                         $change *= $editObj['value'];
                     // incorrect value provided, no operation done
                     else
-                        return false;
+                        throw new HTTPException('increment and decrement values must be numbers', 400);
                 }
 
                 $obj['content'][$id][$field] += $change;
@@ -560,12 +563,11 @@ class JSONDatabase {
                     $obj['content'][$id][$field] = array();
 
                 // check if our field array
-                if (gettype($obj['content'][$id][$field]) != 'array')
-                    return false;
-
-                // our field must be a sequential array
-                if (array_assoc($obj['content'][$id][$field]))
-                    return false;
+                if (
+                    gettype($obj['content'][$id][$field]) != 'array' ||
+                    array_assoc($obj['content'][$id][$field])
+                )
+                    throw new HTTPException('array-push field must be an array', 400);
 
                 array_push($obj['content'][$id][$field], $value);
 
@@ -573,23 +575,22 @@ class JSONDatabase {
 
             case 'array-delete':
                 // check if our field array
-                if (gettype($obj['content'][$id][$field]) != 'array')
-                    return false;
-
-                // our field must be a sequential array
-                if (array_assoc($obj['content'][$id][$field]))
-                    return false;
+                if (
+                    gettype($obj['content'][$id][$field]) != 'array' ||
+                    array_assoc($obj['content'][$id][$field])
+                )
+                    throw new HTTPException('array-delete field must be an array', 400);
 
                 // value must be integer
                 if (gettype($value) != 'integer')
-                    return false;
+                    throw new HTTPException('array-delete value must be a number', 400);
 
                 array_splice($obj['content'][$id][$field], $value, 1);
 
                 return true;
             case 'array-splice':
                 if (array_assoc($obj['content'][$id][$field]))
-                    return false;
+                    throw new HTTPException('array-splice field must be an array', 400);
 
                 // value must be an array starting with two integers
                 if (
@@ -598,7 +599,7 @@ class JSONDatabase {
                     gettype($value[0]) != 'integer' or
                     gettype($value[1]) != 'integer'
                 )
-                    return false;
+                    throw new HTTPException('Incorrect array-splice options', 400);
 
                 if (count($value) > 2)
                     array_splice($obj['content'][$id][$field], $value[0], $value[1], $value[2]);
@@ -610,11 +611,14 @@ class JSONDatabase {
                 break;
         }
 
-        return false;
+        throw new HTTPException("Edit failed on field $field with ID $id", 400);
     }
 
     public function editField($editObj) {
-        return $this->editFieldBulk(array($editObj))[0];
+        $fileObj = $this->read(true);
+        $res = (bool) $this->_edit($fileObj, $editObj);
+        $this->write($fileObj);
+        return $res;
     }
 
     public function editFieldBulk($objArray) {
@@ -624,10 +628,10 @@ class JSONDatabase {
 
         $arrayResult = array();
 
-        $fileObj = $this->read($this);
+        $fileObj = $this->read(true);
 
         foreach ($objArray as &$editObj) {
-            array_push($arrayResult, $this->_edit($fileObj, $editObj));
+            array_push($arrayResult, (bool) $this->_edit($fileObj, $editObj));
         }
 
         $this->write($fileObj);

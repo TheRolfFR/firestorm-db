@@ -36,6 +36,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `array-splice` edit fields being incorrectly typed as `array-slice`.
 - Platform-specific PHP error when searching nested keys.
 - `Collection.remove` rejecting numeric keys, despite `Collection.removeBulk` not doing so.
+- `editField` and `editFieldBulk` validation issues and poor error logging.
 
 ## [1.12.0] - 2024-02-22
 

@@ -63,12 +63,12 @@ function check_key_json($key, $arr, $parse = false) {
     return false;
 }
 
-function array_assoc(array $arr) {
+function array_assoc($arr) {
     if (array() === $arr || !is_array($arr)) return false;
     return array_keys($arr) !== range(0, count($arr) - 1);
 }
 
-function array_sequential(array $arr) {
+function array_sequential($arr) {
     return !array_assoc($arr);
 }
 
