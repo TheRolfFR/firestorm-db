@@ -1338,7 +1338,10 @@ describe("POST operations", () => {
 					base
 						.editField(obj)
 						.then((res) => {
-							expect(res.success).to.equal(true, "Should not fail");
+							expect(res).to.deep.equal(
+								{ message: "Successful editField command" },
+								"Should not fail",
+							);
 							return base.get(2);
 						})
 						.then((res) => {

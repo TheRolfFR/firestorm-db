@@ -23,6 +23,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Deprecated `firestorm.table(name)` method, since `firestorm.collection(name)` does exactly the same thing.
 - Reformatted the repository and improved README.md to make it easier to set up Firestorm.
 - Clean up and standardize JSDoc comments.
+- `editField` and `editFieldBulk` now return confirmations like all other write methods
+- `editField` and `editFieldBulk` now reject with a descriptive error message on failure rather than silently failing.
 
 ### Fixed
 
@@ -36,7 +38,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `array-splice` edit fields being incorrectly typed as `array-slice`.
 - Platform-specific PHP error when searching nested keys.
 - `Collection.remove` rejecting numeric keys, despite `Collection.removeBulk` not doing so.
-- `editField` and `editFieldBulk` validation issues and poor error logging.
+- `editField` and `editFieldBulk` validation issues.
 
 ## [1.12.0] - 2024-02-22
 

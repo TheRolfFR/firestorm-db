@@ -119,14 +119,14 @@ switch ($command) {
         if ($res === false)
             http_error(400, 'Incorrect data provided');
 
-        http_message($res, 'success', 200);
+        http_success("Successful $command command");
         break;
     case 'editFieldBulk':
         $res = $db->editFieldBulk($value);
         if ($res === false)
             http_error(400, 'Incorrect data provided');
 
-        http_message($res, 'success', 200);
+        http_success("Successful $command command");
         break;
     default:
         break;

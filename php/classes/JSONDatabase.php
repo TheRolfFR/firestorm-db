@@ -616,9 +616,8 @@ class JSONDatabase {
 
     public function editField($editObj) {
         $fileObj = $this->read(true);
-        $res = (bool) $this->_edit($fileObj, $editObj);
+        $this->_edit($fileObj, $editObj);
         $this->write($fileObj);
-        return $res;
     }
 
     public function editFieldBulk($objArray) {
@@ -626,17 +625,12 @@ class JSONDatabase {
         if (array_assoc($objArray))
             return false;
 
-        $arrayResult = array();
-
         $fileObj = $this->read(true);
-
         foreach ($objArray as &$editObj) {
-            array_push($arrayResult, (bool) $this->_edit($fileObj, $editObj));
+            // edit by reference, faster than passing values back and forth
+            $this->_edit($fileObj, $editObj);
         }
-
         $this->write($fileObj);
-
-        return $arrayResult;
     }
 
     public function select($selectObj) {
