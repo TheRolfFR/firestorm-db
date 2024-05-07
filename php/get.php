@@ -31,6 +31,7 @@ if (file_exists('./config.php') == false)
 // import db config
 require_once './config.php';
 
+// HTTPExceptions get properly handled in the catch
 try {
 
 // checking good collection

@@ -33,7 +33,7 @@ try {
  */
 
 /**
- * @typedef {WriteConfirmation}
+ * @typedef {Object} WriteConfirmation
  * @property {string} message - Write status
  */
 
@@ -508,7 +508,7 @@ class Collection {
 	/**
 	 * Edit an element's field in the collection
 	 * @param {EditFieldOption} option - The edit object
-	 * @returns {Promise<{ success: boolean }>} Edit confirmation
+	 * @returns {Promise<WriteConfirmation>} Edit confirmation
 	 */
 	editField(option) {
 		const data = this.__write_data("editField", option, null);
@@ -518,7 +518,7 @@ class Collection {
 	/**
 	 * Edit multiple elements' fields in the collection
 	 * @param {EditFieldOption[]} options - The edit objects
-	 * @returns {Promise<{ success: boolean[] }>} Edit confirmation
+	 * @returns {Promise<WriteConfirmation>} Edit confirmation
 	 */
 	editFieldBulk(options) {
 		const data = this.__write_data("editFieldBulk", options, undefined);

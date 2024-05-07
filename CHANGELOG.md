@@ -23,7 +23,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Deprecated `firestorm.table(name)` method, since `firestorm.collection(name)` does exactly the same thing.
 - Reformatted the repository and improved README.md to make it easier to set up Firestorm.
 - Clean up and standardize JSDoc comments.
-- `editField` and `editFieldBulk` now return confirmations like all other write methods
+- `editField` and `editFieldBulk` now return confirmations like all other write methods.
 - `editField` and `editFieldBulk` now reject with a descriptive error message on failure rather than silently failing.
 
 ### Fixed

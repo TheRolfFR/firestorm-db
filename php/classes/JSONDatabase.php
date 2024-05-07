@@ -611,7 +611,7 @@ class JSONDatabase {
                 break;
         }
 
-        throw new HTTPException("Edit failed on field $field with ID $id", 400);
+        throw new HTTPException("Unknown operation $operation", 400);
     }
 
     public function editField($editObj) {
