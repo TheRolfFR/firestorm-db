@@ -1,6 +1,5 @@
-const chai = require("chai");
+const { expect } = require("chai");
 const FormData = require("form-data");
-const { expect } = chai;
 
 const firestorm = require("..");
 
@@ -57,8 +56,8 @@ const resetDatabaseContent = async () => {
 	await base.writeRaw(content).catch((err) => console.error(err));
 
 	houseCollection = firestorm.collection(HOUSE_DATABASE_NAME);
-	const raw_house = JSON.parse(fs.readFileSync(HOUSE_DATABASE_FILE).toString());
-	await houseCollection.writeRaw(raw_house);
+	const rawHouse = JSON.parse(fs.readFileSync(HOUSE_DATABASE_FILE).toString());
+	await houseCollection.writeRaw(rawHouse);
 };
 
 describe("File upload, download and delete", () => {
@@ -117,16 +116,12 @@ describe("File upload, download and delete", () => {
 		const formData = new FormData();
 		formData.append("path", "/");
 		readFile(path.join(__dirname, "lyrics.txt"))
-			.catch(() => {
-				done(new Error("Should not succeed at first"));
-			})
+			.catch(() => done(new Error("Should not succeed at first")))
 			.then((res) => {
 				formData.append("file", res, "lyrics.txt");
 				return firestorm.files.upload(formData);
 			})
-			.then((res) => {
-				done(res);
-			})
+			.then((res) => done(res))
 			.catch((uploadError) => {
 				expect(uploadError).not.to.be.undefined;
 				expect(uploadError.response).not.to.be.undefined;
@@ -150,9 +145,7 @@ describe("File upload, download and delete", () => {
 		const lyricsPromise = readFile(path.join(__dirname, "lyrics.txt"));
 
 		// get done now
-		lyricsPromise.catch(() => {
-			done("File read should not failed");
-		});
+		lyricsPromise.catch(() => done("File read should not failed"));
 
 		const uploadPromise = lyricsPromise.then((res) => {
 			// add file to form data
@@ -186,8 +179,8 @@ describe("GET operations", () => {
 	before(async () => {
 		base = firestorm.collection(DATABASE_NAME);
 
-		const raw_content = fs.readFileSync(DATABASE_FILE).toString();
-		content = JSON.parse(raw_content);
+		const rawContent = fs.readFileSync(DATABASE_FILE).toString();
+		content = JSON.parse(rawContent);
 
 		await resetDatabaseContent();
 	});
@@ -207,23 +200,38 @@ describe("GET operations", () => {
 				});
 		});
 
-		it("returns the exact content of the file", (done) => {
+		it("returns the exact contents of the file", (done) => {
+			base
+				.readRaw(true)
+				.then((res) => {
+					expect(res).deep.equals(content, "Content different");
+					done();
+				})
+				.catch(done);
+		});
+
+		it("injects ID values into every item", (done) => {
 			base
 				.readRaw()
 				.then((res) => {
+					Object.entries(res).forEach(([k, v]) =>
+						expect(v).to.have.property(firestorm.ID_FIELD, k, "Missing ID field"),
+					);
 					Object.keys(res).forEach((key) => delete res[key][firestorm.ID_FIELD]);
 					expect(res).deep.equals(content, "Content different");
 					done();
 				})
-				.catch((err) => done(err));
+				.catch(done);
 		});
+	});
 
+	describe("sha1()", () => {
 		it("sha1 content hash is the same", (done) => {
 			base
 				.sha1()
 				.then((res) => {
-					const file_sha1 = crypto.createHash("sha1").update(JSON.stringify(content)).digest("hex");
-					expect(res).equals(file_sha1, "Content hash different");
+					const sha1 = crypto.createHash("sha1").update(JSON.stringify(content)).digest("hex");
+					expect(res).equals(sha1, "Content hash different");
 					done();
 				})
 				.catch((err) => {
@@ -242,7 +250,7 @@ describe("GET operations", () => {
 					expect(res).deep.equals(content[0], "Content different");
 					done();
 				})
-				.catch((err) => done(err));
+				.catch(done);
 		});
 
 		it("number parameter should return the correct value", (done) => {
@@ -253,7 +261,7 @@ describe("GET operations", () => {
 					expect(res).deep.equals(content[0], "Content different");
 					done();
 				})
-				.catch((err) => done(err));
+				.catch(done);
 		});
 
 		it("string and number parameters gives the same result", (done) => {
@@ -263,7 +271,7 @@ describe("GET operations", () => {
 					expect(results[0]).deep.equals(results[1], "Content different");
 					done();
 				})
-				.catch((err) => done(err));
+				.catch(done);
 		});
 	});
 
@@ -274,10 +282,7 @@ describe("GET operations", () => {
 				.then(() => {
 					done(new Error("Parameter should be an array of string or number"));
 				})
-				.catch((err) => {
-					expect(err).to.equal("Incorrect keys");
-					done();
-				});
+				.catch(() => done());
 		});
 
 		it("returns empty results when no found", (done) => {
@@ -285,13 +290,11 @@ describe("GET operations", () => {
 				.searchKeys([5, 7])
 				.then((res) => {
 					// expected []
-					expect(res).to.be.a("array", "Value should be an array");
+					expect(res).to.be.an("array", "Value should be an array");
 					expect(res).to.have.lengthOf(0, "Value should be empty array");
 					done();
 				})
-				.catch(() => {
-					done(new Error("Should not reject"));
-				});
+				.catch(() => done(new Error("Should not reject")));
 		});
 
 		it("returns correct content", (done) => {
@@ -307,15 +310,13 @@ describe("GET operations", () => {
 					expect(res).deep.equals(expected, "Result content doesn't match");
 					done();
 				})
-				.catch(() => {
-					done(new Error("Should not reject"));
-				});
+				.catch(() => done(new Error("Should not reject")));
 		});
 	});
 
 	describe("search(searchOptions)", () => {
-		// [criteria, field, value, idsFound]
-		const test_array = [
+		// [criteria, field, value, idsFound, ignoreCase]
+		const testArray = [
 			["!=", "age", 13, ["0", "2"]],
 			["==", "age", 13, ["1"]],
 			["==", "age", 25, []],
@@ -342,6 +343,9 @@ describe("GET operations", () => {
 			["array-contains", "qualities", "strong", ["0", "1"]],
 			["array-contains", "qualities", "sTRoNG", ["0", "1"], true],
 			["array-contains", "qualities", "handsome", []],
+			["array-contains-none", "qualities", ["strong"], ["2"]],
+			["array-contains-none", "qualities", ["sTrOnG"], ["2"], true],
+			["array-contains-none", "qualities", ["strong", "calm"], []],
 			["array-contains-any", "qualities", ["intelligent", "calm"], ["0", "2"]],
 			["array-contains-any", "qualities", ["intELLIGent", "CALm"], ["0", "2"], true],
 			["array-contains-any", "qualities", ["fast", "flying"], []],
@@ -358,32 +362,28 @@ describe("GET operations", () => {
 			["array-length-ge", "friends", 7, []],
 		];
 
-		test_array.forEach((test_item) => {
-			const criteria = test_item[0];
-			const field = test_item[1];
-			const value = test_item[2];
-			const ids_found = test_item[3];
-			const ignore_case = !!test_item[4];
-			it(`${criteria} criteria${ids_found.length == 0 ? " (empty result)" : ""}${
-				ignore_case ? " (case insensitive)" : ""
+		testArray.forEach(([criteria, field, value, idsFound, ignoreCase]) => {
+			ignoreCase = !!ignoreCase;
+			it(`${criteria} criteria${idsFound.length == 0 ? " (empty result)" : ""}${
+				ignoreCase ? " (case insensitive)" : ""
 			}`, (done) => {
 				base
 					.search([
 						{
-							criteria: criteria,
-							field: field,
-							value: value,
-							ignoreCase: ignore_case,
+							criteria,
+							field,
+							value,
+							ignoreCase,
 						},
 					])
 					.then((res) => {
-						expect(res).to.be.a("array", "Search result must be an array");
+						expect(res).to.be.an("array", "Search result must be an array");
 						expect(res).to.have.lengthOf(
-							ids_found.length,
+							idsFound.length,
 							"Expected result have not correct length",
 						);
 						expect(res.map((el) => el[firestorm.ID_FIELD])).to.deep.equal(
-							ids_found,
+							idsFound,
 							"Incorrect result search",
 						);
 						done();
@@ -398,7 +398,7 @@ describe("GET operations", () => {
 
 	describe("search(searchOptions, random)", () => {
 		describe("Nested keys test", () => {
-			it("doesn't crash if nested key unknown", (done) => {
+			it("doesn't crash if unknown nested key", (done) => {
 				base
 					.search([
 						{
@@ -412,9 +412,7 @@ describe("GET operations", () => {
 						expect(res.length).to.equal(0);
 						done();
 					})
-					.catch((err) => {
-						done(err);
-					});
+					.catch(done);
 			});
 			it("can find correct nested value", (done) => {
 				base
@@ -444,15 +442,14 @@ describe("GET operations", () => {
 						]);
 						done();
 					})
-					.catch((err) => {
-						done(err);
-					});
+					.catch((err) => done(err));
 			});
 		});
 
-		let incorrect = [null, "gg", ""]; // undefined works because random becomes default parameter false, so false works too
-		incorrect.forEach((unco) => {
-			it(`${JSON.stringify(unco)} seed rejects`, (done) => {
+		// undefined works because random becomes default parameter false, so false works too
+		const incorrect = [null, "gg", ""];
+		incorrect.forEach((incor) => {
+			it(`${JSON.stringify(incor)} seed rejects`, (done) => {
 				base
 					.search(
 						[
@@ -462,12 +459,10 @@ describe("GET operations", () => {
 								value: "",
 							},
 						],
-						unco,
+						incor,
 					)
 					.then((res) => done(`got ${JSON.stringify(res)} value`))
-					.catch(() => {
-						done();
-					});
+					.catch(() => done());
 			});
 		});
 
@@ -483,7 +478,7 @@ describe("GET operations", () => {
 					],
 					true,
 				)
-				.then((_) => done())
+				.then(() => done())
 				.catch((err) => {
 					console.error(err);
 					done("Should not reject with error " + JSON.stringify(err));
@@ -523,22 +518,18 @@ describe("GET operations", () => {
 		it("requires a fields field", (done) => {
 			base
 				.select(undefined)
-				.then((res) => {
-					done("Did not expect it to success");
-				})
+				.then(() => done("Did not expect it to success"))
 				.catch(() => done());
 		});
 		describe("requires field to be a string array", () => {
 			// all incorrect values must catch
-			let incorrect = [undefined, null, false, 5, 12.5, "gg", { toto: "tata" }];
-			incorrect.forEach((unco) => {
-				it(`${JSON.stringify(unco)} value`, (done) => {
+			const incorrect = [undefined, null, false, 5, 12.5, "gg", { toto: "tata" }];
+			incorrect.forEach((incor) => {
+				it(`${JSON.stringify(incor)} value rejects`, (done) => {
 					base
-						.select({ fields: unco })
+						.select({ fields: incor })
 						.then((res) => done(`got ${JSON.stringify(res)} value`))
-						.catch(() => {
-							done();
-						});
+						.catch(() => done());
 				});
 			});
 		});
@@ -548,12 +539,8 @@ describe("GET operations", () => {
 				it(`${JSON.stringify(val)} value`, (done) => {
 					base
 						.select({ fields: val })
-						.then(() => {
-							done();
-						})
-						.catch((err) => {
-							done(err);
-						});
+						.then(() => done())
+						.catch(done);
 				});
 			});
 		});
@@ -561,31 +548,27 @@ describe("GET operations", () => {
 		describe(`must accept only string arrays`, () => {
 			// incorrect arrays
 			incorrect = [undefined, null, false, 5, 12.5, {}];
-			incorrect.forEach(async (unco) => {
-				it(`[${JSON.stringify(unco)}] value`, (done) => {
+			incorrect.forEach((incor) => {
+				it(`[${JSON.stringify(incor)}] value rejects`, (done) => {
 					base
-						.select({ fields: [unco] })
-						.then(() => done(`[${JSON.stringify(unco)}] value passed`))
-						.catch(() => {
-							done();
-						});
+						.select({ fields: [incor] })
+						.then(() => done(`[${JSON.stringify(incor)}] value passed`))
+						.catch(() => done());
 				});
 			});
 		});
 
 		it("Gives correct value", (done) => {
-			const fields_chosen = ["name", "age"];
-			Promise.all([base.readRaw(), base.select({ fields: fields_chosen })])
-				.then((results) => {
-					let raw = results[0];
+			const chosenFields = ["name", "age"];
+			Promise.all([base.readRaw(), base.select({ fields: chosenFields })])
+				.then(([raw, selectResult]) => {
 					Object.keys(raw).forEach((k) => {
-						Object.keys(raw[k]).forEach((el_k) => {
-							if (!fields_chosen.includes(el_k) || typeof raw[k][el_k] === "function") {
-								delete raw[k][el_k];
+						Object.keys(raw[k]).forEach((el) => {
+							if (!chosenFields.includes(el) || typeof raw[k][el] === "function") {
+								delete raw[k][el];
 							}
 						});
 					});
-					let selectResult = results[1];
 					Object.keys(selectResult).forEach((k) => {
 						delete selectResult[k][firestorm.ID_FIELD];
 					});
@@ -593,7 +576,7 @@ describe("GET operations", () => {
 					expect(selectResult).to.be.deep.equal(raw, `contents are different`);
 					done();
 				})
-				.catch((err) => done(err));
+				.catch(done);
 		});
 	});
 
@@ -601,28 +584,92 @@ describe("GET operations", () => {
 		it("requires a field", (done) => {
 			base
 				.values()
-				.then((res) => {
-					done("Did not expect it to succeed");
-				})
+				.then(() => done("Did not expect it to succeed"))
 				.catch(() => done());
 		});
 
 		it("doesn't require a flatten field", (done) => {
 			base
 				.values({ field: "name" })
-				.then((res) => {
-					done();
-				})
+				.then(() => done())
 				.catch(() => done("Did not expect it to fail"));
 		});
 
 		it("needs a boolean flatten field if provided", (done) => {
 			base
 				.values({ field: "name", flatten: "this is not a boolean" })
-				.then((res) => {
-					done("Did not expect it to succeed");
-				})
+				.then(() => done("Did not expect it to succeed"))
 				.catch(() => done());
+		});
+
+		describe("needs string field value", () => {
+			const incorrect = [null, false, 5.5, -5, { key: "val" }, ["asdf"]];
+			incorrect.forEach((incor) => {
+				it(`${JSON.stringify(incor)} value rejects`, (done) => {
+					base
+						.values({ field: incor })
+						.then(() => done("Did not expect it to succeed"))
+						.catch(() => done());
+				});
+			});
+		});
+
+		describe("returns the right content", () => {
+			it("works on primitive without flattening", (done) => {
+				base
+					.values({ field: "age" })
+					.then((res) => {
+						// sort values to prevent possible ordering issues
+						const expected = Array.from(new Set(Object.values(content).map((v) => v.age)));
+						expect(res.sort()).to.deep.equal(expected.sort());
+						done();
+					})
+					.catch(done);
+			});
+
+			it("works with an array with flattening", (done) => {
+				base
+					.values({ field: "friends", flatten: true })
+					.then((res) => {
+						const expected = Array.from(
+							new Set(
+								Object.values(content)
+									.map((v) => v.friends)
+									.flat(),
+							),
+						);
+						expect(res.sort()).to.deep.equal(expected.sort());
+						done();
+					})
+					.catch(done);
+			});
+
+			it("works on primitive with flattening", (done) => {
+				base
+					.values({ field: "age", flatten: true })
+					.then((res) => {
+						// flatten field gets ignored on primitives (easier to handle)
+						const expected = Array.from(new Set(Object.values(content).map((v) => v.age)));
+						expect(res.sort()).to.deep.equal(expected.sort());
+						done();
+					})
+					.catch(done);
+			});
+
+			it("works on an array without flattening", (done) => {
+				base
+					.values({ field: "friends" })
+					.then((res) => {
+						const values = Object.values(content).map((v) => v.friends);
+						const unique = values.filter(
+							(el, i) =>
+								i === values.findIndex((obj) => JSON.stringify(obj) === JSON.stringify(el)),
+						);
+						expect(res.sort()).to.deep.equal(unique.sort());
+						done();
+					})
+					.catch(done);
+			});
 		});
 	});
 
@@ -630,46 +677,38 @@ describe("GET operations", () => {
 		it("doesn't require parameters", (done) => {
 			base
 				.random()
-				.then((res) => {
-					done();
-				})
+				.then(() => done())
 				.catch(() => done("Did not expect it to fail"));
 		});
 		it("passes with undefined parameters", (done) => {
 			base
 				.random(undefined, undefined, undefined)
-				.then((res) => {
-					done();
-				})
+				.then(() => done())
 				.catch(() => done("Did not expect it to fail"));
 		});
 
 		describe("requires max parameter to be an integer >= -1", () => {
 			// all incorrect values must catch
-			let incorrect = [null, false, "gg", 5.5, -5, -2]; // undefined works because max is the whole collection then
-			incorrect.forEach((unco) => {
-				it(`${JSON.stringify(unco)} value`, (done) => {
+			const incorrect = [null, false, "gg", 5.5, -5, -2]; // undefined works because max is the whole collection then
+			incorrect.forEach((incor) => {
+				it(`${JSON.stringify(incor)} value`, (done) => {
 					base
-						.random(unco)
+						.random(incor)
 						.then((res) => done(`got ${JSON.stringify(res)} value`))
-						.catch(() => {
-							done();
-						});
+						.catch(() => done());
 				});
 			});
 		});
 
 		describe("requires seed parameter to be an integer", () => {
 			// all incorrect values must catch
-			let incorrect = [null, false, "gg", 5.5]; // undefined works because then seed is automatic
-			incorrect.forEach((unco) => {
-				it(`${JSON.stringify(unco)} value`, (done) => {
+			const incorrect = [null, false, "gg", 5.5]; // undefined works because then seed is automatic
+			incorrect.forEach((incor) => {
+				it(`${JSON.stringify(incor)} value`, (done) => {
 					base
-						.random(5, unco)
+						.random(5, incor)
 						.then((res) => done(`got ${JSON.stringify(res)} value`))
-						.catch(() => {
-							done();
-						});
+						.catch(() => done());
 				});
 			});
 		});
@@ -683,31 +722,27 @@ describe("GET operations", () => {
 
 		describe("requires offset parameter to be an integer >= 0", () => {
 			// all incorrect values must catch
-			let incorrect = [null, false, "gg", 5.5, -1]; // undefined works because then offset is 0
-			incorrect.forEach((unco) => {
-				it(`${JSON.stringify(unco)} value`, (done) => {
+			const incorrect = [null, false, "gg", 5.5, -1]; // undefined works because then offset is 0
+			incorrect.forEach((incor) => {
+				it(`${JSON.stringify(incor)} value`, (done) => {
 					base
-						.random(5, 69, unco)
+						.random(5, 69, incor)
 						.then((res) => done(`got ${JSON.stringify(res)} value`))
-						.catch(() => {
-							done();
-						});
+						.catch(() => done());
 				});
 			});
 		});
 	});
 });
 
-describe("PUT operations", () => {
+describe("POST operations", () => {
 	describe("writeRaw operations", () => {
 		it("Rejects when incorrect token", (done) => {
 			firestorm.token("LetsGoToTheMall");
 
 			base
 				.writeRaw({})
-				.then((res) => {
-					done(res);
-				})
+				.then((res) => done(res))
 				.catch((err) => {
 					if ("response" in err && err.response.status == 403) {
 						done();
@@ -715,13 +750,11 @@ describe("PUT operations", () => {
 					}
 					done(new Error("Should return 403"));
 				})
-				.finally(() => {
-					firestorm.token(TOKEN);
-				});
+				.finally(() => firestorm.token(TOKEN));
 		});
 
 		describe("You must give a correct value", () => {
-			const incorrect_bodies = [
+			const incorrectBodies = [
 				undefined,
 				null,
 				false,
@@ -733,13 +766,11 @@ describe("PUT operations", () => {
 				{ 5: "is" },
 			];
 
-			incorrect_bodies.forEach((body, index) => {
+			incorrectBodies.forEach((body, index) => {
 				it(`${JSON.stringify(body)} value rejects`, (done) => {
 					base
 						.writeRaw(body)
-						.then((res) => {
-							done(new Error(`Should not fulfill returning ${JSON.stringify(res)}`));
-						})
+						.then((res) => done(new Error(`Should not fulfill returning ${JSON.stringify(res)}`)))
 						.catch((err) => {
 							if (index < 2) {
 								expect(err).to.be.an("error");
@@ -764,9 +795,7 @@ describe("PUT operations", () => {
 			it("but it can write an empty content : {}", (done) => {
 				base
 					.writeRaw({})
-					.then(() => {
-						done();
-					})
+					.then(() => done())
 					.catch((err) => {
 						console.trace(err);
 						done(err);
@@ -787,9 +816,7 @@ describe("PUT operations", () => {
 					outdoor: true,
 					furniture: ["table", "chair", "flowerpot"],
 				})
-				.then(() => {
-					done(new Error("This request should not fulfill"));
-				})
+				.then(() => done(new Error("This request should not fulfill")))
 				.catch((err) => {
 					if ("response" in err && err.response.status == 400) {
 						done();
@@ -806,7 +833,7 @@ describe("PUT operations", () => {
 		});
 
 		it("must give incremented key when adding on a auto key auto increment", (done) => {
-			const last_id = Object.keys(content).pop();
+			const lastID = Object.keys(content).pop();
 			base
 				.add({
 					name: "Elliot Alderson",
@@ -816,22 +843,20 @@ describe("PUT operations", () => {
 				})
 				.then((id) => {
 					expect(id).to.be.a("string");
-					expect(id).to.equals(String(parseInt(last_id) + 1));
+					expect(id).to.equals(String(parseInt(lastID) + 1));
 					done();
 				})
-				.catch((err) => {
-					done(err);
-				});
+				.catch(done);
 		});
 
 		describe("It should not accept incorrect values", () => {
-			const incorrect_values = [undefined, null, false, 16, "Muse", [1, 2, 3]];
+			const incorrectValues = [undefined, null, false, 16, "Muse", [1, 2, 3]];
 			// I wanted to to test [] but serialized it's the same as an empty object which must be accepted
 
-			incorrect_values.forEach((unco) => {
-				it(`${JSON.stringify(unco)} value rejects`, (done) => {
+			incorrectValues.forEach((incor) => {
+				it(`${JSON.stringify(incor)} value rejects`, (done) => {
 					base
-						.add(unco)
+						.add(incor)
 						.then((res) => {
 							done(new Error(`Should not fulfill with res ${res}`));
 						})
@@ -847,7 +872,7 @@ describe("PUT operations", () => {
 		});
 
 		describe("It should accept correct values", () => {
-			const correct_values = [
+			const correctValues = [
 				{},
 				{
 					name: "Elliot Alderson",
@@ -857,16 +882,12 @@ describe("PUT operations", () => {
 				},
 			];
 
-			correct_values.forEach((co, index) => {
+			correctValues.forEach((co, index) => {
 				it(`${index === 0 ? "Empty object" : "Complex object"} should fulfill`, (done) => {
 					base
 						.add(co)
-						.then(() => {
-							done();
-						})
-						.catch((err) => {
-							done(err);
-						});
+						.then(() => done())
+						.catch(done);
 				});
 			});
 		});
@@ -889,20 +910,15 @@ describe("PUT operations", () => {
 		});
 
 		describe("must reject with incorrect base values", () => {
-			const incorrect_values = [undefined, null, false, 16, "Muse", [1, 2, 3]];
+			const incorrectValues = [undefined, null, false, 16, "Muse", [1, 2, 3]];
 
-			incorrect_values.forEach((unco) => {
-				it(`${JSON.stringify(unco)} value rejects`, (done) => {
+			incorrectValues.forEach((incor) => {
+				it(`${JSON.stringify(incor)} value rejects`, (done) => {
 					base
-						.addBulk(unco)
-						.then((res) => {
-							done(new Error(`Should not fulfill with res ${res}`));
-						})
+						.addBulk(incor)
+						.then((res) => done(new Error(`Should not fulfill with res ${res}`)))
 						.catch((err) => {
-							if ("response" in err && err.response.status == 400) {
-								done();
-								return;
-							}
+							if ("response" in err && err.response.status == 400) return done();
 							done(new Error(`Should return 400 not ${JSON.stringify(err)}`));
 						});
 				});
@@ -910,12 +926,12 @@ describe("PUT operations", () => {
 		});
 
 		describe("must reject with incorrect array", () => {
-			const incorrect_values = [undefined, null, false, 16, "Muse", [1, 2, 3]];
+			const incorrectValues = [undefined, null, false, 16, "Muse", [1, 2, 3]];
 
-			incorrect_values.forEach((unco) => {
-				it(`[${JSON.stringify(unco)}] value rejects`, (done) => {
+			incorrectValues.forEach((incor) => {
+				it(`[${JSON.stringify(incor)}] value rejects`, (done) => {
 					base
-						.addBulk([unco])
+						.addBulk([incor])
 						.then((res) => {
 							done(new Error(`Should not fulfill with res ${res}`));
 						})
@@ -939,22 +955,22 @@ describe("PUT operations", () => {
 				base
 					.addBulk([{}])
 					.then((res) => {
-						expect(res).to.be.a("array");
+						expect(res).to.be.an("array");
 						expect(res).to.have.length(1);
 						done();
 					})
 					.catch((err) => {
-						console.log(err);
+						console.error(err);
 						done(err);
 					});
 			});
 
 			it("should accept correct array value", (done) => {
-				const in_value = [{ a: 1 }, { b: 2 }, { c: 3 }];
+				const inValue = [{ a: 1 }, { b: 2 }, { c: 3 }];
 				base
-					.addBulk(in_value)
+					.addBulk(inValue)
 					.then((res) => {
-						expect(res).to.be.a("array");
+						expect(res).to.be.an("array");
 						expect(res).to.have.length(3);
 						res.forEach((id) => {
 							expect(id).to.be.a("string");
@@ -962,19 +978,18 @@ describe("PUT operations", () => {
 						return Promise.all([res, base.searchKeys(res)]);
 					})
 					.then((results) => {
-						const search_results = results[1];
-						expect(search_results).to.be.a("array");
-						expect(search_results).to.have.length(3);
+						const searchResults = results[1];
+						expect(searchResults).to.be.an("array");
+						expect(searchResults).to.have.length(3);
 
-						const ids_generated = results[0];
+						const idsGenerated = results[0];
 						// modify results and add ID
-						in_value.map((el, index) => {
-							el[firestorm.ID_FIELD] = ids_generated[index];
-
+						inValue.map((el, index) => {
+							el[firestorm.ID_FIELD] = idsGenerated[index];
 							return el;
 						});
 
-						expect(search_results).to.be.deep.equals(in_value);
+						expect(searchResults).to.be.deep.equals(inValue);
 						done();
 					})
 					.catch((err) => {
@@ -986,12 +1001,11 @@ describe("PUT operations", () => {
 	});
 
 	describe("remove operations", () => {
-		describe("must accept only string keys", () => {
-			const incorrect_values = [
+		describe("must reject non-keyable values", () => {
+			const incorrectValues = [
 				undefined,
 				null,
 				false,
-				16,
 				22.2,
 				[],
 				[1, 2, 3],
@@ -999,10 +1013,10 @@ describe("PUT operations", () => {
 				{ "i'm": "batman" },
 			];
 
-			incorrect_values.forEach((unco) => {
-				it(`${JSON.stringify(unco)} value rejects`, (done) => {
+			incorrectValues.forEach((incor) => {
+				it(`${JSON.stringify(incor)} value rejects`, (done) => {
 					base
-						.remove(unco)
+						.remove(incor)
 						.then((res) => {
 							done(new Error(`Should not fulfill with value ${JSON.stringify(res)}`));
 						})
@@ -1049,12 +1063,12 @@ describe("PUT operations", () => {
 
 	describe("removeBulk operations", () => {
 		describe("must accept only string array", () => {
-			const incorrect_values = [undefined, null, false, [], [1, 2, 3], {}, { "i'm": "batman" }];
+			const incorrectValues = [undefined, null, false, [], [1, 2, 3], {}, { "i'm": "batman" }];
 
-			incorrect_values.forEach((unco) => {
-				it(`[${JSON.stringify(unco)}] value rejects`, (done) => {
+			incorrectValues.forEach((incor) => {
+				it(`[${JSON.stringify(incor)}] value rejects`, (done) => {
 					base
-						.removeBulk([unco])
+						.removeBulk([incor])
 						.then((res) => {
 							done(new Error(`Should not fulfill with value ${JSON.stringify(res)}`));
 						})
@@ -1114,17 +1128,15 @@ describe("PUT operations", () => {
 		});
 
 		describe("0 values fulfill", () => {
-			const correct_values = ["0", 0, 0.0];
+			const correctValues = ["0", 0, 0.0];
 
-			correct_values.forEach((unco) => {
-				it(`${JSON.stringify(unco)} value fulfills`, (done) => {
+			correctValues.forEach((incor) => {
+				it(`${JSON.stringify(incor)} value fulfills`, (done) => {
 					base
-						.set(unco, tmp)
-						.then((res) => {
-							done();
-						})
+						.set(incor, tmp)
+						.then(() => done())
 						.catch((err) => {
-							if ("response" in err) console.log(err.response.data);
+							if ("response" in err) console.error(err.response.data);
 							done(new Error(err));
 						});
 				});
@@ -1132,12 +1144,12 @@ describe("PUT operations", () => {
 		});
 
 		describe("Key must be a string or an integer", () => {
-			const incorrect_values = [undefined, null, false, [], [1, 2, 3], {}, { "i'm": "batman" }];
+			const incorrectValues = [undefined, null, false, [], [1, 2, 3], {}, { "i'm": "batman" }];
 
-			incorrect_values.forEach((unco) => {
-				it(`${JSON.stringify(unco)} value rejects`, (done) => {
+			incorrectValues.forEach((incor) => {
+				it(`${JSON.stringify(incor)} value rejects`, (done) => {
 					base
-						.set(unco, tmp)
+						.set(incor, tmp)
 						.then((res) => {
 							done(new Error(`Should not fulfill with value ${JSON.stringify(res)}`));
 						})
@@ -1152,12 +1164,12 @@ describe("PUT operations", () => {
 		});
 
 		describe("Value must be an object", () => {
-			const incorrect_values = [undefined, null, false, 16, 22.2, [1, 2, 3]];
+			const incorrectValues = [undefined, null, false, 16, 22.2, [1, 2, 3]];
 
-			incorrect_values.forEach((unco) => {
-				it(`${JSON.stringify(unco)} value rejects`, (done) => {
+			incorrectValues.forEach((incor) => {
+				it(`${JSON.stringify(incor)} value rejects`, (done) => {
 					base
-						.set("1", unco)
+						.set("1", incor)
 						.then((res) => {
 							done(new Error(`Should not fulfill with value ${JSON.stringify(res)}`));
 						})
@@ -1242,12 +1254,12 @@ describe("PUT operations", () => {
 		});
 
 		describe("keys should be an array of string", () => {
-			const incorrect_values = [undefined, null, false, [], [1, 2, 3], {}, { "i'm": "batman" }];
+			const incorrectValues = [undefined, null, false, [], [1, 2, 3], {}, { "i'm": "batman" }];
 
-			incorrect_values.forEach((unco) => {
-				it(`[${JSON.stringify(unco)}] value rejects`, (done) => {
+			incorrectValues.forEach((incor) => {
+				it(`[${JSON.stringify(incor)}] value rejects`, (done) => {
 					base
-						.setBulk([unco], [tmp])
+						.setBulk([incor], [tmp])
 						.then((res) => {
 							done(new Error(`Should not fulfill with value ${JSON.stringify(res)}`));
 						})
@@ -1285,21 +1297,72 @@ describe("PUT operations", () => {
 			await resetDatabaseContent();
 		});
 
-		describe("Reject with incorrect values", () => {
-			const incorrect_values = [undefined, null, false, 16, 0.5, "", "gg", [], {}];
+		it("Rejects with unknown operation", (done) => {
+			base
+				.editField({
+					id: "2",
+					operation: "smile",
+					field: "name",
+				})
+				.then((res) => done(new Error("Should not fulfill with " + JSON.stringify(res))))
+				.catch((err) => {
+					if ("response" in err && err.response.status == 400) return done();
+					done(new Error(`Should return 400 not ${JSON.stringify(err)}`));
+				});
+		});
 
-			incorrect_values.forEach((unco) => {
-				it(`'${JSON.stringify(unco)}' value rejects`, (done) => {
+		describe("Edits the correct values", () => {
+			// field, operation, value, expected
+			const testArray = [
+				["name", "set", "new name", "new name"],
+				["name", "append", " yes", "new name yes"],
+				["name", "remove", null, undefined],
+				["amazing", "invert", null, false],
+				["age", "increment", null, 46],
+				["age", "increment", 3, 49],
+				["age", "decrement", null, 48],
+				["age", "decrement", 3, 45],
+				["friends", "array-push", "Bob", ["Dwight", "Bob"]],
+				["qualities", "array-delete", 2, ["pretty", "wild"]],
+			];
+
+			testArray.forEach(([field, operation, value, expected]) => {
+				it(`'${operation}' on '${field}' yields ${JSON.stringify(expected)}`, (done) => {
+					const obj = {
+						id: 2,
+						field,
+						operation,
+					};
+					// not required
+					if (value !== null) obj.value = value;
 					base
-						.editField(unco)
+						.editField(obj)
 						.then((res) => {
-							done(new Error("Should not fulfill with " + JSON.stringify(res)));
+							expect(res).to.deep.equal(
+								{ message: "Successful editField command" },
+								"Should not fail",
+							);
+							return base.get(2);
 						})
+						.then((res) => {
+							expect(res[field]).to.deep.equal(expected, "Should be the new set values");
+							done();
+						})
+						.catch(done);
+				});
+			});
+		});
+
+		describe("Reject with incorrect values", () => {
+			const incorrectValues = [undefined, null, false, 16, 0.5, "", "gg", [], {}];
+
+			incorrectValues.forEach((incor) => {
+				it(`'${JSON.stringify(incor)}' value rejects`, (done) => {
+					base
+						.editField(incor)
+						.then((res) => done(new Error("Should not fulfill with " + JSON.stringify(res))))
 						.catch((err) => {
-							if ("response" in err && err.response.status == 400) {
-								done();
-								return;
-							}
+							if ("response" in err && err.response.status == 400) return done();
 							done(new Error(`Should return 400 not ${JSON.stringify(err)}`));
 						});
 				});
@@ -1314,7 +1377,7 @@ describe("PUT operations", () => {
 			];
 
 			for (let i = 0; i < args.length; ++i) {
-				let obj = {};
+				const obj = {};
 				args.slice(0, i + 1).forEach((el) => {
 					obj[el[0]] = el[1];
 				});
@@ -1322,14 +1385,9 @@ describe("PUT operations", () => {
 				it(`${i + 1} args is not enough`, (done) => {
 					base
 						.editField(obj)
-						.then((res) => {
-							done(new Error("Should not fulfill with " + JSON.stringify(res)));
-						})
+						.then((res) => done(new Error("Should not fulfill with " + JSON.stringify(res))))
 						.catch((err) => {
-							if ("response" in err && err.response.status == 400) {
-								done();
-								return;
-							}
+							if ("response" in err && err.response.status == 400) return done();
 							done(new Error(`Should return 400 not ${JSON.stringify(err)}`));
 						});
 				});
@@ -1337,7 +1395,7 @@ describe("PUT operations", () => {
 		});
 
 		describe("Rejects operations with value required", () => {
-			["set", "append", "array-push", "array-delete", "array-slice"].forEach((op) => {
+			["set", "append", "array-push", "array-delete", "array-splice"].forEach((op) => {
 				it(`${op} operation needs a value`, (done) => {
 					base
 						.editField({
@@ -1345,37 +1403,13 @@ describe("PUT operations", () => {
 							operation: op,
 							field: "name",
 						})
-						.then((res) => {
-							done(new Error("Should not fulfill with " + JSON.stringify(res)));
-						})
+						.then((res) => done(new Error("Should not fulfill with " + JSON.stringify(res))))
 						.catch((err) => {
-							if ("response" in err && err.response.status == 400) {
-								done();
-								return;
-							}
+							if ("response" in err && err.response.status == 400) return done();
 							done(new Error(`Should return 400 not ${JSON.stringify(err)}`));
 						});
 				});
 			});
-		});
-
-		it("Rejects with unknown operation", (done) => {
-			base
-				.editField({
-					id: "2",
-					operation: "smile",
-					field: "name",
-				})
-				.then((res) => {
-					done(new Error("Should not fulfill with " + JSON.stringify(res)));
-				})
-				.catch((err) => {
-					if ("response" in err && err.response.status == 400) {
-						done();
-						return;
-					}
-					done(new Error(`Should return 400 not ${JSON.stringify(err)}`));
-				});
 		});
 	});
 });

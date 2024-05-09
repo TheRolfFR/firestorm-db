@@ -1,12 +1,11 @@
 <?php
 
-function array_contains($array, $value, $ignoreCase = false)
-{
+function array_contains($array, $value, $ignoreCase = false) {
     $tmp = false;
     $tmp_i = 0;
     while ($tmp_i < count($array) and !$tmp) {
         if ($ignoreCase) {
-            $tmp = ($ignoreCase ? strcasecmp($array[$tmp_i], $value)  : strcmp($array[$tmp_i], $value)) == 0;
+            $tmp = ($ignoreCase ? strcasecmp($array[$tmp_i], $value) : strcmp($array[$tmp_i], $value)) == 0;
         } else {
             $tmp = $array[$tmp_i] == $value;
         }
@@ -15,12 +14,10 @@ function array_contains($array, $value, $ignoreCase = false)
     return $tmp;
 }
 
-function array_contains_any($concernedField, $value, $ignoreCase = false)
-{
-
+function array_contains_any($concernedField, $value, $ignoreCase = false) {
     $add = false;
 
-    if (gettype($value) === "array") {
+    if (gettype($value) === 'array') {
         $tmp = false;
         $val_i = 0;
         while ($val_i < count($value) and !$tmp) {
@@ -36,8 +33,6 @@ function array_contains_any($concernedField, $value, $ignoreCase = false)
             $val_i = $val_i + 1;
         }
 
-        if($val_i  == count($value)) {
-        }
         $add = $tmp;
     } else {
         $add = false;

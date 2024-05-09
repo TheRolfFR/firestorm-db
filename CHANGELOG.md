@@ -5,7 +5,42 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [1.12.0]
+## Unreleased
+
+### Added
+
+- Exposed `Collection.collectionName` as a readonly property for TypeScript usage.
+- TypeScript overview to the README.
+- Optional replacement argument for `array-splice` edit fields.
+- `array-contains-none` option for array fields.
+- Optional constructor for the `JSONDatabase` PHP class to reduce repetitive code.
+- "Advanced" section to the README for previously undocumented features.
+- `original` option for `readRaw` to not insert ID fields, for easier non-relational collection usage.
+
+### Changed
+
+- Rejected incorrect parameters are now `TypeError`s instead of regular `Error`s.
+- Deprecated `firestorm.table(name)` method, since `firestorm.collection(name)` does exactly the same thing.
+- Reformatted the repository and improved README.md to make it easier to set up Firestorm.
+- Clean up and standardize JSDoc comments.
+- `editField` and `editFieldBulk` now return confirmations like all other write methods.
+- `editField` and `editFieldBulk` now reject with a descriptive error message on failure rather than silently failing.
+
+### Fixed
+
+- PHP-level errors not being rejected properly in GET requests.
+- Certain write commands mutating data internally and affecting parameters outside Firestorm.
+- `Collection.searchKeys` and `Collection.values` not returning proper `Error` objects sometimes.
+- `files.upload` not allowing the `form-data` package's typing of `FormData` in TypeScript.
+- Inconsistent use of indentation and formatting in PHP files.
+- Various typos in PHP files.
+- `Collection` class being exported in TypeScript despite the actual class being private.
+- `array-splice` edit fields being incorrectly typed as `array-slice`.
+- Platform-specific PHP error when searching nested keys.
+- `Collection.remove` rejecting numeric keys, despite `Collection.removeBulk` not doing so.
+- `editField` and `editFieldBulk` validation issues.
+
+## [1.12.0] - 2024-02-22
 
 ### Added
 
@@ -14,7 +49,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - Refactored JavaScript part to be less verbose and reuse existing code better.
-- Use JSDoc `{@link }` properties.
+- Added JSDoc `{@link }` properties.
 - Cleaned up and clarified README.md.
 - Renamed `AllCriteria` to `AnyCriteria` to be more accurate.
 - Replaced broken `NoMethods<T>` type with a more generalized `RemoveMethods<T>` type.
@@ -76,4 +111,4 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Removed
 
-- crypto module as it is now deprecated and a built-in node package
+- `crypto` module as it is now deprecated and a built-in node package

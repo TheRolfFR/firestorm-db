@@ -1,11 +1,12 @@
-const fs = require("fs").promises;
+const { mkdtemp, mkdir, symlink, unlink } = require("fs").promises;
 const { existsSync } = require("fs");
-const path = require("path");
-const os = require("os");
+const { join, relative, dirname, basename } = require("path");
+const { tmpdir } = require("os");
 const { glob } = require("glob");
 const copy = require("recursive-copy");
-const child_process = require("child_process");
+const { execSync, spawn } = require("child_process");
 
+const PHP_PATH = "php";
 const PHP_SERVER_START_DELAY = 2000;
 const PORT = 8000;
 
@@ -14,117 +15,82 @@ console.log("Creating tmp folder...");
 
 async function setup_php() {
 	// create tmp folder for PHP
-	let tmpFolder;
-	child_process.execSync("rm -rf /tmp/php-*");
+	execSync("rm -rf /tmp/php-*");
 
-	await fs
-		.mkdtemp(path.join(os.tmpdir(), "php-"))
-		.then((folder) => {
-			tmpFolder = folder;
-			console.log(`Created ${tmpFolder}`);
+	const tmpFolder = await mkdtemp(join(tmpdir(), "php-"));
+	console.log(`Created ${tmpFolder}`);
 
-			console.log(
-				"Moving PHP folder + Checking test php files + Creating files folder + Checking test databases...",
-			);
-			return Promise.all([
-				glob(path.join(process.cwd(), "src/php", "**/*.php")),
-				fs.mkdir(path.join(tmpFolder, "files")),
-				glob(path.join(process.cwd(), "tests", "*.json")),
-			]);
-		})
-		.then((results) => {
-			const glob_php_files = results[0];
+	console.log(
+		"Moving PHP folder + Checking test php files + Creating files folder + Checking test databases...",
+	);
+	const [phpPaths, jsonPaths] = await Promise.all([
+		glob(join(process.cwd(), PHP_PATH, "**/*.php")),
+		glob(join(process.cwd(), "tests", "*.json")),
+		mkdir(join(tmpFolder, "files")),
+	]);
 
-			const php_symbolic_link = glob_php_files.map((from) => {
-				const endPath = path.relative(path.join(process.cwd(), "src", "php"), from);
-				const to = path.join(tmpFolder, endPath);
-				console.log(`Linking ${endPath}...`);
+	const phpSymlinkProms = phpPaths.map(async (from) => {
+		const endPath = relative(join(process.cwd(), PHP_PATH), from);
+		const to = join(tmpFolder, endPath);
+		console.log(`Linking ${endPath}...`);
 
-				return fs
-					.mkdir(path.dirname(to), { recursive: true })
-					.then(() => {
-						return fs.symlink(from, to, "file");
-					})
-					.then((res) => {
-						console.log(`Linked ${endPath}`);
-						return res;
-					});
-			});
-			const glob_json_files = results[2];
-			console.log("Copying test databases...");
+		await mkdir(dirname(to), { recursive: true });
+		const res = await symlink(from, to, "file");
+		console.log(`Linked ${endPath}`);
+		return res;
+	});
 
-			const json_prom = glob_json_files.map(async (from) => {
-				const filename = path.basename(from);
-				console.log(`Copying ${filename}...`);
-				const to = path.join(tmpFolder, "files", filename);
-				return copy(from, to).then((res) => {
-					console.log(`Copied ${filename}`);
-					return res;
-				});
-			});
+	console.log("Copying test databases...");
 
-			const get_test_php_files = glob(path.join(process.cwd(), "tests", "*.php"));
-
-			return Promise.all([get_test_php_files, ...php_symbolic_link, ...json_prom]);
-		})
-		.then((results) => {
-			console.log("Copying test php config files...");
-			const glob_test_php_files = results[0];
-
-			const php_prom = glob_test_php_files.map((from) => {
-				const filename = path.basename(from);
-				const to = path.join(tmpFolder, filename);
-				console.log(`Linking test ${filename}...`);
-
-				let prom = Promise.resolve();
-				if (existsSync(to)) prom = fs.unlink(to);
-
-				return prom
-					.then(() => fs.symlink(from, to, "file"))
-					.then((res) => {
-						console.log(`Linked ${filename}`);
-						return res;
-					});
-			});
-
-			return Promise.all(php_prom);
-		})
-		.then(async () => {
-			// console.log(await (glob(path.join(tmpFolder, '/**/*'))))
-			const php_server_command = `sh tests/php_server_start.sh ${tmpFolder} ${PORT}`;
-			console.log('Starting php server with command "' + php_server_command + '"');
-			const args = php_server_command.split(" ");
-			const command = args.shift();
-
-			child_process.spawn(command, args, { stdio: "ignore", detached: true }).unref();
-
-			console.log(`Waiting ${PHP_SERVER_START_DELAY}ms for the server to start...`);
-			return pause(PHP_SERVER_START_DELAY);
-		})
-		.catch((err) => {
-			console.error("Terrible error happened");
-			console.trace(err);
-			process.exit(1);
+	const jsonCopyProms = jsonPaths.map((from) => {
+		const filename = basename(from);
+		console.log(`Copying ${filename}...`);
+		const to = join(tmpFolder, "files", filename);
+		return copy(from, to).then((res) => {
+			console.log(`Copied ${filename}`);
+			return res;
 		});
+	});
+
+	const phpTestPaths = await glob(join(process.cwd(), "tests", "*.php"));
+
+	await Promise.all([...phpSymlinkProms, ...jsonCopyProms]);
+
+	console.log("Copying test PHP config files...");
+
+	await Promise.all(
+		phpTestPaths.map(async (from) => {
+			const filename = basename(from);
+			const to = join(tmpFolder, filename);
+			console.log(`Linking test ${filename}...`);
+
+			if (existsSync(to)) await unlink(to);
+			const res = await symlink(from, to, "file");
+			console.log(`Linked ${filename}`);
+			return res;
+		}),
+	);
+
+	const phpCommand = `sh tests/php_server_start.sh ${tmpFolder} ${PORT}`;
+	console.log('Starting php server with command "' + phpCommand + '"...');
+	const args = phpCommand.split(" ");
+	const command = args.shift();
+
+	spawn(command, args, { stdio: "ignore", detached: true }).unref();
+
+	console.log(`Waiting ${PHP_SERVER_START_DELAY}ms for the server to start...`);
+	return pause(PHP_SERVER_START_DELAY);
 }
 
-setup_php();
+setup_php().catch((err) => {
+	console.error("Terrible error happened");
+	console.trace(err);
+	process.exit(1);
+});
 
 /**
- * Promisify setTimeout
+ * Promise-based implementation of setTimeout
  * @param {Number} ms Timeout in ms
- * @param {Function} cb callback function after timeout
- * @param  {...any} args Optional return arguments
  * @returns {Promise<any>}
  */
-const pause = (ms, cb, ...args) =>
-	new Promise((resolve, reject) => {
-		setTimeout(async () => {
-			try {
-				const result = !!cb ? await cb(...args) : undefined;
-				resolve(result);
-			} catch (error) {
-				reject(error);
-			}
-		}, ms);
-	});
+const pause = (ms) => new Promise((resolve) => setTimeout(resolve, ms));

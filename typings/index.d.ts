@@ -1,3 +1,5 @@
+import * as NodeFormData from "form-data";
+
 export type NumberCriteria =
 	| "==" /** Value is equal to the provided value */
 	| "!=" /** Value is not equal to the provided value */
@@ -22,6 +24,7 @@ export type StringCriteria =
 
 export type ArrayCriteria =
 	| "array-contains" /** Value is in the given array */
+	| "array-contains-none" /** No value of the array is in the given array */
 	| "array-contains-any" /** Any value of the array is in the given array */
 	| "array-length-eq" /** Array length is equal to the provided value */
 	| "array-length-df" /** Array length is different from the provided value */
@@ -91,7 +94,7 @@ type Field<P, T> = {
 	[K in keyof T]: T[K] extends P ? K : never;
 }[keyof T];
 
-export type EditField<T> = {
+export type EditFieldOption<T> = {
 	[K in keyof T]: BaseEditField<T> &
 		(
 			| {
@@ -124,8 +127,8 @@ export type EditField<T> = {
 			  }
 			| {
 					field: Field<Array<unknown>, T>;
-					operation: "array-slice";
-					value: [number, number];
+					operation: "array-splice";
+					value: [number, number] | [number, number, T[Field<Array<unknown>, T>][any]];
 			  }
 		);
 }[keyof T];
@@ -171,12 +174,19 @@ export type RemoveMethods<T> = Pick<
 
 /** ID field not known at add time */
 export type Addable<T> = Omit<RemoveMethods<T>, "id">;
-/** ID field can be provided in request */
+/** ID field known at add time */
 export type Settable<T> = Addable<T> & {
 	id?: number | string;
 };
 
-export class Collection<T> {
+/**
+ * Represents a Firestorm Collection
+ * @template T Type of collection element
+ */
+declare class Collection<T> {
+	/** Name of the Firestorm collection */
+	public readonly collectionName: string;
+
 	/**
 	 * Create a new Firestorm collection instance
 	 * @param name - The name of the collection
@@ -185,45 +195,47 @@ export class Collection<T> {
 	public constructor(name: string, addMethods?: CollectionMethods<T>);
 
 	/**
-	 * Get an element from the collection
-	 * @param id - The ID of the element you want to get
-	 * @returns Corresponding value
-	 */
-	public get(id: string | number): Promise<T>;
-
-	/**
-	 * Get the sha1 hash of the file
-	 * - Can be used to see if same file content without downloading the file
+	 * Get the sha1 hash of the collection
+	 * - Can be used to compare file content without downloading the file
 	 * @returns The sha1 hash of the file
 	 */
 	public sha1(): string;
 
 	/**
-	 * Search through the collection
-	 * @param options - Array of searched options
-	 * @param random - Random result seed, disabled by default, but can activated with true or a given seed
-	 * @returns The found elements
+	 * Get an element from the collection by its key
+	 * @param key - Key to search
+	 * @returns The found element
 	 */
-	public search(
-		options: SearchOption<RemoveMethods<T> & { id: string | number }>[],
-		random?: boolean | number,
-	): Promise<T[]>;
+	public get(key: string | number): Promise<T>;
 
 	/**
-	 * Search specific keys through the collection
+	 * Get multiple elements from the collection by their keys
 	 * @param keys - Array of keys to search
 	 * @returns The found elements
 	 */
 	public searchKeys(keys: string[] | number[]): Promise<T[]>;
 
 	/**
-	 * Returns the whole content of the JSON
-	 * @returns The entire collection
+	 * Search through the collection
+	 * @param options - Array of search options
+	 * @param random - Random result seed, disabled by default, but can activated with true or a given seed
+	 * @returns The found elements
 	 */
-	public readRaw(): Promise<Record<string, T>>;
+	public search(
+		options: SearchOption<RemoveMethods<T> & { id: string }>[],
+		random?: boolean | number,
+	): Promise<T[]>;
 
 	/**
-	 * Returns the whole content of the JSON
+	 * Read the entire collection
+	 * @param original - Disable ID field injection for easier iteration (default false)
+	 * @returns The entire collection
+	 */
+	public readRaw(original?: boolean): Promise<Record<string, T>>;
+
+	/**
+	 * Read the entire collection
+	 * - ID values are injected for easier iteration, so this may be different from {@link sha1}
 	 * @deprecated Use {@link readRaw} instead
 	 * @returns The entire collection
 	 */
@@ -231,13 +243,13 @@ export class Collection<T> {
 
 	/**
 	 * Get only selected fields from the collection
-	 * - Essentially an upgraded version of readRaw
-	 * @param option - The option you want to select
+	 * - Essentially an upgraded version of {@link readRaw}
+	 * @param option - The fields you want to select
 	 * @returns Selected fields
 	 */
 	public select<K extends Array<"id" | keyof T>>(
 		option: SelectOption<K>,
-	): Promise<Record<string, Pick<T & { id: string | number }, K[number]>>>;
+	): Promise<Record<string, Pick<T & { id: string }, K[number]>>>;
 
 	/**
 	 * Get all distinct non-null values for a given key across a collection
@@ -249,7 +261,7 @@ export class Collection<T> {
 	): Promise<T[K] extends Array<any> ? (F extends true ? T[K] : T[K][]) : T[K][]>;
 
 	/**
-	 * Get random max entries offset with a given seed
+	 * Read random elements of the collection
 	 * @param max - The maximum number of entries
 	 * @param seed - The seed to use
 	 * @param offset - The offset to use
@@ -258,14 +270,16 @@ export class Collection<T> {
 	public random(max: number, seed: number, offset: number): Promise<T[]>;
 
 	/**
-	 * Set the entire JSON file contents
+	 * Set the entire content of the collection.
+	 * - Only use this method if you know what you are doing!
 	 * @param value - The value to write
 	 * @returns Write confirmation
 	 */
 	public writeRaw(value: Record<string, RemoveMethods<T>>): Promise<WriteConfirmation>;
 
 	/**
-	 * Set the entire JSON file contents
+	 * Set the entire content of the collection.
+	 * - Only use this method if you know what you are doing!
 	 * @deprecated Use {@link writeRaw} instead
 	 * @param value - The value to write
 	 * @returns Write confirmation
@@ -273,76 +287,78 @@ export class Collection<T> {
 	public write_raw(value: Record<string, RemoveMethods<T>>): Promise<WriteConfirmation>;
 
 	/**
-	 * Automatically add a value to the JSON file
+	 * Append a value to the collection
+	 * - Only works if autoKey is enabled server-side
 	 * @param value - The value (without methods) to add
-	 * @returns The generated ID of the added element
+	 * @returns The generated key of the added element
 	 */
 	public add(value: Addable<T>): Promise<string>;
 
 	/**
-	 * Automatically add multiple values to the JSON file
+	 * Append multiple values to the collection
+	 * - Only works if autoKey is enabled server-side
 	 * @param values - The values (without methods) to add
-	 * @returns The generated IDs of the added elements
+	 * @returns The generated keys of the added elements
 	 */
 	public addBulk(values: Addable<T>[]): Promise<string[]>;
 
 	/**
-	 * Remove an element from the collection by its ID
-	 * @param id - The ID of the element you want to remove
+	 * Remove an element from the collection by its key
+	 * @param key - The key of the element you want to remove
 	 * @returns Write confirmation
 	 */
-	public remove(id: string | number): Promise<WriteConfirmation>;
+	public remove(key: string | number): Promise<WriteConfirmation>;
 
 	/**
-	 * Remove multiple elements from the collection by their IDs
-	 * @param ids - The IDs of the elements you want to remove
+	 * Remove multiple elements from the collection by their keys
+	 * @param keys - The keys of the elements you want to remove
 	 * @returns Write confirmation
 	 */
-	public removeBulk(ids: string[] | number[]): Promise<WriteConfirmation>;
+	public removeBulk(keys: string[] | number[]): Promise<WriteConfirmation>;
 
 	/**
-	 * Set a value in the collection by ID
-	 * @param id - The ID of the element you want to edit
-	 * @param value - The value (without methods) you want to edit
+	 * Set a value in the collection by its key
+	 * @param key - The key of the element you want to set
+	 * @param value - The value (without methods) you want to set
 	 * @returns Write confirmation
 	 */
-	public set(id: string | number, value: Settable<T>): Promise<WriteConfirmation>;
+	public set(key: string | number, value: Settable<T>): Promise<WriteConfirmation>;
 
 	/**
-	 * Set multiple values in the collection by their IDs
-	 * @param ids - The IDs of the elements you want to edit
-	 * @param values - The values (without methods) you want to edit
+	 * Set multiple values in the collection by their keys
+	 * @param keys - The keys of the elements you want to set
+	 * @param values - The values (without methods) you want to set
 	 * @returns Write confirmation
 	 */
-	public setBulk(ids: string[] | number[], values: Settable<T>[]): Promise<WriteConfirmation>;
+	public setBulk(keys: string[] | number[], values: Settable<T>[]): Promise<WriteConfirmation>;
 
 	/**
-	 * Edit one field of the collection
-	 * @param edit - The edit object
+	 * Edit an element's field in the collection
+	 * @param option - The edit object
 	 * @returns Edit confirmation
 	 */
-	public editField(edit: EditField<RemoveMethods<T>>): Promise<{ success: boolean }>;
+	public editField(option: EditFieldOption<RemoveMethods<T>>): Promise<WriteConfirmation>;
 
 	/**
-	 * Change one field from multiple elements of the collection
-	 * @param edits - The edit objects
+	 * Edit multiple elements' fields in the collection
+	 * @param options - The edit objects
 	 * @returns Edit confirmation
 	 */
-	public editFieldBulk(edits: EditField<RemoveMethods<T>>[]): Promise<{ success: boolean[] }>;
+	public editFieldBulk(options: EditFieldOption<RemoveMethods<T>>[]): Promise<WriteConfirmation>;
 }
 
-/** Value for the id field when searching content */
+/** Value for the ID field when searching content */
 export const ID_FIELD: string;
 
 /**
- * Change the current Firestorm address
+ * Change or get the current Firestorm address
  * @param value - The new Firestorm address
  * @returns The stored Firestorm address
  */
 export function address(value?: string): string;
 
 /**
- * Change the current Firestorm token
+ * Change or get the current Firestorm token
  * @param value - The new Firestorm write token
  * @returns The stored Firestorm write token
  */
@@ -352,16 +368,17 @@ export function token(value?: string): string;
  * Create a new Firestorm collection instance
  * @param value - The name of the collection
  * @param addMethods - Additional methods and data to add to the objects
- * @returns The collection
+ * @returns The collection instance
  */
 export function collection<T>(value: string, addMethods?: CollectionMethods<T>): Collection<T>;
 
 /**
  * Create a temporary Firestorm collection with no methods
+ * @deprecated Use {@link collection} with no second argument instead
  * @param table - The table name to get
- * @returns The collection
+ * @returns The table instance
  */
-export function table<T>(table: string): Promise<Collection<T>>;
+export function table<T>(table: string): Collection<T>;
 
 /**
  * Firestorm file handler
@@ -369,20 +386,20 @@ export function table<T>(table: string): Promise<Collection<T>>;
 export declare const files: {
 	/**
 	 * Get a file by its path
-	 * @param path - The file path wanted
+	 * @param path - The wanted file path
 	 * @returns File contents
 	 */
 	get(path: string): Promise<any>;
 
 	/**
 	 * Upload a file
-	 * @param form - The form data with path, filename, and file
+	 * @param form - Form data with path, filename, and file
 	 * @returns Write confirmation
 	 */
-	upload(form: FormData): Promise<WriteConfirmation>;
+	upload(form: FormData | NodeFormData): Promise<WriteConfirmation>;
 
 	/**
-	 * Deletes a file by path
+	 * Delete a file by its path
 	 * @param path - The file path to delete
 	 * @returns Write confirmation
 	 */

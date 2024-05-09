@@ -26,7 +26,7 @@
         "keyword": "firebase,firestore,db,api,php,micro-operations,bulk"
     },
     "menu": {
-      "Github repo": {
+      "Repository": {
         "href": "https://github.com/TheRolfFR/firestorm",
         "target": "_blank",
         "class": "menu-item",

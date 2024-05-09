@@ -1,17 +1,20 @@
+const IS_NODE = typeof process === "object";
+
 try {
-	if (typeof process === "object") var axios = require("axios").default;
-} catch (_error) {}
+	// ambient axios context in browser
+	if (IS_NODE) var axios = require("axios").default;
+} catch {}
 
 /**
  * @typedef {Object} SearchOption
  * @property {string} field - The field to be searched for
- * @property {"!=" | "==" | ">=" | "<=" | "<" | ">" | "in" | "includes" | "startsWith" | "endsWith" | "array-contains" | "array-contains-any" | "array-length-(eq|df|gt|lt|ge|le)"} criteria - Search criteria to filter results
+ * @property {"!=" | "==" | ">=" | "<=" | "<" | ">" | "in" | "includes" | "startsWith" | "endsWith" | "array-contains" | "array-contains-none" | "array-contains-any" | "array-length-(eq|df|gt|lt|ge|le)"} criteria - Search criteria to filter results
  * @property {string | number | boolean | Array} value - The value to be searched for
  * @property {boolean} [ignoreCase] - Is it case sensitive? (default true)
  */
 
 /**
- * @typedef {Object} EditObject
+ * @typedef {Object} EditFieldOption
  * @property {string | number} id - The affected element
  * @property {string} field - The field to edit
  * @property {"set" | "remove" | "append" | "increment" | "decrement" | "array-push" | "array-delete" | "array-splice"} operation - Operation for the field
@@ -19,7 +22,7 @@ try {
  */
 
 /**
- * @typedef {Object} ValueObject
+ * @typedef {Object} ValueOption
  * @property {string} field - Field to search
  * @property {boolean} [flatten] - Flatten array fields? (default false)
  */
@@ -30,7 +33,7 @@ try {
  */
 
 /**
- * @typedef {WriteConfirmation}
+ * @typedef {Object} WriteConfirmation
  * @property {string} message - Write status
  */
 
@@ -71,7 +74,7 @@ const writeToken = () => {
 /**
  * Auto-extracts data from Axios request
  * @ignore
- * @param {Promise<AxiosPromise>} request The Axios concerned request
+ * @param {AxiosPromise} request - Axios request promise
  */
 const __extract_data = (request) => {
 	if (!(request instanceof Promise)) request = Promise.resolve(request);
@@ -82,7 +85,7 @@ const __extract_data = (request) => {
 };
 
 /**
- * Class representing a collection
+ * Represents a Firestorm Collection
  * @template T
  */
 class Collection {
@@ -92,9 +95,9 @@ class Collection {
 	 * @param {Function} [addMethods] - Additional methods and data to add to the objects
 	 */
 	constructor(name, addMethods = (el) => el) {
-		if (name === undefined) throw new SyntaxError("Collection must have a name");
+		if (!name) throw new SyntaxError("Collection must have a name");
 		if (typeof addMethods !== "function")
-			throw new TypeError("Collection must have an addMethods of type Function");
+			throw new TypeError("Collection add methods must be a function");
 		this.addMethods = addMethods;
 		this.collectionName = name;
 	}
@@ -103,142 +106,139 @@ class Collection {
 	 * Add user methods to returned data
 	 * @private
 	 * @ignore
-	 * @param {AxiosPromise} req - Incoming request
-	 * @returns {Object | Object[]}
+	 * @param {any} el - Value to add methods to
+	 * @param {boolean} [nested] - Nest the methods inside an object
+	 * @returns {any}
 	 */
-	__add_methods(req) {
-		if (!(req instanceof Promise)) req = Promise.resolve(req);
-		return req.then((el) => {
-			if (Array.isArray(el)) return el.map((el) => this.addMethods(el));
-			el[Object.keys(el)[0]][ID_FIELD_NAME] = Object.keys(el)[0];
-			el = el[Object.keys(el)[0]];
+	__add_methods(el, nested = true) {
+		// can't add properties on falsy values
+		if (!el) return el;
+		if (Array.isArray(el)) return el.map((el) => this.addMethods(el));
+		// nested objects
+		if (nested && typeof el === "object") {
+			Object.keys(el).forEach((k) => {
+				el[k] = this.addMethods(el[k]);
+			});
+			return el;
+		}
 
-			// else on the object itself
-			return this.addMethods(el);
-		});
+		// add directly to single object
+		return this.addMethods(el);
 	}
 
 	/**
 	 * Auto-extracts data from Axios request
 	 * @private
 	 * @ignore
-	 * @param {AxiosPromise} request - The Axios concerned request
+	 * @param {AxiosPromise} request - Axios request promise
 	 */
 	__extract_data(request) {
 		return __extract_data(request);
 	}
 
 	/**
-	 * Send get request and extract data from response
+	 * Send GET request with provided data and return extracted response
 	 * @private
 	 * @ignore
-	 * @param {Object} data - Body data
-	 * @returns {Promise<Object|Object[]>} data out
+	 * @param {string} command - The read command name
+	 * @param {Object} [data] - Body data
+	 * @param {boolean} [objectLike] - Reject if an object or array isn't being returned
+	 * @returns {Promise<any>} Extracted response
 	 */
-	__get_request(data) {
-		const request =
-			typeof process === "object"
-				? axios.get(readAddress(), {
-						data: data,
-					})
-				: axios.post(readAddress(), data);
-		return this.__extract_data(request);
-	}
-
-	/**
-	 * Get an element from the collection
-	 * @param {string | number} id - The ID of the element you want to get
-	 * @returns {Promise<T>} Corresponding value
-	 */
-	get(id) {
-		return this.__get_request({
+	__get_request(command, data = {}, objectLike = true) {
+		const obj = {
 			collection: this.collectionName,
-			command: "get",
-			id: id,
-		}).then((res) => this.__add_methods(res));
+			command: command,
+			...data,
+		};
+		const request = IS_NODE
+			? axios.get(readAddress(), { data: obj })
+			: axios.post(readAddress(), obj);
+		return this.__extract_data(request).then((res) => {
+			// reject php error strings if enforcing return type
+			if (objectLike && typeof res !== "object") return Promise.reject(res);
+			return res;
+		});
 	}
 
 	/**
-	 * Get the sha1 hash of the file
-	 * - Can be used to see if same file content without downloading the file
+	 * Generate POST data with provided data
+	 * @private
+	 * @ignore
+	 * @param {string} command - The write command name
+	 * @param {Object} [value] - The value for the command
+	 * @param {boolean} [multiple] - Used to delete multiple
+	 * @returns {Object} Write data object
+	 */
+	__write_data(command, value = undefined, multiple = false) {
+		const obj = {
+			token: writeToken(),
+			collection: this.collectionName,
+			command: command,
+		};
+
+		// clone/serialize data if possible (prevents mutating data)
+		if (value) value = JSON.parse(JSON.stringify(value));
+
+		if (multiple && Array.isArray(value)) {
+			value.forEach((v) => {
+				if (typeof v === "object" && !Array.isArray(v) && v != null) delete v[ID_FIELD_NAME];
+			});
+		} else if (
+			multiple === false &&
+			value !== null &&
+			value !== undefined &&
+			typeof value !== "number" &&
+			typeof value !== "string" &&
+			!Array.isArray(value)
+		) {
+			if (typeof value === "object") value = { ...value };
+			delete value[ID_FIELD_NAME];
+		}
+
+		if (value) {
+			if (multiple) obj.values = value;
+			else obj.value = value;
+		}
+
+		return obj;
+	}
+
+	/**
+	 * Get the sha1 hash of the JSON
+	 * - Can be used to compare file content without downloading the file
 	 * @returns {string} The sha1 hash of the file
 	 */
 	sha1() {
-		return this.__get_request({
-			collection: this.collectionName,
-			command: "sha1",
-		});
+		// string value is correct so we don't need validation
+		return this.__get_request("sha1", {}, false);
 	}
 
 	/**
-	 * Search through collection
-	 * @param {SearchOption[]} searchOptions - Array of search options
-	 * @param {boolean | number} [random] - Random result seed, disabled by default, but can activated with true or a given seed
-	 * @returns {Promise<T[]>} The found elements
+	 * Get an element from the collection by its key
+	 * @param {string | number} key - Key to search
+	 * @returns {Promise<T>} The found element
 	 */
-	search(searchOptions, random = false) {
-		if (!Array.isArray(searchOptions))
-			return Promise.reject(new Error("searchOptions shall be an array"));
-
-		searchOptions.forEach((searchOption) => {
-			if (
-				searchOption.field === undefined ||
-				searchOption.criteria === undefined ||
-				searchOption.value === undefined
-			)
-				return Promise.reject(new Error("Missing fields in searchOptions array"));
-
-			if (typeof searchOption.field !== "string")
-				return Promise.reject(
-					new Error(`${JSON.stringify(searchOption)} search option field is not a string`),
-				);
-
-			if (searchOption.criteria == "in" && !Array.isArray(searchOption.value))
-				return Promise.reject(new Error("in takes an array of values"));
-
-			//TODO: add more strict value field warnings in JS and PHP
-		});
-
-		const params = {
-			collection: this.collectionName,
-			command: "search",
-			search: searchOptions,
-		};
-
-		if (random !== false) {
-			if (random === true) {
-				params.random = {};
-			} else {
-				const seed = parseInt(random);
-				if (isNaN(seed))
-					return Promise.reject(
-						new Error("random takes as parameter true, false or an integer value"),
-					);
-				params.random = { seed };
-			}
-		}
-
-		return this.__get_request(params).then((res) => {
-			const arr = Object.entries(res).map(([id, value]) => {
-				value[ID_FIELD_NAME] = id;
-				return value;
-			});
-
-			return this.__add_methods(arr);
+	get(key) {
+		return this.__get_request("get", {
+			id: key,
+		}).then((res) => {
+			const firstKey = Object.keys(res)[0];
+			res[firstKey][ID_FIELD_NAME] = firstKey;
+			res = res[firstKey];
+			return this.__add_methods(res, false);
 		});
 	}
 
 	/**
-	 * Search specific keys through collection
+	 * Get multiple elements from the collection by their keys
 	 * @param {string[] | number[]} keys - Array of keys to search
 	 * @returns {Promise<T[]>} The found elements
 	 */
 	searchKeys(keys) {
-		if (!Array.isArray(keys)) return Promise.reject("Incorrect keys");
+		if (!Array.isArray(keys)) return Promise.reject(new TypeError("Incorrect keys"));
 
-		return this.__get_request({
-			collection: this.collectionName,
-			command: "searchKeys",
+		return this.__get_request("searchKeys", {
 			search: keys,
 		}).then((res) => {
 			const arr = Object.entries(res).map(([id, value]) => {
@@ -251,26 +251,78 @@ class Collection {
 	}
 
 	/**
-	 * Returns the whole content of the JSON
-	 * @returns {Promise<Record<string, T>>} The entire collection
+	 * Search through the collection
+	 * @param {SearchOption[]} options - Array of search options
+	 * @param {boolean | number} [random] - Random result seed, disabled by default, but can activated with true or a given seed
+	 * @returns {Promise<T[]>} The found elements
 	 */
-	readRaw() {
-		return this.__get_request({
-			collection: this.collectionName,
-			command: "read_raw",
-		}).then((data) => {
-			// preserve as object
-			Object.keys(data).forEach((key) => {
-				data[key][ID_FIELD_NAME] = key;
-				this.addMethods(data[key]);
+	search(options, random = false) {
+		if (!Array.isArray(options))
+			return Promise.reject(new TypeError("searchOptions shall be an array"));
+
+		options.forEach((option) => {
+			if (option.field === undefined || option.criteria === undefined || option.value === undefined)
+				return Promise.reject(new TypeError("Missing fields in searchOptions array"));
+
+			if (typeof option.field !== "string")
+				return Promise.reject(
+					new TypeError(`${JSON.stringify(option)} search option field is not a string`),
+				);
+
+			if (option.criteria == "in" && !Array.isArray(option.value))
+				return Promise.reject(new TypeError("in takes an array of values"));
+
+			// TODO: add more strict value field warnings in JS and PHP
+		});
+
+		const params = {
+			search: options,
+		};
+
+		if (random !== false) {
+			if (random === true) {
+				params.random = {};
+			} else {
+				const seed = parseInt(random);
+				if (isNaN(seed))
+					return Promise.reject(
+						new TypeError("random takes as parameter true, false or an integer value"),
+					);
+				params.random = { seed };
+			}
+		}
+
+		return this.__get_request("search", params).then((res) => {
+			const arr = Object.entries(res).map(([id, value]) => {
+				value[ID_FIELD_NAME] = id;
+				return value;
 			});
 
-			return data;
+			return this.__add_methods(arr);
 		});
 	}
 
 	/**
-	 * Returns the whole content of the JSON
+	 * Read the entire collection
+	 * @param {boolean} [original] - Disable ID field injection for easier iteration (default false)
+	 * @returns {Promise<Record<string, T>>} The entire collection
+	 */
+	readRaw(original = false) {
+		return this.__get_request("read_raw").then((data) => {
+			if (original) return this.__add_methods(data);
+
+			// preserve as object
+			Object.keys(data).forEach((key) => {
+				data[key][ID_FIELD_NAME] = key;
+			});
+
+			return this.__add_methods(data);
+		});
+	}
+
+	/**
+	 * Read the entire collection
+	 * - ID values are injected for easier iteration, so this may be different from {@link sha1}
 	 * @deprecated Use {@link readRaw} instead
 	 * @returns {Promise<Record<string, T>>} The entire collection
 	 */
@@ -280,41 +332,36 @@ class Collection {
 
 	/**
 	 * Get only selected fields from the collection
-	 * - Essentially an upgraded version of readRaw
-	 * @param {SelectOption} selectOption - Select options
+	 * - Essentially an upgraded version of {@link readRaw}
+	 * @param {SelectOption} option - The fields you want to select
 	 * @returns {Promise<Record<string, Partial<T>>>} Selected fields
 	 */
-	select(selectOption) {
-		if (!selectOption) selectOption = {};
-		return this.__get_request({
-			collection: this.collectionName,
-			command: "select",
-			select: selectOption,
+	select(option) {
+		if (!option) option = {};
+		return this.__get_request("select", {
+			select: option,
 		}).then((data) => {
 			Object.keys(data).forEach((key) => {
 				data[key][ID_FIELD_NAME] = key;
-				this.addMethods(data[key]);
 			});
-
-			return data;
+			return this.__add_methods(data);
 		});
 	}
 
 	/**
 	 * Get all distinct non-null values for a given key across a collection
-	 * @param {ValueObject} valueOption - Value options
+	 * @param {ValueOption} option - Value options
 	 * @returns {Promise<T[]>} Array of unique values
 	 */
-	values(valueOption) {
-		if (!valueOption) return Promise.reject("Value option must be provided");
-		if (typeof valueOption.field !== "string") return Promise.reject("Field must be a string");
-		if (valueOption.flatten !== undefined && typeof valueOption.flatten !== "boolean")
-			return Promise.reject("Flatten must be a boolean");
+	values(option) {
+		if (!option) return Promise.reject(new TypeError("Value option must be provided"));
+		if (typeof option.field !== "string")
+			return Promise.reject(new TypeError("Field must be a string"));
+		if (option.flatten !== undefined && typeof option.flatten !== "boolean")
+			return Promise.reject(new TypeError("Flatten must be a boolean"));
 
-		return this.__get_request({
-			collection: this.collectionName,
-			command: "values",
-			values: valueOption,
+		return this.__get_request("values", {
+			values: option,
 		}).then((data) =>
 			// no ID_FIELD or method injection since no ids are returned
 			Object.values(data).filter((d) => d !== null),
@@ -322,7 +369,7 @@ class Collection {
 	}
 
 	/**
-	 * Returns random max entries offsets with a given seed
+	 * Read random elements of the collection
 	 * @param {number} max - The maximum number of entries
 	 * @param {number} seed - The seed to use
 	 * @param {number} offset - The offset to use
@@ -332,95 +379,53 @@ class Collection {
 		const params = {};
 		if (max !== undefined) {
 			if (typeof max !== "number" || !Number.isInteger(max) || max < -1)
-				return Promise.reject(new Error("Expected integer >= -1 for the max"));
+				return Promise.reject(new TypeError("Expected integer >= -1 for the max"));
 			params.max = max;
 		}
 
 		const hasSeed = seed !== undefined;
 		const hasOffset = offset !== undefined;
 		if (hasOffset && !hasSeed)
-			return Promise.reject(new Error("You can't put an offset without a seed"));
+			return Promise.reject(new TypeError("You can't put an offset without a seed"));
 
 		if (hasOffset && (typeof offset !== "number" || !Number.isInteger(offset) || offset < 0))
-			return Promise.reject(new Error("Expected integer >= -1 for the max"));
+			return Promise.reject(new TypeError("Expected integer >= -1 for the max"));
 
 		if (hasSeed) {
 			if (typeof seed !== "number" || !Number.isInteger(seed))
-				return Promise.reject(new Error("Expected integer for the seed"));
+				return Promise.reject(new TypeError("Expected integer for the seed"));
 
 			if (!hasOffset) offset = 0;
 			params.seed = seed;
 			params.offset = offset;
 		}
 
-		return this.__get_request({
-			collection: this.collectionName,
-			command: "random",
+		return this.__get_request("random", {
 			random: params,
 		}).then((data) => {
 			Object.keys(data).forEach((key) => {
 				data[key][ID_FIELD_NAME] = key;
-				this.addMethods(data[key]);
 			});
 
-			return data;
+			return this.__add_methods(data);
 		});
 	}
 
 	/**
-	 * Creates write requests with given value
-	 * @private
-	 * @ignore
-	 * @param {string} command The write command you want
-	 * @param {Object} [value] The value for this command
-	 * @param {boolean | undefined} multiple if I need to delete multiple
-	 * @returns {Object} Write data object
-	 */
-	__write_data(command, value = undefined, multiple = false) {
-		const obj = {
-			token: writeToken(),
-			collection: this.collectionName,
-			command: command,
-		};
-		if (multiple === true && Array.isArray(value)) {
-			// solves errors with undefined and null values
-			value.forEach((v) => {
-				if (typeof value != "number" && typeof value != "string" && !Array.isArray(value))
-					delete v[ID_FIELD_NAME];
-			});
-		} else if (
-			multiple === false &&
-			value != null &&
-			value != undefined &&
-			typeof value != "number" &&
-			typeof value != "string" &&
-			!Array.isArray(value)
-		) {
-			// solves errors with undefined and null values
-			delete value[ID_FIELD_NAME];
-		}
-		if (value) {
-			if (multiple) obj["values"] = value;
-			else obj["value"] = value;
-		}
-
-		return obj;
-	}
-
-	/**
-	 * Set the entire JSON file contents
+	 * Set the entire content of the collection.
+	 * - Only use this method if you know what you are doing!
 	 * @param {Record<string, T>} value - The value to write
 	 * @returns {Promise<WriteConfirmation>} Write confirmation
 	 */
 	writeRaw(value) {
-		if (value === undefined || value === null) {
-			return Promise.reject(new Error("writeRaw value must not be undefined or null"));
-		}
+		if (value === undefined || value === null)
+			return Promise.reject(new TypeError("writeRaw value must not be undefined or null"));
 		return this.__extract_data(axios.post(writeAddress(), this.__write_data("write_raw", value)));
 	}
 
 	/**
-	 * Set the entire JSON file contents
+	 * Set the entire content of the collection.
+	 * - Only use this method if you know what you are doing!
 	 * @deprecated Use {@link writeRaw} instead
 	 * @param {Record<string, T>} value - The value to write
 	 * @returns {Promise<WriteConfirmation>} Write confirmation
@@ -430,9 +435,10 @@ class Collection {
 	}
 
 	/**
-	 * Automatically add a value to the JSON file
+	 * Append a value to the collection
+	 * - Only works if autoKey is enabled server-side
 	 * @param {T} value - The value (without methods) to add
-	 * @returns {Promise<string>} The generated ID of the added element
+	 * @returns {Promise<string>} The generated key of the added element
 	 */
 	add(value) {
 		return axios
@@ -440,15 +446,16 @@ class Collection {
 			.then((res) => this.__extract_data(res))
 			.then((res) => {
 				if (typeof res != "object" || !("id" in res) || typeof res.id != "string")
-					return Promise.reject(new Error("Incorrect result"));
+					return Promise.reject(res);
 				return res.id;
 			});
 	}
 
 	/**
-	 * Automatically add multiple values to the JSON file
-	 * @param {Object[]} values - The values (without methods) to add
-	 * @returns {Promise<string[]>} The generated IDs of the added elements
+	 * Append multiple values to the collection
+	 * - Only works if autoKey is enabled server-side
+	 * @param {T[]} values - The values (without methods) to add
+	 * @returns {Promise<string[]>} The generated keys of the added elements
 	 */
 	addBulk(values) {
 		return this.__extract_data(
@@ -457,7 +464,7 @@ class Collection {
 	}
 
 	/**
-	 * Remove an element from the collection by its ID
+	 * Remove an element from the collection by its key
 	 * @param {string | number} key The key from the entry to remove
 	 * @returns {Promise<WriteConfirmation>} Write confirmation
 	 */
@@ -466,7 +473,7 @@ class Collection {
 	}
 
 	/**
-	 * Remove multiple elements from the collection by their IDs
+	 * Remove multiple elements from the collection by their keys
 	 * @param {string[] | number[]} keys The key from the entries to remove
 	 * @returns {Promise<WriteConfirmation>} Write confirmation
 	 */
@@ -475,8 +482,8 @@ class Collection {
 	}
 
 	/**
-	 * Set a value in the collection by ID
-	 * @param {string} key - The ID of the element you want to edit
+	 * Set a value in the collection by key
+	 * @param {string} key - The key of the element you want to edit
 	 * @param {T} value - The value (without methods) you want to edit
 	 * @returns {Promise<WriteConfirmation>} Write confirmation
 	 */
@@ -487,8 +494,8 @@ class Collection {
 	}
 
 	/**
-	 * Set multiple values in the collection by their IDs
-	 * @param {string[]} keys - The IDs of the elements you want to edit
+	 * Set multiple values in the collection by their keys
+	 * @param {string[]} keys - The keys of the elements you want to edit
 	 * @param {T[]} values - The values (without methods) you want to edit
 	 * @returns {Promise<WriteConfirmation>} Write confirmation
 	 */
@@ -499,22 +506,22 @@ class Collection {
 	}
 
 	/**
-	 * Edit one field of the collection
-	 * @param {EditObject} obj - The edit object
-	 * @returns {Promise<{ success: boolean }>} Edit confirmation
+	 * Edit an element's field in the collection
+	 * @param {EditFieldOption} option - The edit object
+	 * @returns {Promise<WriteConfirmation>} Edit confirmation
 	 */
-	editField(obj) {
-		const data = this.__write_data("editField", obj, null);
+	editField(option) {
+		const data = this.__write_data("editField", option, null);
 		return this.__extract_data(axios.post(writeAddress(), data));
 	}
 
 	/**
-	 * Changes one field from an element in this collection
-	 * @param {EditObject[]} objArray The edit object array with operations
-	 * @returns {Promise<{ success: boolean[] }>} Edit confirmation
+	 * Edit multiple elements' fields in the collection
+	 * @param {EditFieldOption[]} options - The edit objects
+	 * @returns {Promise<WriteConfirmation>} Edit confirmation
 	 */
-	editFieldBulk(objArray) {
-		const data = this.__write_data("editFieldBulk", objArray, undefined);
+	editFieldBulk(options) {
+		const data = this.__write_data("editFieldBulk", options, undefined);
 		return this.__extract_data(axios.post(writeAddress(), data));
 	}
 }
@@ -524,7 +531,7 @@ class Collection {
  */
 const firestorm = {
 	/**
-	 * Change the current Firestorm address
+	 * Change or get the current Firestorm address
 	 * @param {string} [newValue] - The new Firestorm address
 	 * @returns {string} The stored Firestorm address
 	 */
@@ -537,7 +544,7 @@ const firestorm = {
 	},
 
 	/**
-	 * Change the current Firestorm token
+	 * Change or get the current Firestorm token
 	 * @param {string} [newValue] - The new Firestorm write token
 	 * @returns {string} The stored Firestorm write token
 	 */
@@ -553,7 +560,7 @@ const firestorm = {
 	 * @template T
 	 * @param {string} name - The name of the collection
 	 * @param {Function} [addMethods] - Additional methods and data to add to the objects
-	 * @returns {Collection<T>} The collection
+	 * @returns {Collection<T>} The collection instance
 	 */
 	collection(name, addMethods = (el) => el) {
 		return new Collection(name, addMethods);
@@ -561,15 +568,16 @@ const firestorm = {
 
 	/**
 	 * Create a temporary Firestorm collection with no methods
+	 * @deprecated Use {@link collection} with no second argument instead
 	 * @template T
 	 * @param {string} name - The table name to get
-	 * @returns {Collection<T>} The collection
+	 * @returns {Collection<T>} The table instance
 	 */
 	table(name) {
 		return this.collection(name);
 	},
 
-	/** Value for the id field when researching content */
+	/** Value for the ID field when searching content */
 	ID_FIELD: ID_FIELD_NAME,
 
 	/**
@@ -582,7 +590,7 @@ const firestorm = {
 		/**
 		 * Get a file by its path
 		 * @memberof firestorm.files
-		 * @param {string} path - The file path wanted
+		 * @param {string} path - The wanted file path
 		 * @returns {Promise<any>} File contents
 		 */
 		get(path) {
@@ -598,7 +606,7 @@ const firestorm = {
 		/**
 		 * Upload a file
 		 * @memberof firestorm.files
-		 * @param {FormData} form - The form data with path, filename, and file
+		 * @param {FormData} form - Form data with path, filename, and file
 		 * @returns {Promise<WriteConfirmation>} Write confirmation
 		 */
 		upload(form) {
@@ -613,7 +621,7 @@ const firestorm = {
 		},
 
 		/**
-		 * Deletes a file by path
+		 * Delete a file by its path
 		 * @memberof firestorm.files
 		 * @param {string} path - The file path to delete
 		 * @returns {Promise<WriteConfirmation>} Write confirmation
@@ -631,8 +639,7 @@ const firestorm = {
 	},
 };
 
+// browser check
 try {
-	if (typeof process === "object") module.exports = firestorm;
-} catch (_error) {
-	// normal browser
-}
+	if (IS_NODE) module.exports = firestorm;
+} catch {}
