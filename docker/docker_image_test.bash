@@ -3,7 +3,7 @@
 # constants
 BASE_PORT=8000
 INCREMENT=1
-IMAGE_NAME="firestorm-db-image"
+IMAGE_NAME="firestorm-db-php"
 IMAGE_TAG="latest"
 
 npm_runner=""
@@ -20,9 +20,6 @@ rm -rf $temp_dir/*
 
 echo "Copying db test files to temp file folder..."
 cp tests/*.json $temp_dir
-# match group write to the files with writing authorized to the test group
-chgrp www-data $temp_dir/*.json
-chmod g+w $temp_dir/*.json
 
 echo -n "Finding free port for docker HTTP port..."
 port=$BASE_PORT
@@ -35,14 +32,18 @@ echo " [:$port]"
 
 echo "Starting docker container..."
 docker_container_id=$(docker run -d \
+    # execute the container as the current user to avoid permission issues
+    --user "$(id -u):$(id -g)" \
+    # mount the test files and the config file
     -v ./tests/config.php:/var/www/html/config.php \
     -v ./tests/tokens.php:/var/www/html/tokens.php \
     -v $temp_dir/:/var/www/html/files \
+    # expose the container port to the host machine so we can test it
     -p $port:80 $IMAGE_NAME:$IMAGE_TAG \
 )
 
 echo "Running tests..."
-$npm_runner run test -- --port $port
+env PORT=$port $npm_runner run test
 
 e=$?
 

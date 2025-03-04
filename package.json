@@ -10,12 +10,12 @@
     "test:full": "npm run php:stop ; npm run php:start && npm run test ; npm run php:stop",
     "test": "mocha tests/**/*.spec.js",
     "test:local": "sudo act -P ubuntu-latest=shivammathur/node:latest -j js-wrapper-test",
+    "test:docker": "bash docker/docker_image_build.bash && bash docker/docker_image_test.bash",
     "doc:gen": "jsdoc src/index.js -c jsdoc.json -R README.md -t ./node_modules/docdash -d out",
     "doc:watch": "nodemon -x npm run doc:gen --watch src/index.js --watch jsdoc.json --watch README.md",
     "types:gen": "npx tsc",
     "lint:prettier": "prettier \"{,!(node_modules)/**/}*.{js,ts}\" --config .prettierrc --write",
-    "coverage": "npm run php:stop ; npm run php:start && nyc --reporter=text mocha tests/**/*.spec.js; npm run php:stop",
-    "test_docker": "bash docker/docker_image_build.bash && bash docker/docker_image_test.bash"
+    "coverage": "npm run php:stop ; npm run php:start && nyc --reporter=text mocha tests/**/*.spec.js; npm run php:stop"
   },
   "repository": {
     "type": "git",

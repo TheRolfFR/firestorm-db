@@ -8,7 +8,7 @@ const path = require("path");
 const fs = require("fs");
 const { readFile } = require("fs").promises;
 
-const PORT = process.argv.indexOf('--port') > -1 ? process.argv[process.argv.indexOf('--port')+1] : '8000'
+const PORT = process.env.PORT ? process.env.PORT : '8000'
 const ADDRESS = `http://127.0.0.1:${PORT}/`;
 const TOKEN = "NeverGonnaGiveYouUp";
 
