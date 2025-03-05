@@ -8,8 +8,6 @@ ServerSignature Off\n'\
 
 # Enable mod_rewrite
 RUN a2enmod rewrite
-# Restart Apache to apply changes
-RUN service apache2 restart
 
 # Copy host configuration
 COPY docker/vhost.conf /etc/apache2/sites-available/000-default.conf

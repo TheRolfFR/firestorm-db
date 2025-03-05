@@ -5,10 +5,10 @@
   "main": "src/index.js",
   "types": "typings/index.d.ts",
   "scripts": {
-    "php:start": "node tests/php_setup.js",
+    "php:start": "node tests/php_setup.mjs",
     "php:stop": "sh tests/php_server_kill.sh",
     "test:full": "npm run php:stop ; npm run php:start && npm run test ; npm run php:stop",
-    "test": "mocha tests/**/*.spec.js",
+    "test": "mocha tests/**/*.spec.cjs",
     "test:local": "sudo act -P ubuntu-latest=shivammathur/node:latest -j js-wrapper-test",
     "test:docker": "bash docker/docker_image_build.bash && bash docker/docker_image_test.bash",
     "doc:gen": "jsdoc src/index.js -c jsdoc.json -R README.md -t ./node_modules/docdash -d out",
@@ -45,6 +45,7 @@
   },
   "devDependencies": {
     "chai": "^4.4.1",
+    "consola": "^3.4.0",
     "docdash": "^2.0.2",
     "glob": "^11.0.1",
     "jsdoc": "^4.0.4",

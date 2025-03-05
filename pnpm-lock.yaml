@@ -18,6 +18,9 @@ importers:
       chai:
         specifier: ^4.4.1
         version: 4.5.0
+      consola:
+        specifier: ^3.4.0
+        version: 3.4.0
       docdash:
         specifier: ^2.0.2
         version: 2.0.2
@@ -373,6 +376,10 @@ packages:
 
   config-master@3.1.0:
     resolution: {integrity: sha512-n7LBL1zBzYdTpF1mx5DNcZnZn05CWIdsdvtPL4MosvqbBUK3Rq6VWEtGUuF3Y0s9/CIhMejezqlSkP6TnCJ/9g==}
+
+  consola@3.4.0:
+    resolution: {integrity: sha512-EiPU8G6dQG0GFHNR8ljnZFki/8a+cQwEQ+7wpxdChl02Q8HXlwEZWD5lqAF8vC2sEC3Tehr8hy7vErz88LHyUA==}
+    engines: {node: ^14.18.0 || >=16.10.0}
 
   convert-source-map@1.9.0:
     resolution: {integrity: sha512-ASFBup0Mz1uyiIjANan1jzLQami9z1PoYSZCiiYW2FczPbenXc45FZdBZLzOT+r6+iciuEModtmCti+hjaAk0A==}
@@ -1690,6 +1697,8 @@ snapshots:
   config-master@3.1.0:
     dependencies:
       walk-back: 2.0.1
+
+  consola@3.4.0: {}
 
   convert-source-map@1.9.0: {}
 

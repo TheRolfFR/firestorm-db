@@ -19,7 +19,7 @@ mkdir -p $temp_dir
 rm -rf $temp_dir/*
 
 echo "Copying db test files to temp file folder..."
-cp tests/*.json $temp_dir
+cp tests/files/*.json $temp_dir
 
 echo -n "Finding free port for docker HTTP port..."
 port=$BASE_PORT
@@ -31,14 +31,14 @@ done
 echo " [:$port]"
 
 echo "Starting docker container..."
+# execute the container as the current user to avoid permission issues
+# & mount the test files and the config file
+# & expose the container port to the host machine so we can test it
 docker_container_id=$(docker run -d \
-    # execute the container as the current user to avoid permission issues
     --user "$(id -u):$(id -g)" \
-    # mount the test files and the config file
-    -v ./tests/config.php:/var/www/html/config.php \
-    -v ./tests/tokens.php:/var/www/html/tokens.php \
+    -v ./tests/php/config.php:/var/www/html/config.php \
+    -v ./tests/php/tokens.php:/var/www/html/tokens.php \
     -v $temp_dir/:/var/www/html/files \
-    # expose the container port to the host machine so we can test it
     -p $port:80 $IMAGE_NAME:$IMAGE_TAG \
 )
 

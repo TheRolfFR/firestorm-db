@@ -13,10 +13,10 @@ const ADDRESS = `http://127.0.0.1:${PORT}/`;
 const TOKEN = "NeverGonnaGiveYouUp";
 
 const HOUSE_DATABASE_NAME = "house";
-const HOUSE_DATABASE_FILE = path.join(__dirname, `${HOUSE_DATABASE_NAME}.json`);
+const HOUSE_DATABASE_FILE = path.join(__dirname, "files", `${HOUSE_DATABASE_NAME}.json`);
 
 const DATABASE_NAME = "base";
-const DATABASE_FILE = path.join(__dirname, "base.json");
+const DATABASE_FILE = path.join(__dirname, "files", "base.json");
 
 console.log("Testing at address " + ADDRESS + " with token " + TOKEN);
 
