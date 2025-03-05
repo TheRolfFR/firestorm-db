@@ -116,6 +116,8 @@ if ($method === 'POST') {
     try {
         // try to read the image
         $imgInfo = getimagesize($absolutePath);
+        if ($imgInfo === false) throw new Exception('Not an image');
+
         header("Content-type: {$imgInfo['mime']}");
         header('Expires: 0');
         header('Cache-Control: must-revalidate, post-check=0, pre-check=0');

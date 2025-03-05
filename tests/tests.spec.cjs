@@ -79,30 +79,28 @@ describe("File upload, download and delete", () => {
 				done(testError);
 			});
 	});
+
 	it("finds an uploaded file and get it with same content", (done) => {
 		const timeoutPromise = (timeout) => new Promise((resolve) => setTimeout(resolve, timeout));
-		let uploaded;
+
+		const uploaded = fs.readFileSync(path.join(__dirname, "lyrics.txt"));
 		const formData = new FormData();
+
 		formData.append("path", "/lyrics.txt");
 		formData.append("overwrite", "true");
-		readFile(path.join(__dirname, "lyrics.txt"))
-			.then((res) => {
-				uploaded = res;
-				formData.append("file", res, "lyrics.txt");
-				return firestorm.files.upload(formData);
-			})
+		formData.append("file", uploaded, "lyrics.txt");
+		
+		firestorm.files.upload(formData)
 			.then((res) => {
 				expect(res).not.to.be.undefined;
-				expect(res).to.deep.equal(
-					{ message: "Written file successfully to /lyrics.txt" },
-					"Message returned should match",
-				);
-
+				expect(res).to.deep.equal({ message: "Written file successfully to /lyrics.txt" }, "Message returned should match");
 				return timeoutPromise(200);
 			})
 			.then(() => firestorm.files.get("/lyrics.txt"))
-			.then((fileResult) => {
-				const downloaded = Buffer.from(fileResult);
+			.then((res) => {
+				const downloaded = Buffer.from(res);
+				fs.writeFileSync(path.join(__dirname, "downloaded.txt"), downloaded);
+				
 				expect(downloaded).to.deep.equal(uploaded);
 				done();
 			})
