@@ -43,7 +43,7 @@ docker_container_id=$(docker run -d \
 )
 
 echo "Running tests..."
-env PORT=$port $npm_runner run test
+env PORT=$port $npm_runner run js:tests
 
 e=$?
 

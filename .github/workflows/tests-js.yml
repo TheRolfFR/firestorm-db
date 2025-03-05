@@ -1,0 +1,41 @@
+name: Tests
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  js-wrapper-test:
+    name: Tests with PHP ${{ matrix.php }}
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        php: ["7.4", "8.2"]
+
+    steps:
+      - name: Check out repository code
+        uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
+      - name: Use Node.js 18
+        uses: actions/setup-node@v4
+        with:
+          node-version: lts/Hydrogen
+          cache: 'pnpm'
+
+      - name: Install PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php }}
+
+      - name: Install developer dependencies
+        run: pnpm install
+        
+      - name: Test da code
+        run: pnpm php:tests
+

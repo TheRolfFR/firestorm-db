@@ -1,4 +1,4 @@
-name: GitHub pages
+name: Documentation
 
 on:
   push:
@@ -6,6 +6,7 @@ on:
 
 jobs:
   deploy:
+    name: Publish on GitHub Pages
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
@@ -19,8 +20,10 @@ jobs:
           config_file: ./jsdoc.json
           template: docdash
           front_page: README.md
+
       - name: Copy images
         run: cp -r ./img ./out/img/
+
       - name: Deploy
         uses: peaceiris/actions-gh-pages@v4
         with:
