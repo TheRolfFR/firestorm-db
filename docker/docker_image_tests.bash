@@ -3,7 +3,7 @@
 # constants
 BASE_PORT=8000
 INCREMENT=1
-IMAGE_NAME="firestorm-db-php"
+IMAGE_NAME="firestorm-db"
 IMAGE_TAG="latest"
 
 npm_runner=""

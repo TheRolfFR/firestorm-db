@@ -36,7 +36,6 @@ jobs:
 
       - name: Install developer dependencies
         run: pnpm install
-        
+
       - name: Test da code
         run: pnpm php:tests
-

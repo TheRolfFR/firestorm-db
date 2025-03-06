@@ -27,7 +27,7 @@ jobs:
 
       - name: Install developer dependencies
         run: pnpm install
-        
+
       - name: Build and run tests in Docker
         run: |
           pnpm run docker:build

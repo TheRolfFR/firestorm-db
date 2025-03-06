@@ -4,6 +4,7 @@ on:
   push:
     branches: [ main ]
   pull_request:
+  workflow_dispatch:
 
 jobs:
   build:
@@ -42,13 +43,24 @@ jobs:
         run: pnpm docker:build
 
       - name: Check Docker Image
-        run: | 
+        run: |
           pnpm docker:start
           pnpm docker:alive
+
+      - name: Extract latest version tag
+        id: version
+        run: |
+          VERSION=$(git describe --tags --abbrev=0 || echo "v1.0.0")
+          MAJOR_VERSION=$(echo $VERSION | cut -d'.' -f1)
+          echo "VERSION=${VERSION}" >> $GITHUB_ENV
+          echo "MAJOR_VERSION=${MAJOR_VERSION}" >> $GITHUB_ENV
 
       - name: Push Docker Image (only on main)
         if: github.ref == 'refs/heads/main'
         run: |
-          docker tag firestorm-db-php:latest ${{ secrets.DOCKERHUB_USERNAME }}/firestorm-db-php:latest
-          docker push ${{ secrets.DOCKERHUB_USERNAME }}/firestorm-db-php:latest
-          
+          docker tag firestorm-db:latest ${{ secrets.DOCKERHUB_USERNAME }}/firestorm-db:$VERSION
+          docker tag firestorm-db:latest ${{ secrets.DOCKERHUB_USERNAME }}/firestorm-db:latest
+          docker tag firestorm-db:latest ${{ secrets.DOCKERHUB_USERNAME }}/firestorm-db:$MAJOR_VERSION
+          docker push ${{ secrets.DOCKERHUB_USERNAME }}/firestorm-db:latest
+          docker push ${{ secrets.DOCKERHUB_USERNAME }}/firestorm-db:$VERSION
+          docker push ${{ secrets.DOCKERHUB_USERNAME }}/firestorm-db:$MAJOR_VERSION

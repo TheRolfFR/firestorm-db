@@ -13,6 +13,6 @@ else
 	echo "Docker image is not alive!"
 	echo "Expected: $EXPECTED_RESPONSE"
 	echo "Received: $RESPONSE"
-	docker logs firestorm-db-php
+	docker logs firestorm-db
 	exit 1
 fi
