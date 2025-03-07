@@ -8,7 +8,7 @@
     "php:start": "node tests/php_setup.mjs",
     "php:stop": "sh tests/php_server_kill.sh",
     "php:tests": "npm run php:stop ; npm run php:start && npm run js:tests ; npm run php:stop",
-    "js:tests": "mocha tests/**/*.spec.cjs",
+    "js:tests": "mocha tests/**/tests-setup.spec.mjs tests/**/*.spec.mjs",
     "docker:build": "bash docker/docker_image_build.bash",
     "docker:alive": "bash docker/docker_image_alive.bash",
     "docker:tests": "bash docker/docker_image_tests.bash",
