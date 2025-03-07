@@ -150,9 +150,14 @@ class JSONDatabase {
         $value_decoded = json_decode(json_encode($values), true);
         $keys_decoded = json_decode(json_encode($keys), true);
 
-        // ensure both arrays are valid and have the same length
-        if (!is_array($keys_decoded) || !is_array($value_decoded) || count($keys_decoded) !== count($value_decoded)) {
-            throw new HTTPException("Mismatch in keys and values array sizes or invalid input.");
+        // ensure both arrays are valid
+        if (!is_array($keys_decoded) || !is_array($value_decoded)) {
+            throw new HTTPException("Invalid input: keys or values are not arrays.");
+        }
+
+        // ensure both arrays have the same length
+        if (count($keys_decoded) !== count($value_decoded)) {
+            throw new HTTPException("Mismatch in keys and values array sizes.");
         }
 
         // regular for loop to join keys and values together
