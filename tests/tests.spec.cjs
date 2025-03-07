@@ -8,15 +8,20 @@ const path = require("path");
 const fs = require("fs");
 const { readFile } = require("fs").promises;
 
-const PORT = process.env.PORT ? process.env.PORT : '8000'
+const PORT = process.env.PORT || "8000";
 const ADDRESS = `http://127.0.0.1:${PORT}/`;
 const TOKEN = "NeverGonnaGiveYouUp";
 
 const HOUSE_DATABASE_NAME = "house";
-const HOUSE_DATABASE_FILE = path.join(__dirname, "files", `${HOUSE_DATABASE_NAME}.json`);
+const HOUSE_DATABASE_FILE = path.join(
+	process.cwd(),
+	"tests",
+	"files",
+	`${HOUSE_DATABASE_NAME}.json`,
+);
 
 const DATABASE_NAME = "base";
-const DATABASE_FILE = path.join(__dirname, "files", "base.json");
+const DATABASE_FILE = path.join(process.cwd(), "tests", "files", "base.json");
 
 console.log("Testing at address " + ADDRESS + " with token " + TOKEN);
 
@@ -83,24 +88,28 @@ describe("File upload, download and delete", () => {
 	it("finds an uploaded file and get it with same content", (done) => {
 		const timeoutPromise = (timeout) => new Promise((resolve) => setTimeout(resolve, timeout));
 
-		const uploaded = fs.readFileSync(path.join(__dirname, "lyrics.txt"));
+		const uploaded = fs.readFileSync(path.join(process.cwd(), "tests", "lyrics.txt"));
 		const formData = new FormData();
 
 		formData.append("path", "/lyrics.txt");
 		formData.append("overwrite", "true");
 		formData.append("file", uploaded, "lyrics.txt");
-		
-		firestorm.files.upload(formData)
+
+		firestorm.files
+			.upload(formData)
 			.then((res) => {
 				expect(res).not.to.be.undefined;
-				expect(res).to.deep.equal({ message: "Written file successfully to /lyrics.txt" }, "Message returned should match");
+				expect(res).to.deep.equal(
+					{ message: "Written file successfully to /lyrics.txt" },
+					"Message returned should match",
+				);
 				return timeoutPromise(200);
 			})
 			.then(() => firestorm.files.get("/lyrics.txt"))
 			.then((res) => {
 				const downloaded = Buffer.from(res);
-				fs.writeFileSync(path.join(__dirname, "downloaded.txt"), downloaded);
-				
+				fs.writeFileSync(path.join(process.cwd(), "tests", "downloaded.txt"), downloaded);
+
 				expect(downloaded).to.deep.equal(uploaded);
 				done();
 			})
@@ -114,7 +123,7 @@ describe("File upload, download and delete", () => {
 	it("cannot upload an already uploaded file with no overwrite", (done) => {
 		const formData = new FormData();
 		formData.append("path", "/");
-		readFile(path.join(__dirname, "lyrics.txt"))
+		readFile(path.join(process.cwd(), "tests", "lyrics.txt"))
 			.catch(() => done(new Error("Should not succeed at first")))
 			.then((res) => {
 				formData.append("file", res, "lyrics.txt");
@@ -141,7 +150,7 @@ describe("File upload, download and delete", () => {
 		formData.append("overwrite", "true");
 
 		// create file read promise
-		const lyricsPromise = readFile(path.join(__dirname, "lyrics.txt"));
+		const lyricsPromise = readFile(path.join(process.cwd(), "tests", "lyrics.txt"));
 
 		// get done now
 		lyricsPromise.catch(() => done("File read should not failed"));

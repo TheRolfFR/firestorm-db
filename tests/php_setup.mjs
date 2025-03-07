@@ -20,7 +20,6 @@ consola.info(" Setup of PHP files...");
 consola.info(" Creating tmp folder...");
 
 async function setup_php() {
-
 	// delete previous temporary files
 	execSync("rm -rf /tmp/php-*");
 
@@ -85,19 +84,21 @@ async function setup_php() {
 	spawn(command, args, { stdio: "ignore", detached: true }).unref();
 
 	consola.info(` Waiting ${PHP_SERVER_START_DELAY}ms for the server to start...`);
-	return pause(PHP_SERVER_START_DELAY)
-		.then(() => fetch(`http://localhost:${PORT}`)
+	return pause(PHP_SERVER_START_DELAY).then(() =>
+		fetch(`http://localhost:${PORT}`)
 			.then(() => consola.success(" PHP server started successfully"))
 			.catch((err) => consola.error(" PHP server failed to start")),
-		);
+	);
 }
 
-if (platform() === "win32") consola.error("This script is built for Unix systems only, if you are on Windows, use WSL");
-else setup_php().catch((err) => {
-	consola.error("Terrible error happened");
-	consola.trace(err);
-	process.exit(1);
-});
+if (platform() === "win32")
+	consola.error("This script is built for Unix systems only, if you are on Windows, use WSL");
+else
+	setup_php().catch((err) => {
+		consola.error("Terrible error happened");
+		consola.trace(err);
+		process.exit(1);
+	});
 
 /**
  * Promise-based implementation of setTimeout
