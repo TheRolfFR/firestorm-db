@@ -495,7 +495,7 @@ class Collection {
 
 	/**
 	 * Set multiple values in the collection by their keys
-	 * @param {(string|number)[]} keys - The keys of the elements you want to edit
+	 * @param {string[] | number[]} keys - The keys of the elements you want to edit
 	 * @param {T[]} values - The values (without methods) you want to edit
 	 * @returns {Promise<WriteConfirmation>} Write confirmation
 	 */
