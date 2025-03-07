@@ -99,7 +99,7 @@ export type EditFieldOption<T> = {
 		(
 			| {
 					field: K | string;
-					operation: "remove";
+					operation: "remove" | "append";
 			  }
 			| {
 					field: Field<boolean, T>;

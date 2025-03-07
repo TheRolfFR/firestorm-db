@@ -17,7 +17,7 @@ try {
  * @typedef {Object} EditFieldOption
  * @property {string | number} id - The affected element
  * @property {string} field - The field to edit
- * @property {"set" | "remove" | "append" | "increment" | "decrement" | "array-push" | "array-delete" | "array-splice"} operation - Operation for the field
+ * @property {"set" | "remove" | "append" | "invert" | "increment" | "decrement" | "array-push" | "array-delete" | "array-splice"} operation - Operation for the field
  * @property {string | number | boolean | Array} [value] - The value to write
  */
 
@@ -483,7 +483,7 @@ class Collection {
 
 	/**
 	 * Set a value in the collection by key
-	 * @param {string} key - The key of the element you want to edit
+	 * @param {string|number} key - The key of the element you want to edit
 	 * @param {T} value - The value (without methods) you want to edit
 	 * @returns {Promise<WriteConfirmation>} Write confirmation
 	 */
@@ -495,7 +495,7 @@ class Collection {
 
 	/**
 	 * Set multiple values in the collection by their keys
-	 * @param {string[]} keys - The keys of the elements you want to edit
+	 * @param {(string|number)[]} keys - The keys of the elements you want to edit
 	 * @param {T[]} values - The values (without methods) you want to edit
 	 * @returns {Promise<WriteConfirmation>} Write confirmation
 	 */
