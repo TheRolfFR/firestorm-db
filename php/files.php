@@ -97,9 +97,9 @@ if ($method === 'POST') {
         UPLOAD_ERR_EXTENSION  => "File upload blocked by extension.",
     ];
 
-    $errorCode = isset($_FILES['file']['error']) ? $_FILES['file']['error'] : UPLOAD_ERR_OK;
+    $errorCode = $_FILES['file']['error'] ?? UPLOAD_ERR_OK;
     if ($errorCode !== UPLOAD_ERR_OK) {
-        http_error(500, isset($errorMessages[$errorCode]) ? $errorMessages[$errorCode] : "Unknown error.");
+        http_error(500, $errorMessages[$errorCode] ?? "Unknown error.");
     }
 
     $tmpName = $_FILES['file']['tmp_name'];

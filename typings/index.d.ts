@@ -199,7 +199,7 @@ declare class Collection<T> {
 	 * - Can be used to compare file content without downloading the file
 	 * @returns The sha1 hash of the file
 	 */
-	public sha1(): string;
+	public sha1(): Promise<string>;
 
 	/**
 	 * Get an element from the collection by its key
@@ -267,7 +267,7 @@ declare class Collection<T> {
 	 * @param offset - The offset to use
 	 * @returns The found elements
 	 */
-	public random(max: number, seed: number, offset: number): Promise<T[]>;
+	public random(max?: number, seed?: number, offset?: number): Promise<T[]>;
 
 	/**
 	 * Set the entire content of the collection.

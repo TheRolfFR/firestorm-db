@@ -92,7 +92,7 @@ async function setup_php() {
 }
 
 if (platform() === "win32")
-	consola.error("This script is built for Unix systems only, if you are on Windows, use WSL");
+	consola.error("This script is built for Unix systems only. If you are on Windows, use WSL.");
 else
 	setup_php().catch((err) => {
 		consola.error("Terrible error happened");

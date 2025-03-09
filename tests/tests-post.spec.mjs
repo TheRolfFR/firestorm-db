@@ -1,39 +1,11 @@
 // @ts-check
 
 import { expect } from "chai";
-import fs from "fs";
+
 import firestorm from "../src/index.js";
-import path from "path";
-
-const TOKEN = "NeverGonnaGiveYouUp";
-
-const DATABASE_NAME = "base";
-const DATABASE_FILE = path.join(process.cwd(), "tests", "files", "base.json");
-
-const HOUSE_DATABASE_NAME = "house";
-const HOUSE_DATABASE_FILE = path.join(
-	process.cwd(),
-	"tests",
-	"files",
-	`${HOUSE_DATABASE_NAME}.json`,
-);
-
-let base = firestorm.collection(DATABASE_NAME);
-let houseCollection = firestorm.collection(HOUSE_DATABASE_NAME);
-
-const rawContent = fs.readFileSync(DATABASE_FILE).toString();
-const content = JSON.parse(rawContent);
+import { base, content, houseCollection, resetDatabaseContent, TOKEN } from "./tests.env.mjs";
 
 let tmp;
-
-const resetDatabaseContent = async () => {
-	// reset the content of the database
-	await base.writeRaw(content).catch((err) => console.error(err));
-
-	houseCollection = firestorm.collection(HOUSE_DATABASE_NAME);
-	const rawHouse = JSON.parse(fs.readFileSync(HOUSE_DATABASE_FILE).toString());
-	await houseCollection.writeRaw(rawHouse);
-};
 
 describe("POST operations", () => {
 	describe("writeRaw operations", () => {

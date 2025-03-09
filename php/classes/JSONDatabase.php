@@ -157,13 +157,13 @@ class JSONDatabase {
 
         // ensure both arrays have the same length
         if (count($keys_decoded) !== count($value_decoded)) {
-            throw new HTTPException("Mismatch in keys and values array sizes.");
+            throw new HTTPException("Key and value array sizes are not equal.");
         }
 
         // regular for loop to join keys and values together
         for ($i = 0; $i < count($value_decoded); $i++) {
             if (!array_key_exists($i, $keys_decoded)) {
-                throw new HTTPException("Undefined key at index $i in keys array.");
+                throw new HTTPException("Undefined key at index $i in key array.");
             }
 
             $key_var_type = gettype($keys_decoded[$i]);

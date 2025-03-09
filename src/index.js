@@ -8,7 +8,7 @@ try {
 /**
  * @typedef {Object} SearchOption
  * @property {string} field - The field to be searched for
- * @property {"!=" | "==" | ">=" | "<=" | "<" | ">" | "in" | "includes" | "startsWith" | "endsWith" | "array-contains" | "array-contains-none" | "array-contains-any" | "array-length-(eq|df|gt|lt|ge|le)"} criteria - Search criteria to filter results
+ * @property {"!=" | "==" | ">=" | "<=" | "<" | ">" | "in" | "includes" | "startsWith" | "endsWith" | "array-contains" | "array-contains-none" | "array-contains-any" | "array-length-eq" | "array-length-df" | "array-length-gt" | "array-length-le" | "array-length-lt" | "array-length-ge"} criteria - Search criteria to filter results
  * @property {string | number | boolean | Array} value - The value to be searched for
  * @property {boolean} [ignoreCase] - Is it case sensitive? (default true)
  */
@@ -207,7 +207,7 @@ class Collection {
 	/**
 	 * Get the sha1 hash of the JSON
 	 * - Can be used to compare file content without downloading the file
-	 * @returns {string} The sha1 hash of the file
+	 * @returns {Promise<string>} The sha1 hash of the file
 	 */
 	sha1() {
 		// string value is correct so we don't need validation
@@ -370,9 +370,9 @@ class Collection {
 
 	/**
 	 * Read random elements of the collection
-	 * @param {number} max - The maximum number of entries
-	 * @param {number} seed - The seed to use
-	 * @param {number} offset - The offset to use
+	 * @param {number} [max] - The maximum number of entries
+	 * @param {number} [seed] - The seed to use
+	 * @param {number} [offset] - The offset to use
 	 * @returns {Promise<T[]>} The found elements
 	 */
 	random(max, seed, offset) {
@@ -483,7 +483,7 @@ class Collection {
 
 	/**
 	 * Set a value in the collection by key
-	 * @param {string|number} key - The key of the element you want to edit
+	 * @param {string | number} key - The key of the element you want to edit
 	 * @param {T} value - The value (without methods) you want to edit
 	 * @returns {Promise<WriteConfirmation>} Write confirmation
 	 */

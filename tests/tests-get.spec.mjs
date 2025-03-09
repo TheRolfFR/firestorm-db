@@ -1,45 +1,13 @@
 // @ts-check
 
-import path from "path";
-import fs from "fs";
 import crypto from "crypto";
 import { expect } from "chai";
 
 import firestorm from "../src/index.js";
-
-const DATABASE_NAME = "base";
-const DATABASE_FILE = path.join(process.cwd(), "tests", "files", "base.json");
-
-const HOUSE_DATABASE_NAME = "house";
-const HOUSE_DATABASE_FILE = path.join(
-	process.cwd(),
-	"tests",
-	"files",
-	`${HOUSE_DATABASE_NAME}.json`,
-);
-
-let base; // = undefined
-let content;
-let houseCollection; // = undefined
-
-const resetDatabaseContent = async () => {
-	// reset the content of the database
-	await base.writeRaw(content).catch((err) => console.error(err));
-
-	houseCollection = firestorm.collection(HOUSE_DATABASE_NAME);
-	const rawHouse = JSON.parse(fs.readFileSync(HOUSE_DATABASE_FILE).toString());
-	await houseCollection.writeRaw(rawHouse);
-};
+import { base, content, resetDatabaseContent } from "./tests.env.mjs";
 
 describe("GET operations", () => {
-	before(async () => {
-		base = firestorm.collection(DATABASE_NAME);
-
-		const rawContent = fs.readFileSync(DATABASE_FILE).toString();
-		content = JSON.parse(rawContent);
-
-		await resetDatabaseContent();
-	});
+	before(async () => await resetDatabaseContent());
 
 	describe("readRaw()", () => {
 		it("fails if table not found", (done) => {
@@ -133,6 +101,7 @@ describe("GET operations", () => {
 	describe("searchKeys(arrayKey)", () => {
 		it("fails with incorrect parameters", (done) => {
 			base
+				// @ts-expect-error
 				.searchKeys(1, 2, 3)
 				.then(() => {
 					done(new Error("Parameter should be an array of string or number"));
@@ -171,7 +140,8 @@ describe("GET operations", () => {
 
 	describe("search(searchOptions)", () => {
 		/**
-		 * @type {Readonly<[string, string, any, string[], boolean?]>[]}
+		 * @typedef {import("../src/index.js").SearchOption["criteria"]} Criteria
+		 * @type {Readonly<[Criteria, string, any, string[], boolean?]>[]}
 		 * [criteria, field, value, idsFound, ignoreCase]
 		 */
 		const testArray = [
@@ -316,6 +286,7 @@ describe("GET operations", () => {
 								value: "",
 							},
 						],
+						// @ts-expect-error
 						incor,
 					)
 					.then((res) => done(`got ${JSON.stringify(res)} value`))
@@ -373,6 +344,7 @@ describe("GET operations", () => {
 	describe("select(selectOptions)", () => {
 		it("requires a fields field", (done) => {
 			base
+				// @ts-expect-error
 				.select(undefined)
 				.then(() => done("Did not expect it to success"))
 				.catch(() => done());
@@ -383,6 +355,7 @@ describe("GET operations", () => {
 			incorrect.forEach((incor) => {
 				it(`${JSON.stringify(incor)} value rejects`, (done) => {
 					base
+						// @ts-expect-error
 						.select({ fields: incor })
 						.then((res) => done(`got ${JSON.stringify(res)} value`))
 						.catch(() => done());
@@ -394,6 +367,7 @@ describe("GET operations", () => {
 			[[], {}].forEach((val) => {
 				it(`${JSON.stringify(val)} value`, (done) => {
 					base
+						// @ts-expect-error
 						.select({ fields: val })
 						.then(() => done())
 						.catch(done);
@@ -406,6 +380,7 @@ describe("GET operations", () => {
 			[undefined, null, false, 5, 12.5, {}].forEach((incor) => {
 				it(`[${JSON.stringify(incor)}] value rejects`, (done) => {
 					base
+						// @ts-expect-error
 						.select({ fields: [incor] })
 						.then(() => done(`[${JSON.stringify(incor)}] value passed`))
 						.catch(() => done());
@@ -438,6 +413,7 @@ describe("GET operations", () => {
 	describe("values(valueOptions)", () => {
 		it("requires a field", (done) => {
 			base
+				// @ts-expect-error
 				.values()
 				.then(() => done("Did not expect it to succeed"))
 				.catch(() => done());
@@ -452,6 +428,7 @@ describe("GET operations", () => {
 
 		it("needs a boolean flatten field if provided", (done) => {
 			base
+				// @ts-expect-error
 				.values({ field: "name", flatten: "this is not a boolean" })
 				.then(() => done("Did not expect it to succeed"))
 				.catch(() => done());
@@ -462,6 +439,7 @@ describe("GET operations", () => {
 			incorrect.forEach((incor) => {
 				it(`${JSON.stringify(incor)} value rejects`, (done) => {
 					base
+						// @ts-expect-error
 						.values({ field: incor })
 						.then(() => done("Did not expect it to succeed"))
 						.catch(() => done());
@@ -548,6 +526,7 @@ describe("GET operations", () => {
 			incorrect.forEach((incor) => {
 				it(`${JSON.stringify(incor)} value`, (done) => {
 					base
+						// @ts-expect-error
 						.random(incor)
 						.then((res) => done(`got ${JSON.stringify(res)} value`))
 						.catch(() => done());
@@ -561,6 +540,7 @@ describe("GET operations", () => {
 			incorrect.forEach((incor) => {
 				it(`${JSON.stringify(incor)} value`, (done) => {
 					base
+						// @ts-expect-error
 						.random(5, incor)
 						.then((res) => done(`got ${JSON.stringify(res)} value`))
 						.catch(() => done());
@@ -581,6 +561,7 @@ describe("GET operations", () => {
 			incorrect.forEach((incor) => {
 				it(`${JSON.stringify(incor)} value`, (done) => {
 					base
+						// @ts-expect-error
 						.random(5, 69, incor)
 						.then((res) => done(`got ${JSON.stringify(res)} value`))
 						.catch(() => done());
