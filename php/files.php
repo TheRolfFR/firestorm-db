@@ -87,9 +87,26 @@ if ($method === 'POST') {
         http_error(500, "PHP script can't create folder " . $uploadDir . ". Check permission, group and owner.");
     }
 
-    if (!check($_FILES) || !check($_FILES['file'])) http_error(400, 'No actual file was given');
+    $errorMessages = [
+        UPLOAD_ERR_INI_SIZE   => "File exceeds allowed size.",
+        UPLOAD_ERR_FORM_SIZE  => "File too large.",
+        UPLOAD_ERR_PARTIAL    => "File only partially uploaded.",
+        UPLOAD_ERR_NO_FILE    => "No file uploaded.",
+        UPLOAD_ERR_NO_TMP_DIR => "Missing temp folder.",
+        UPLOAD_ERR_CANT_WRITE => "Cannot write file to disk.",
+        UPLOAD_ERR_EXTENSION  => "File upload blocked by extension.",
+    ];
+
+    $errorCode = $_FILES['file']['error'] ?? UPLOAD_ERR_OK;
+    if ($errorCode !== UPLOAD_ERR_OK) {
+        http_error(500, $errorMessages[$errorCode] ?? "Unknown error.");
+    }
 
     $tmpName = $_FILES['file']['tmp_name'];
+
+    if (!is_uploaded_file($tmpName)) {
+        http_error(403, "Possible file upload attack.");
+    }
 
     // eventually write the file
     if (move_uploaded_file($tmpName, $absolutePath)) {
@@ -116,6 +133,8 @@ if ($method === 'POST') {
     try {
         // try to read the image
         $imgInfo = getimagesize($absolutePath);
+        if ($imgInfo === false) throw new Exception('Not an image');
+
         header("Content-type: {$imgInfo['mime']}");
         header('Expires: 0');
         header('Cache-Control: must-revalidate, post-check=0, pre-check=0');

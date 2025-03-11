@@ -5,16 +5,18 @@ on:
 
 jobs:
   build_doc:
-    name: "Build documentation"
+    name: Build documentation
     runs-on: "ubuntu-latest"
     steps:
       - name: Check out repository code
-        uses: actions/checkout@v2
-      - name: Use Node.js 18
-        uses: actions/setup-node@v3
+        uses: actions/checkout@v4
+
+      - name: Use Node.js
+        uses: actions/setup-node@v4
         with:
-          node-version: lts/Hydrogen
+          node-version: 20
           cache: 'pnpm'
+
       - name: Publish package to NPM
         run:
           npm publish
