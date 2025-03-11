@@ -60,5 +60,11 @@
     "prettier": "^3.5.3",
     "recursive-copy": "^2.0.14",
     "typescript": "^5.8.2"
+  },
+  "pnpm": {
+    "overrides": {
+      "cross-spawn@>=7.0.0 <7.0.5": ">=7.0.5",
+      "serialize-javascript@>=6.0.0 <6.0.2": ">=6.0.2"
+    }
   }
 }
