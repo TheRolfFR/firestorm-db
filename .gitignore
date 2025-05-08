@@ -129,3 +129,6 @@ dist
 #jsdoc
 docs/
 .DS_Store
+
+# tests
+tests/downloaded.txt

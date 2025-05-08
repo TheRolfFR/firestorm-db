@@ -76,7 +76,7 @@ johnDoe.hello(); // "John Doe says hello!"
 
 | Name                      | Parameters                                                  | Description                                                                                            |
 | ------------------------- | ----------------------------------------------------------- | ------------------------------------------------------------------------------------------------------ |
-| sha1()                    | none                                                        | Get the sha1 hash of the file. Can be used to compare file content without downloading the JSON.       |
+| sha1()                    | none                                                        | Get the SHA-1 hash of the file. Can be used to compare file content without downloading the JSON.      |
 | readRaw(original)         | original?: `boolean`                                        | Read the entire collection. `original` disables ID field injection, for non-relational collections.    |
 | get(key)                  | key: `string \| number`                                     | Get an element from the collection by its key.                                                         |
 | searchKeys(keys)          | keys: `string[] \| number[]`                                | Get multiple elements from the collection by their keys.                                               |

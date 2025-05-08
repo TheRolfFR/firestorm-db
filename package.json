@@ -5,16 +5,19 @@
   "main": "src/index.js",
   "types": "typings/index.d.ts",
   "scripts": {
-    "php_start": "node tests/php_setup.js",
-    "test": "./node_modules/.bin/mocha tests/**/*.spec.js",
-    "php_stop": "sh tests/php_server_kill.sh",
-    "full": "npm run php_stop ; npm run php_start && npm run test ; npm run php_stop",
-    "local_tests": "sudo act -P ubuntu-latest=shivammathur/node:latest -j js-wrapper-test",
-    "jsdoc": "jsdoc src/index.js -c jsdoc.json -R README.md -t ./node_modules/docdash -d out",
-    "nodemon_jsdoc": "nodemon -x npm run jsdoc --watch src/index.js --watch jsdoc.json --watch README.md",
-    "types": "npx tsc",
-    "prettier": "prettier \"{,!(node_modules)/**/}*.{js,ts}\" --config .prettierrc --write",
-    "cov": "npm run php_stop ; npm run php_start && nyc --reporter=text mocha tests/**/*.spec.js; npm run php_stop"
+    "php:start": "node tests/php_setup.mjs",
+    "php:stop": "sh tests/php_server_kill.sh",
+    "php:tests": "npm run php:stop ; npm run php:start && npm run js:tests ; npm run php:stop",
+    "js:tests": "mocha tests/**/tests-setup.spec.mjs tests/**/*.spec.mjs",
+    "docker:build": "bash docker/docker_image_build.bash",
+    "docker:alive": "bash docker/docker_image_alive.bash",
+    "docker:tests": "bash docker/docker_image_tests.bash",
+    "docker:start": "bash docker/docker_image_start.bash",
+    "doc:gen": "jsdoc src/index.js -c jsdoc.json -R README.md -t ./node_modules/docdash -d out",
+    "doc:watch": "nodemon -x npm run doc:gen --watch src/index.js --watch jsdoc.json --watch README.md",
+    "types:gen": "npx tsc",
+    "lint:prettier": "prettier \"{,!(node_modules)/**/}*.{cjs,mjs,js,ts}\" --config .prettierrc --write",
+    "coverage": "npm run php:stop ; npm run php:start && nyc --reporter=text mocha tests/**/*.spec.js; npm run php:stop"
   },
   "repository": {
     "type": "git",
@@ -38,21 +41,25 @@
     "src/index.js",
     "typings/index.d.ts"
   ],
+  "engines": {
+    "node": ">=20.0.0"
+  },
   "dependencies": {
     "axios": "^1.6.8",
     "form-data": "^4.0.0"
   },
   "devDependencies": {
     "chai": "^4.4.1",
+    "consola": "^3.4.0",
     "docdash": "^2.0.2",
-    "glob": "^10.3.12",
-    "jsdoc": "^4.0.2",
-    "jsdoc-to-markdown": "^8.0.1",
-    "mocha": "^10.4.0",
-    "nyc": "^15.1.0",
-    "prettier": "^3.2.5",
+    "glob": "^11.0.1",
+    "jsdoc": "^4.0.4",
+    "jsdoc-to-markdown": "^9.1.1",
+    "mocha": "^11.1.0",
+    "nyc": "^17.1.0",
+    "prettier": "^3.5.3",
     "recursive-copy": "^2.0.14",
-    "typescript": "^5.4.5"
+    "typescript": "^5.8.2"
   },
   "pnpm": {
     "overrides": {

@@ -1,4 +1,4 @@
-name: GitHub pages
+name: Documentation
 
 on:
   push:
@@ -6,10 +6,11 @@ on:
 
 jobs:
   deploy:
+    name: Publish on GitHub Pages
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
 
       - name: Build
         uses: andstor/jsdoc-action@v1
@@ -19,10 +20,12 @@ jobs:
           config_file: ./jsdoc.json
           template: docdash
           front_page: README.md
+
       - name: Copy images
         run: cp -r ./img ./out/img/
+
       - name: Deploy
-        uses: peaceiris/actions-gh-pages@v3
+        uses: peaceiris/actions-gh-pages@v4
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: ./out
