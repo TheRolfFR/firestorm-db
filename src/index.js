@@ -205,9 +205,9 @@ class Collection {
 	}
 
 	/**
-	 * Get the sha1 hash of the JSON
+	 * Get the SHA-1 hash of the JSON
 	 * - Can be used to compare file content without downloading the file
-	 * @returns {Promise<string>} The sha1 hash of the file
+	 * @returns {Promise<string>} The SHA-1 hash of the file
 	 */
 	sha1() {
 		// string value is correct so we don't need validation

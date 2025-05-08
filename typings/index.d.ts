@@ -195,9 +195,9 @@ declare class Collection<T> {
 	public constructor(name: string, addMethods?: CollectionMethods<T>);
 
 	/**
-	 * Get the sha1 hash of the collection
+	 * Get the SHA-1 hash of the collection
 	 * - Can be used to compare file content without downloading the file
-	 * @returns The sha1 hash of the file
+	 * @returns The SHA-1 hash of the file
 	 */
 	public sha1(): Promise<string>;
 
