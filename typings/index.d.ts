@@ -264,7 +264,7 @@ declare class Collection<T extends { [ID_FIELD]: string }> {
 	): Promise<T[K] extends Array<any> ? (F extends true ? T[K] : T[K][]) : T[K][]>;
 
 	/**
-	 * Read random elements of the collection
+	 * Read random collection elements
 	 * @param max - The maximum number of entries
 	 * @param seed - The seed to use
 	 * @param offset - The offset to use

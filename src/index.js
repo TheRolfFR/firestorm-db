@@ -354,7 +354,7 @@ class Collection {
 	}
 
 	/**
-	 * Read random elements of the collection
+	 * Read random collection elements
 	 * @param {number} [max] - The maximum number of entries
 	 * @param {number} [seed] - The seed to use
 	 * @param {number} [offset] - The offset to use
