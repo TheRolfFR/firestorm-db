@@ -181,7 +181,7 @@ export type Settable<T> = Addable<T> & {
 };
 
 /** Helper type for non-relational collections */
-export type WithoutID<T extends { [ID_FIELD]: string }> = Omit<T, typeof ID_FIELD>;
+export type WithoutID<T> = Omit<T, typeof ID_FIELD>;
 
 /**
  * Represents a Firestorm Collection
