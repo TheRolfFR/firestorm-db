@@ -1,42 +1,42 @@
 <?php
 
+require_once './classes/HTTPException.php';
+
 function array_contains($array, $value, $ignoreCase = false) {
-    $tmp = false;
-    $tmp_i = 0;
-    while ($tmp_i < count($array) and !$tmp) {
-        if ($ignoreCase) {
-            $tmp = ($ignoreCase ? strcasecmp($array[$tmp_i], $value) : strcmp($array[$tmp_i], $value)) == 0;
-        } else {
-            $tmp = $array[$tmp_i] == $value;
-        }
-        $tmp_i = $tmp_i + 1;
+    for ($tmp_i = 0; $tmp_i < count($array); ++$tmp_i) {
+        $contains = $ignoreCase
+            ? strcasecmp($array[$tmp_i], $value) === 0
+            : $array[$tmp_i] == $value;
+        if ($contains)
+            return true;
     }
-    return $tmp;
+    return false;
 }
 
 function array_contains_any($concernedField, $value, $ignoreCase = false) {
-    $add = false;
+    if (gettype($value) !== 'array')
+        throw new HTTPException("Comparison array is not an array");
 
-    if (gettype($value) === 'array') {
-        $tmp = false;
-        $val_i = 0;
-        while ($val_i < count($value) and !$tmp) {
-            $cf_i = 0;
-            while ($cf_i < count($concernedField) && !$tmp) {
-                if ($ignoreCase) {
-                    $tmp = ($ignoreCase ? strcasecmp($concernedField[$cf_i], $value[$val_i]) : strcmp($concernedField[$cf_i], $value[$val_i])) === 0;
-                } else {
-                    $tmp = $concernedField[$cf_i] == $value[$val_i];
-                }
-                $cf_i = $cf_i + 1;
-            }
-            $val_i = $val_i + 1;
+    for ($val_i = 0; $val_i < count($value); ++$val_i) {
+        for ($cf_i = 0; $cf_i < count($concernedField); ++$cf_i) {
+            $contains = $ignoreCase
+                ? strcasecmp($concernedField[$cf_i], $value[$val_i]) === 0
+                : $concernedField[$cf_i] == $value[$val_i];
+            if ($contains)
+                return true;
         }
-
-        $add = $tmp;
-    } else {
-        $add = false;
     }
+    return false;
+}
 
-    return $add;
+function array_contains_all($concernedField, $value, $ignoreCase = false) {
+    if (gettype($value) !== 'array')
+        throw new HTTPException("Comparison array is not an array");
+
+    $diff = $ignoreCase
+        ? array_udiff($value, $concernedField, 'strcasecmp')
+        : array_diff($concernedField, $value);
+
+    // if there's no array diff one must be a superset of the other
+    return count($diff) === 0;
 }

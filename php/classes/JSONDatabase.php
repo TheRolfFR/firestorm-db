@@ -30,13 +30,13 @@ class JSONDatabase {
         $this->autoIncrement = $autoIncrement;
     }
 
-    public function fullPath() {
+    public function fullPath(): string {
         return $this->folderPath . $this->fileName . $this->fileExt;
     }
 
     public function write_raw($content) {
         $content_type = gettype($content);
-        $incorrect_types = array('integer', 'double', 'string', 'boolean');
+        $incorrect_types = ['integer', 'double', 'string', 'boolean'];
 
         // content must not be primitive
         if (in_array($content_type, $incorrect_types)) {
@@ -78,24 +78,24 @@ class JSONDatabase {
         return file_put_contents($this->fullPath(), $content, LOCK_EX);
     }
 
-    private function write($obj) {
-        $obj['content'] = stringifier($obj['content'], 1);
+    private function write(FileObject $obj) {
+        $obj->content = stringifier($obj->content, 1);
         return FileAccess::write($obj);
     }
 
     public function sha1() {
         $obj = $this->read_raw();
-        return sha1($obj['content']);
+        return sha1($obj->content);
     }
 
-    public function read_raw($waitLock = false) {
+    public function read_raw($waitLock = false): FileObject {
         // fall back to empty array if failed
-        return FileAccess::read($this->fullPath(), $waitLock, json_encode(array()));
+        return FileAccess::read($this->fullPath(), $waitLock, json_encode([]));
     }
 
     public function read($waitLock = false) {
         $res = $this->read_raw($waitLock);
-        $res['content'] = json_decode($res['content'], true);
+        $res->content = json_decode($res->content, true);
         return $res;
     }
 
@@ -103,13 +103,11 @@ class JSONDatabase {
         $obj = $this->read();
         if (
             !$obj ||
-            array_key_exists('content', $obj) == false ||
-            array_key_exists(strval($key), $obj['content']) == false
+            property_exists($obj, 'content') == false ||
+            array_key_exists(strval($key), $obj->content) == false
         )
             return null;
-
-        $res = array($key => $obj['content'][$key]);
-        return $res;
+        return $obj->content[$key];
     }
 
     public function set($key, $value) {
@@ -126,14 +124,14 @@ class JSONDatabase {
         if (is_primitive($value))
             throw new HTTPException("Invalid value type, got $value_var_type, expected object", 400);
 
-        if ($value !== array() and !array_assoc($value))
+        if ($value !== [] and !array_assoc($value))
             throw new HTTPException('Value cannot be a sequential array', 400);
 
         $key = strval($key);
 
         // set it at the corresponding value
         $obj = $this->read(true);
-        $obj['content'][$key] = json_decode(json_encode($value), true);
+        $obj->content[$key] = json_decode(json_encode($value), true);
         return $this->write($obj);
     }
 
@@ -172,7 +170,7 @@ class JSONDatabase {
 
             $key = strval($keys_decoded[$i]);
 
-            $obj['content'][$key] = $value_decoded[$i];
+            $obj->content[$key] = $value_decoded[$i];
         }
 
         $this->write($obj);
@@ -204,8 +202,8 @@ class JSONDatabase {
         // else set it at the corresponding value
         $obj = $this->read(true);
 
-        $id = $this->newLastKey($obj['content']);
-        $obj['content'][$id] = $value;
+        $id = $this->newLastKey($obj->content);
+        $obj->content[$id] = $value;
 
         $this->write($obj);
 
@@ -216,7 +214,7 @@ class JSONDatabase {
         if (!$this->autoKey)
             throw new HTTPException('Automatic key generation is disabled');
 
-        if ($values !== array() and $values == NULL)
+        if ($values !== [] and $values == NULL)
             throw new HTTPException('null-like value not accepted', 400);
 
         // restricts types to non base variables
@@ -241,11 +239,11 @@ class JSONDatabase {
 
         // decode and add all values
         $values_decoded = $values;
-        $id_array = array();
+        $id_array = [];
         foreach ($values_decoded as $value_decoded) {
-            $id = $this->newLastKey($obj['content']);
+            $id = $this->newLastKey($obj->content);
 
-            $obj['content'][$id] = $value_decoded;
+            $obj->content[$id] = $value_decoded;
 
             array_push($id_array, $id);
         }
@@ -261,12 +259,12 @@ class JSONDatabase {
             throw new HTTPException("Incorrect key type, got $key_var_type, expected string or integer", 400);
 
         $obj = $this->read(true);
-        unset($obj['content'][$key]);
+        unset($obj->content[$key]);
         $this->write($obj);
     }
 
     public function removeBulk($keys) {
-        if ($keys !== array() and $keys == NULL)
+        if ($keys !== [] and $keys == NULL)
             throw new HTTPException('null-like keys not accepted', 400);
 
         if (gettype($keys) !== 'array' or array_assoc($keys))
@@ -284,7 +282,7 @@ class JSONDatabase {
 
         // remove all keys
         foreach ($keys as $key_decoded)
-            unset($obj['content'][$key_decoded]);
+            unset($obj->content[$key_decoded]);
 
         $this->write($obj);
     }
@@ -365,6 +363,8 @@ class JSONDatabase {
                         return !array_contains_any($field, $value, $ignoreCase);
                     case 'array-contains-any':
                         return array_contains_any($field, $value, $ignoreCase);
+                    case 'array-contains-all':
+                        return array_contains_all($field, $value, $ignoreCase);
                     case 'array-length':
                     case 'array-length-eq':
                         return count($field) == $value;
@@ -393,7 +393,7 @@ class JSONDatabase {
         $obj = $this->read();
         $res = [];
 
-        foreach ($obj['content'] as $key => $el) {
+        foreach ($obj->content as $key => $el) {
             $el_root = $el;
 
             $add = true;
@@ -458,15 +458,15 @@ class JSONDatabase {
     public function searchKeys($searchedKeys) {
         $obj = $this->read();
 
-        $res = array();
+        $res = [];
         if (gettype($searchedKeys) != 'array')
             return $res;
 
         foreach ($searchedKeys as $key) {
             $key = strval($key);
 
-            if (array_key_exists($key, $obj['content'])) {
-                $res[$key] = $obj['content'][$key];
+            if (array_key_exists($key, $obj->content)) {
+                $res[$key] = $obj->content[$key];
             }
         }
 
@@ -474,7 +474,7 @@ class JSONDatabase {
     }
 
     // MANDATORY REFERENCE to edit directly: PHP 5+
-    private function _edit(&$obj, $editObj): bool {
+    private function _edit(&$content, $editObj): bool {
         // must be associative array
         $editObjType = gettype($editObj);
         if (is_primitive($editObj) || array_sequential($editObj))
@@ -491,7 +491,7 @@ class JSONDatabase {
             throw new HTTPException('ID must be a string or number', 400);
 
         // object not found
-        if (!array_key_exists($id, $obj['content']) || !check($obj['content'][$id]))
+        if (!array_key_exists($id, $content) || !check($content[$id]))
             throw new HTTPException('ID doesn\'t exist in collection', 400);
 
         // field required
@@ -525,36 +525,36 @@ class JSONDatabase {
         // field not needed for set or push operation (can create fields)
         // missing field in remove doesn't matter since it's gone either way
         if (
-            !isset($obj['content'][$id][$field]) and
+            !isset($content[$id][$field]) and
             ($operation != 'set' and $operation != 'remove' and $operation != 'array-push')
         )
             throw new HTTPException("Field $field doesn't exist in ID $id", 400);
 
         switch ($operation) {
             case 'set':
-                $obj['content'][$id][$field] = $value;
+                $content[$id][$field] = $value;
                 return true;
             case 'remove':
-                unset($obj['content'][$id][$field]);
+                unset($content[$id][$field]);
                 return true;
             case 'append':
                 // check type string
-                if (gettype($obj['content'][$id][$field]) != 'string' or gettype($value) != 'string')
+                if (gettype($content[$id][$field]) != 'string' or gettype($value) != 'string')
                     throw new HTTPException('append requires string values', 400);
 
-                $obj['content'][$id][$field] .= $value;
+                $content[$id][$field] .= $value;
                 return true;
             case 'invert':
                 // check type boolean
-                if (gettype($obj['content'][$id][$field]) != 'boolean')
+                if (gettype($content[$id][$field]) != 'boolean')
                     throw new HTTPException('invert field must be a boolean', 400);
 
-                $obj['content'][$id][$field] = !$obj['content'][$id][$field];
+                $content[$id][$field] = !$content[$id][$field];
                 return true;
             case 'increment':
             case 'decrement':
                 // check type number
-                if (!is_number_like($obj['content'][$id][$field]))
+                if (!is_number_like($content[$id][$field]))
                     throw new HTTPException('increment and decrement fields must be numbers', 400);
 
                 $change = $operation == 'increment' ? 1 : -1;
@@ -569,29 +569,29 @@ class JSONDatabase {
                         throw new HTTPException('increment and decrement values must be numbers', 400);
                 }
 
-                $obj['content'][$id][$field] += $change;
+                $content[$id][$field] += $change;
                 return true;
             case 'array-push':
                 // create it if not here
-                if (!isset($obj['content'][$id][$field]))
-                    $obj['content'][$id][$field] = array();
+                if (!isset($content[$id][$field]))
+                    $content[$id][$field] = [];
 
                 // check if our field array
                 if (
-                    gettype($obj['content'][$id][$field]) != 'array' ||
-                    array_assoc($obj['content'][$id][$field])
+                    gettype($content[$id][$field]) != 'array' ||
+                    array_assoc($content[$id][$field])
                 )
                     throw new HTTPException('array-push field must be an array', 400);
 
-                array_push($obj['content'][$id][$field], $value);
+                array_push($content[$id][$field], $value);
 
                 return true;
 
             case 'array-delete':
                 // check if our field array
                 if (
-                    gettype($obj['content'][$id][$field]) != 'array' ||
-                    array_assoc($obj['content'][$id][$field])
+                    gettype($content[$id][$field]) != 'array' ||
+                    array_assoc($content[$id][$field])
                 )
                     throw new HTTPException('array-delete field must be an array', 400);
 
@@ -599,11 +599,11 @@ class JSONDatabase {
                 if (gettype($value) != 'integer')
                     throw new HTTPException('array-delete value must be a number', 400);
 
-                array_splice($obj['content'][$id][$field], $value, 1);
+                array_splice($content[$id][$field], $value, 1);
 
                 return true;
             case 'array-splice':
-                if (array_assoc($obj['content'][$id][$field]))
+                if (array_assoc($content[$id][$field]))
                     throw new HTTPException('array-splice field must be an array', 400);
 
                 // value must be an array starting with two integers
@@ -616,9 +616,9 @@ class JSONDatabase {
                     throw new HTTPException('Incorrect array-splice options', 400);
 
                 if (count($value) > 2)
-                    array_splice($obj['content'][$id][$field], $value[0], $value[1], $value[2]);
+                    array_splice($content[$id][$field], $value[0], $value[1], $value[2]);
                 else
-                    array_splice($obj['content'][$id][$field], $value[0], $value[1]);
+                    array_splice($content[$id][$field], $value[0], $value[1]);
 
                 return true;
             default:
@@ -630,7 +630,7 @@ class JSONDatabase {
 
     public function editField($editObj) {
         $fileObj = $this->read(true);
-        $this->_edit($fileObj, $editObj);
+        $this->_edit($fileObj->content, $editObj);
         $this->write($fileObj);
     }
 
@@ -663,9 +663,9 @@ class JSONDatabase {
 
         $obj = $this->read();
 
-        $result = array();
-        foreach ($obj['content'] as $key => $value) {
-            $result[$key] = array();
+        $result = [];
+        foreach ($obj->content as $key => $value) {
+            $result[$key] = [];
             foreach ($fields as $field) {
                 if (array_key_exists($field, $value))
                     $result[$key][$field] = $value[$field];
@@ -695,7 +695,7 @@ class JSONDatabase {
         $obj = $this->read();
 
         $result = [];
-        foreach ($obj['content'] as $value) {
+        foreach ($obj->content as $value) {
             // get correct field and skip existing primitive values (faster)
             if (!array_key_exists($field, $value) || in_array($value, $result))
                 continue;
@@ -713,7 +713,35 @@ class JSONDatabase {
         return $result;
     }
 
+
+    // can run with a maximum amount of random entries
+    // (if collection is smaller it's not guaranteed)
+    // (is optional, else it will be all the results)
     public function random($params) {
-        return random($params, $this);
+        $hasMax = array_key_exists('max', $params);
+        $max = $hasMax ? $params['max'] : -1;
+        if ($hasMax && (gettype($max) !== 'integer' || $max < -1))
+            throw new HTTPException('Expected integer >= -1 for the max');
+
+        $hasSeed = array_key_exists('seed', $params);
+        $hasOffset = array_key_exists('offset', $params);
+
+        // offset is relevant only if you get the key
+        if ($hasOffset && !$hasSeed)
+            throw new HTTPException('You can\'t put an offset without a seed');
+
+        // offset validation
+        $offset = $hasOffset ? $params['offset'] : 0;
+        if ($hasOffset && (gettype($offset) !== 'integer' || $offset < 0))
+            throw new HTTPException('Expected integer >= 0 for the offset');
+
+        // seed validation
+        $seed = $hasSeed ? $params['seed'] : false;
+        if ($hasSeed && gettype($seed) !== 'integer')
+            throw new HTTPException('Expected integer for the seed');
+
+        $obj = $this->read();
+
+        return choose_random($obj->content, $seed, $max, $offset);
     }
 }

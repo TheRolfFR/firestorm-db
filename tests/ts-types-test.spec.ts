@@ -7,6 +7,7 @@ import firestorm from "..";
 
 // let's declare an interface for our collection
 interface User {
+	[firestorm.ID_FIELD]: string;
 	name: string;
 }
 
@@ -19,9 +20,9 @@ interface UserWithMethods extends User {
 }
 
 // where the method implementation goes in the addMethods
-const usersWithMethods = firestorm.collection<UserWithMethods>("users", (col) => {
-	col.getNameAsLowerCase = (): string => col.name.toLowerCase();
-	return col;
+const usersWithMethods = firestorm.collection<UserWithMethods>("users", (el) => {
+	el.getNameAsLowerCase = (): string => el.name.toLowerCase();
+	return el;
 });
 
 // we can use the methods in all results...
@@ -35,6 +36,7 @@ usersWithMethods.select({ fields: ["name", "family"] }); // getNameAsLowerCase n
 
 // 1. search through a collection
 interface User {
+	[firestorm.ID_FIELD]: string;
 	name: string;
 	age: number;
 	sex: "female" | "male" | "other";
@@ -59,25 +61,24 @@ users.search([
 	{ field: "emails", criteria: "array-contains-any", value: ["aha@domain.net", "ehe@domain.net"] },
 ]);
 
-// 2. collections can interfere with each other
+// 2. collections can interface with each other
 interface Family {
+	[firestorm.ID_FIELD]: string;
 	parents: User[];
 	children: User[];
 	getDad(): Promise<User>;
 	getMom(): Promise<User>;
 }
 
-firestorm.collection<Family>("families", (col) => {
-	col.getDad = (): Promise<User> =>
+firestorm.collection<Family>("families", (el) => {
+	el.getDad = (): Promise<User> =>
 		users.search([
-			//! TODO - needs clarification
-			// firestorm.ID_FIELD refers to id of the 'asked object' of the collection
 			// === family id
-			{ field: "family", criteria: "==", value: firestorm.ID_FIELD },
+			{ field: "family", criteria: "==", value: el[firestorm.ID_FIELD] },
 			{ field: "sex", criteria: "==", value: "male" },
 		])[0];
 
-	return col;
+	return el;
 });
 
 /**

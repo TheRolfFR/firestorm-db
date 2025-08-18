@@ -1,50 +1,17 @@
 <?php
 
-require_once './classes/HTTPException.php';
-
 function make_seed() {
-    list($usec, $sec) = explode(' ', microtime());
+    [$usec, $sec] = explode(' ', microtime());
     return intval($sec + $usec * 1000000);
-}
-
-// can run with a maximum amount of random entries
-// (if collection is smaller it's not guaranteed)
-// (is optional, else it will be all the results)
-function random($params, $class) {
-    $hasMax = array_key_exists('max', $params);
-    $max = $hasMax ? $params['max'] : -1;
-    if ($hasMax && (gettype($max) !== 'integer' || $max < -1))
-        throw new HTTPException('Expected integer >= -1 for the max');
-
-    $hasSeed = array_key_exists('seed', $params);
-    $hasOffset = array_key_exists('offset', $params);
-
-    // offset is relevant only if you get the key
-    if ($hasOffset && !$hasSeed)
-        throw new HTTPException('You can\'t put an offset without a seed');
-
-    // offset validation
-    $offset = $hasOffset ? $params['offset'] : 0;
-    if ($hasOffset && (gettype($offset) !== 'integer' || $offset < 0))
-        throw new HTTPException('Expected integer >= 0 for the offset');
-
-    // seed validation
-    $seed = $hasSeed ? $params['seed'] : false;
-    if ($hasSeed && gettype($seed) !== 'integer')
-        throw new HTTPException('Expected integer for the seed');
-
-    $json = $class->read()['content'];
-
-    return choose_random($json, $seed, $max, $offset);
 }
 
 function choose_random($json, $seed = false, $max = -1, $offset = 0) {
     $keys = array_keys($json);
-    $keys_selected = array();
+    $keys_selected = [];
     $keys_length = count($keys);
 
     // return an empty array, can't get more elements
-    if ($offset >= $keys_length) return array();
+    if ($offset >= $keys_length) return [];
 
     if ($max == -1 || $max > $keys_length) $max = $keys_length;
 
@@ -75,7 +42,7 @@ function choose_random($json, $seed = false, $max = -1, $offset = 0) {
     }
 
     // get objects from keys selected
-    $result = array();
+    $result = [];
     foreach ($keys_selected as $k) {
         $key = strval($k);
         $result[$key] = $json[$key];

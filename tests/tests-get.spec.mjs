@@ -177,6 +177,9 @@ describe("GET operations", () => {
 			["array-contains-any", "qualities", ["intelligent", "calm"], ["0", "2"]],
 			["array-contains-any", "qualities", ["intELLIGent", "CALm"], ["0", "2"], true],
 			["array-contains-any", "qualities", ["fast", "flying"], []],
+			["array-contains-all", "qualities", ["intelligent", "strong", "efficient"], ["0"]],
+			["array-contains-all", "qualities", ["intELLIGent", "sTROnG"], ["0"], true],
+			["array-contains-all", "qualities", ["intelligent", "flying"], []],
 			["array-length-eq", "friends", 6, ["0"]],
 			["array-length-eq", "friends", 2, []],
 			["array-length-df", "friends", 6, ["1", "2"]],
@@ -192,7 +195,7 @@ describe("GET operations", () => {
 
 		testArray.forEach(([criteria, field, value, idsFound, ignoreCase]) => {
 			ignoreCase = !!ignoreCase;
-			it(`${criteria} criteria${idsFound.length == 0 ? " (empty result)" : ""}${
+			it(`${criteria} criteria${idsFound.length === 0 ? " (empty result)" : ""}${
 				ignoreCase ? " (case insensitive)" : ""
 			}`, (done) => {
 				base
@@ -206,10 +209,7 @@ describe("GET operations", () => {
 					])
 					.then((res) => {
 						expect(res).to.be.an("array", "Search result must be an array");
-						expect(res).to.have.lengthOf(
-							idsFound.length,
-							"Expected result have not correct length",
-						);
+						expect(res).to.have.lengthOf(idsFound.length, "Found result has incorrect length");
 						expect(res.map((el) => el[firestorm.ID_FIELD])).to.deep.equal(
 							idsFound,
 							"Incorrect result search",

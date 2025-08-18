@@ -5,7 +5,27 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-# [1.13.0] - 2024-05-09
+## Unreleased
+
+### Added
+
+- `array-contains-all` option for array fields.
+
+### Changed
+
+- Collection type must always have an ID field.
+- Changed PHP file representation from an associative array to a strongly-typed FileObject class.
+- Reduced payload size for `Collection.get`.
+- Use modern async/await for client code (supported in all major browers/Node.js since 2017).
+- Made `firestorm.files.get` a generic method for increased type safety.
+- Stricter type checking for `array-contains` search methods.
+- Mixed arrays of strings and numbers are allowed in all bulk Firestorm methods.
+
+### Fixed
+
+- Fixed `ID_FIELD` TypeScript type.
+
+## [1.13.0] - 2024-05-09
 
 ### Added
 

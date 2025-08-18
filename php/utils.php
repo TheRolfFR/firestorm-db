@@ -122,6 +122,7 @@ function remove_dots($path) {
     return $root . implode('/', $ret);
 }
 
+// php 7 compatibility (added in php 8)
 if (!function_exists('str_ends_with')) {
     function str_ends_with(string $haystack, string $needle): bool {
         $needle_len = strlen($needle);

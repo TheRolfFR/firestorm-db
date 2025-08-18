@@ -68,7 +68,7 @@ switch ($command) {
         break;
     case 'read_raw':
         $res = $db->read_raw();
-        $res = $res['content'];
+        $res = $res->content;
         http_response($res);
         break;
     case 'get':

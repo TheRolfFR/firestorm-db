@@ -10,12 +10,12 @@
 <a href="https://github.com/TheRolfFR/firestorm-db/blob/main/CHANGELOG.md">
     <img alt="Changelog" src="https://img.shields.io/badge/Changelog-Read_here-blue?style=flat-square">
 </a>
-<a href="https://github.com/TheRolfFR/firestorm-db/actions/workflows/testjs.yml">
-    <img src="https://img.shields.io/github/actions/workflow/status/TheRolfFR/firestorm-db/testjs.yml?style=flat-square" alt="Tests" />
+<a href="https://github.com/TheRolfFR/firestorm-db/actions/workflows/tests-js.yml">
+    <img src="https://img.shields.io/github/actions/workflow/status/TheRolfFR/firestorm-db/tests-js.yml?style=flat-square" alt="Tests" />
 </a>
 </div>
 
-*Self hosted Firestore-like database with API endpoints based on micro bulk operations*
+*Self hosted Firestore-like database with API endpoints based on micro bulk operations.*
 
 # Installation
 
@@ -36,7 +36,7 @@ The JavaScript [index.js](./src/index.js) file is simply an [Axios](https://www.
 First, set your API address (and your writing token if needed) using the `address()` and `token()` functions:
 
 ```js
-// only needed in Node.js, including the script tag in a browser is enough otherwise.
+// only needed in Node.js; including the script tag in a browser is enough otherwise.
 const firestorm = require("firestorm-db");
 
 firestorm.address("http://example.com/path/to/firestorm/root/");
@@ -79,11 +79,25 @@ johnDoe.hello(); // "John Doe says hello!"
 | sha1()                    | none                                                        | Get the SHA-1 hash of the file. Can be used to compare file content without downloading the JSON.      |
 | readRaw(original)         | original?: `boolean`                                        | Read the entire collection. `original` disables ID field injection, for non-relational collections.    |
 | get(key)                  | key: `string \| number`                                     | Get an element from the collection by its key.                                                         |
-| searchKeys(keys)          | keys: `string[] \| number[]`                                | Get multiple elements from the collection by their keys.                                               |
+| searchKeys(keys)          | keys: `(string \| number)[]`                                | Get multiple elements from the collection by their keys.                                               |
 | search(options, random)   | options: `SearchOption[]` random?:`boolean \| number`       | Search through the collection. You can randomize the output order with random as true or a given seed. |
 | select(option)            | option: `SelectOption`                                      | Get only selected fields from the collection. Essentially an upgraded version of readRaw.              |
 | values(option)            | option: `ValueOption`                                       | Get all distinct non-null values for a given key across a collection.                                  |
-| random(max, seed, offset) | max?: `number >= -1` seed?: `number` offset?: `number >= 0` | Read random elements of the collection.                                                                |
+| random(max, seed, offset) | max?: `number >= -1` seed?: `number` offset?: `number >= 0` | Read random collection elements.                                                                |
+
+## Write operations
+
+| Name                    | Parameters                                       | Description                                                                               |
+| ----------------------- | ------------------------------------------------ | ----------------------------------------------------------------------------------------- |
+| writeRaw(value)         | value: `Object`                                  | Set the entire content of the collection. **⚠️ Very dangerous! ⚠️**                         |
+| add(value)              | value: `Object`                                  | Append a value to the collection. Only works if `autoKey` is enabled server-side.         |
+| addBulk(values)         | values: `Object[]`                               | Append multiple values to the collection. Only works if `autoKey` is enabled server-side. |
+| remove(key)             | key: `string \| number`                          | Remove an element from the collection by its key.                                         |
+| removeBulk(keys)        | keys: `(string \| number)[]`                     | Remove multiple elements from the collection by their keys.                               |
+| set(key, value)         | key: `string \| number`, value: `Object`         | Set a value in the collection by its key.                                                 |
+| setBulk(keys, values)   | keys: `(string \| number)[]`, values: `Object[]` | Set multiple values in the collection by their keys.                                      |
+| editField(obj)          | option: `EditFieldOption`                        | Edit an element's field in the collection.                                                |
+| editFieldBulk(objArray) | options: `EditFieldOption[]`                     | Edit multiple elements' fields in the collection.                                         |
 
 ## Search options
 
@@ -106,6 +120,7 @@ The search method can take one or more options to filter entries in a collection
 | `'array-contains'`      | `Array`                       | Entry field's array contains your value                         |
 | `'array-contains-none'` | `Array`                       | Entry field's array contains no values from your array          |
 | `'array-contains-any'`  | `Array`                       | Entry field's array contains at least one value from your array |
+| `'array-contains-all'`  | `Array`                       | Entry field's array contains every value from your array        |
 | `'array-length-eq'`     | `number`                      | Entry field's array size is equal to your value                 |
 | `'array-length-df'`     | `number`                      | Entry field's array size is different from your value           |
 | `'array-length-lt'`     | `number`                      | Entry field's array size is lower than your value               |
@@ -113,23 +128,9 @@ The search method can take one or more options to filter entries in a collection
 | `'array-length-le'`     | `number`                      | Entry field's array size is lower or equal to your value        |
 | `'array-length-ge'`     | `number`                      | Entry field's array size is greater or equal to your value      |
 
-## Write operations
-
-| Name                    | Parameters                                       | Description                                                                               |
-| ----------------------- | ------------------------------------------------ | ----------------------------------------------------------------------------------------- |
-| writeRaw(value)         | value: `Object`                                  | Set the entire content of the collection. **⚠️ Very dangerous! ⚠️**                         |
-| add(value)              | value: `Object`                                  | Append a value to the collection. Only works if `autoKey` is enabled server-side.         |
-| addBulk(values)         | values: `Object[]`                               | Append multiple values to the collection. Only works if `autoKey` is enabled server-side. |
-| remove(key)             | key: `string \| number`                          | Remove an element from the collection by its key.                                         |
-| removeBulk(keys)        | keys: `string[] \| number[]`                     | Remove multiple elements from the collection by their keys.                               |
-| set(key, value)         | key: `string \| number`, value: `Object`         | Set a value in the collection by its key.                                                 |
-| setBulk(keys, values)   | keys: `string[] \| number[]`, values: `Object[]` | Set multiple values in the collection by their keys.                                      |
-| editField(obj)          | option: `EditFieldOption`                        | Edit an element's field in the collection.                                                |
-| editFieldBulk(objArray) | options: `EditFieldOption[]`                     | Edit multiple elements' fields in the collection.                                         |
-
 ## Edit field options
 
-Edit objects have an `id` of the element, a `field` to edit, an `operation` with what to do to this field, and a possible `value`. Here is a list of operations:
+Edit objects have an element `id`, a `field` to edit, an `operation` specifying what to do to this field, and optionally a `value`.
 
 | Operation      | Needs value | Allowed value types      | Description                                                                                                                            |
 | -------------- | ----------- | ------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------|
@@ -161,7 +162,7 @@ The server-side files to handle requests can be found and copied to your hosting
 // config.php
 require_once './classes/JSONDatabase.php';
 
-$database_list = array();
+$database_list = [];
 
 // without constructor
 $tmp = new JSONDatabase;
@@ -179,21 +180,21 @@ $tmp->folderPath = './files/';
 $database_list[$tmp->fileName] = $tmp;
 ```
 
-- The database will be stored in `<folderPath>/<filename>.json` (default folder: `./files/`).
+- The database will be stored in `<folderPath>/<fileName>.json` (default folder: `./files/`).
 - `autoKey` controls whether to automatically generate the key name or to have explicit key names (default: `true`).
 - `autoIncrement` controls whether to simply start generating key names from zero or to use a [random ID](https://www.php.net/manual/en/function.uniqid.php) each time (default: `true`).
 - The key in the `$database_list` array is what the collection should be referred to in the JavaScript collection constructor. This can be different from the JSON filename if needed.
 
-If you're working with multiple collections, it's probably easier to initialize them all in the array constructor directly:
+If you're working with multiple collections, it can be easier to initialize them all in the array constructor directly:
 
 ```php
 // config.php
 <?php
 require_once './classes/JSONDatabase.php';
-$database_list = array(
+$database_list = [
     'orders' => new JSONDatabase('orders', true),
     'users' => new JSONDatabase('users', false),
-)
+];
 ```
 
 ## Permissions
@@ -208,11 +209,11 @@ sudo chown -R www-data "/path/to/firestorm/root/"
 
 Firestorm's file APIs are implemented in `files.php`. If you don't need file-related features, then simply delete this file.
 
-To work with files server-side, you need two new configuration variables in `config.php`:
+To work with files server-side, you need to add two new configuration variables in `config.php`:
 
 ```php
 // Extension whitelist
-$authorized_file_extension = array('.txt', '.png', '.jpg', '.jpeg');
+$authorized_file_extension = ['.txt', '.png', '.jpg', '.jpeg'];
 
 // Root directory for where files should be uploaded
 // ($_SERVER['SCRIPT_FILENAME']) is a shortcut to the root Firestorm directory.
@@ -280,72 +281,6 @@ deletePromise
     .catch((err) => console.error(err));
 ```
 
-# TypeScript Support
-
-Firestorm ships with TypeScript support out of the box.
-
-## Collection types
-
-Collections in TypeScript take a generic parameter `T`, which is the type of each element in the collection. If you aren't using a relational collection, this can simply be set to `any`.
-
-```ts
-import firestorm from "firestorm-db";
-firestorm.address("ADDRESS_VALUE");
-
-interface User {
-    name: string;
-    password: string;
-    pets: string[];
-}
-
-const userCollection = firestorm.collection<User>("users");
-
-const johnDoe = await userCollection.get(123456789);
-// type: { name: string, password: string, pets: string[] }
-```
-
-Injected methods should also be stored in this interface. They'll get filtered out from write operations to prevent false positives:
-
-```ts
-import firestorm from "firestorm-db";
-firestorm.address("ADDRESS_VALUE");
-
-interface User {
-    name: string;
-    hello(): string;
-}
-
-const userCollection = firestorm.collection("users", (el) => {
-    // interface types should agree with injected methods
-    el.hello = () => `${el.name} says hello!`;
-    return el;
-});
-
-const johnDoe = await userCollection.get(123456789);
-const hello = johnDoe.hello(); // type: string
-
-await userCollection.add({
-    name: "Mary Doe",
-    // error: 'hello' does not exist in type 'Addable<User>'.
-    hello() {
-        return "Mary Doe says hello!"
-    }
-})
-```
-
-## Additional types
-
-Additional types exist for search criteria options, write method return types, configuration methods, the file handler, etc.
-
-```ts
-import firestorm from "firestorm-db";
-const address = firestorm.address("ADDRESS_VALUE");
-// type: string
-
-const deleteConfirmation = await firestorm.files.delete("/quote.txt");
-// type: firestorm.WriteConfirmation
-```
-
 # Advanced Features
 
 ## `ID_FIELD` and its meaning
@@ -368,11 +303,11 @@ console.log(returnedID === returnedUser[firestorm.ID_FIELD]); // true
 returnedUser.basicInfo(); // Bob (123456789)
 ```
 
-As it's entirely a JavaScript construct, `ID_FIELD` values will never be in your collection.
+As it's entirely a JavaScript construct, `ID_FIELD` values will actually never be in the server-side collection JSONs.
 
 ## Add and set operations
 
-You may have noticed two different methods that seem to do the same thing: `add` and `set` (and their corresponding bulk variants). The key difference is that `add` is used on collections where `autoKey` is enabled, and `set` is used on collections where `autoKey` is disabled. `autoIncrement` doesn't affect this behavior.
+You may have noticed two different methods that seem to do the same thing: `add` and `set` (and their corresponding bulk variants). The key difference is that `add` automatically generates a key for the given value, and hence can only be used on collections where `autoKey` is enabled, but `set` can be used on any collection type. `autoIncrement` doesn't affect this behavior.
 
 For instance, the following PHP configuration will disable add operations:
 
@@ -389,9 +324,17 @@ await userCollection.add({ name: "John Doe", age: 30 });
 Add operations return the generated ID of the added element, since it isn't known at add time, but set operations simply return a confirmation. If you want to get an element after it's been set, use the ID passed into the method.
 
 ```js
-// this will not work, since set operations don't return the ID
-userCollection.set(123, { name: "John Doe", age: 30 })
+// Works, ID is returned
+userCollection.add({ name: "John Doe", age: 30 })
     .then((id) => userCollection.get(id));
+
+// Works, using already-known ID to retrieve results
+userCollection.set(123, { name: "John Doe", age: 30 })
+    .then(() => userCollection.get(123));
+
+// Fails, confirmation is returned rather than ID
+userCollection.set(123, { name: "John Doe", age: 30 })
+    .then((conf) => userCollection.get(conf));
 ```
 
 ## Combining collections
@@ -420,7 +363,7 @@ const johnDoe = await customers.get(123456789);
 await johnDoe.getOrders();
 ```
 
-This functionality is particularly useful for complex data hierarchies that store fields as ID values to other collections, and is the main reason why add methods exist in the first place. It can also be used to split deeply nested data structures to increase server-side performance by only loading collections when necessary.
+This functionality is particularly useful for complex data hierarchies with foreign keys spanning multiple collections, and is the main reason why add methods exist in the first place. It can also be used to split deeply nested data structures to increase server-side performance by only loading relevant data.
 
 ## Manually sending data
 
@@ -441,7 +384,7 @@ The first keys in a Firestorm request will always be the same regardless of its 
 }
 ```
 
-PHP grabs the `JSONDatabase` instance created in `config.php` using the `collection` key in the request as the `$database_list` key name. From there, the `token` is used to validate the request if needed and the `command` is found and executed.
+The requested PHP file then grabs the `JSONDatabase` instance created in `config.php` using the `collection` key in the request as the `$database_list` key name. From there, the `token` is used to validate the request if needed and the `command` is found and executed.
 
 ## Memory management
 
@@ -454,8 +397,80 @@ Allowed memory size of 134217728 bytes exhausted (tried to allocate 32360168 byt
 
 If you encounter a memory allocation issue, simply change the memory limit in `/etc/php/7.4/apache2/php.ini` to be bigger:
 
-```
+```ini
 memory_limit = 256M
 ```
 
-If this doesn't help, considering splitting your collection into smaller collections and linking them together with methods.
+If this doesn't help, considering splitting your collection into multiple smaller collections and linking them together with methods.
+
+# TypeScript Support
+
+Firestorm ships with TypeScript support out of the box.
+
+## Collection types
+
+Collections in TypeScript take a generic parameter `T`, which is the type of each element in the collection. If you aren't using a relational collection, this can simply be set to `any`.
+
+The generic parameter must contain an `ID_FIELD` imported from Firestorm (unless you're using a non-relational collection).
+
+```ts
+import firestorm from "firestorm-db";
+firestorm.address("ADDRESS_VALUE");
+
+interface User {
+    // An ID field is required by a generic constraint
+    // unless the collection is non-relational
+    [firestorm.ID_FIELD]: string;
+    name: string;
+    password: string;
+    pets: string[];
+}
+
+const userCollection = firestorm.collection<User>("users");
+
+const johnDoe = await userCollection.get(123456789);
+// type: { [ID_FIELD]: string, name: string, password: string, pets: string[] }
+```
+
+Injected methods should also be stored in this interface. They'll get filtered out from write operations to prevent false positives:
+
+```ts
+import firestorm from "firestorm-db";
+firestorm.address("ADDRESS_VALUE");
+
+interface User {
+    [firestorm.ID_FIELD]: string;
+    name: string;
+    hello(): string;
+}
+
+const userCollection = firestorm.collection("users", (el) => {
+    // interface types should agree with injected methods
+    el.hello = () => `${el.name} says hello!`;
+    return el;
+});
+
+const johnDoe = await userCollection.get(123456789);
+const hello = johnDoe.hello(); // type: string
+
+await userCollection.add({
+    name: "Mary Doe",
+    // Error: 'hello' does not exist in type 'Addable<User>'.
+    hello() {
+        return "Mary Doe says hello!"
+    }
+})
+```
+
+## Additional types
+
+Additional types exist for search criteria options, write method return types, configuration methods, the file handler, etc.
+
+```ts
+import firestorm from "firestorm-db";
+const address = firestorm.address("ADDRESS_VALUE");
+// type: string
+
+const deleteConfirmation = await firestorm.files.delete("/quote.txt");
+// type: firestorm.WriteConfirmation
+```

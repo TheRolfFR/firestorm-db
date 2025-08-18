@@ -7,17 +7,17 @@
   "scripts": {
     "php:start": "node tests/php_setup.mjs",
     "php:stop": "sh tests/php_server_kill.sh",
-    "php:tests": "npm run php:stop ; npm run php:start && npm run js:tests ; npm run php:stop",
+    "php:tests": "pnpm php:stop ; pnpm php:start && pnpm js:tests ; pnpm php:stop",
     "js:tests": "mocha tests/**/tests-setup.spec.mjs tests/**/*.spec.mjs",
     "docker:build": "bash docker/docker_image_build.bash",
     "docker:alive": "bash docker/docker_image_alive.bash",
     "docker:tests": "bash docker/docker_image_tests.bash",
     "docker:start": "bash docker/docker_image_start.bash",
     "doc:gen": "jsdoc src/index.js -c jsdoc.json -R README.md -t ./node_modules/docdash -d out",
-    "doc:watch": "nodemon -x npm run doc:gen --watch src/index.js --watch jsdoc.json --watch README.md",
+    "doc:watch": "nodemon -x pnpm doc:gen --watch src/index.js --watch jsdoc.json --watch README.md",
     "types:gen": "npx tsc",
     "lint:prettier": "prettier \"{,!(node_modules)/**/}*.{cjs,mjs,js,ts}\" --config .prettierrc --write",
-    "coverage": "npm run php:stop ; npm run php:start && nyc --reporter=text mocha tests/**/*.spec.js; npm run php:stop"
+    "coverage": "pnpm php:stop ; pnpm php:start && nyc --reporter=text mocha tests/**/*.spec.js; pnpm php:stop"
   },
   "repository": {
     "type": "git",
@@ -45,21 +45,22 @@
     "node": ">=20.0.0"
   },
   "dependencies": {
-    "axios": "^1.6.8",
-    "form-data": "^4.0.0"
+    "axios": "^1.11.0",
+    "form-data": "^4.0.4"
   },
   "devDependencies": {
-    "chai": "^4.4.1",
-    "consola": "^3.4.0",
+    "@types/mocha": "^10.0.10",
+    "chai": "^5.2.1",
+    "consola": "^3.4.2",
     "docdash": "^2.0.2",
-    "glob": "^11.0.1",
+    "glob": "^11.0.3",
     "jsdoc": "^4.0.4",
-    "jsdoc-to-markdown": "^9.1.1",
-    "mocha": "^11.1.0",
+    "jsdoc-to-markdown": "^9.1.2",
+    "mocha": "^11.7.1",
     "nyc": "^17.1.0",
-    "prettier": "^3.5.3",
+    "prettier": "^3.6.2",
     "recursive-copy": "^2.0.14",
-    "typescript": "^5.8.2"
+    "typescript": "^5.9.2"
   },
   "pnpm": {
     "overrides": {
