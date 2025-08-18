@@ -84,11 +84,11 @@
 <a href="https://github.com/TheRolfFR/firestorm-db/blob/main/CHANGELOG.md">
     <img alt="Changelog" src="https://img.shields.io/badge/Changelog-Read_here-blue?style=flat-square">
 </a>
-<a href="https://github.com/TheRolfFR/firestorm-db/actions/workflows/testjs.yml">
-    <img src="https://img.shields.io/github/actions/workflow/status/TheRolfFR/firestorm-db/testjs.yml?style=flat-square" alt="Tests" />
+<a href="https://github.com/TheRolfFR/firestorm-db/actions/workflows/tests-js.yml">
+    <img src="https://img.shields.io/github/actions/workflow/status/TheRolfFR/firestorm-db/tests-js.yml?style=flat-square" alt="Tests" />
 </a>
 </div>
-<p><em>Self hosted Firestore-like database with API endpoints based on micro bulk operations</em></p>
+<p><em>Self hosted Firestore-like database with API endpoints based on micro bulk operations.</em></p>
 <h1>Installation</h1>
 <p>Installing the JavaScript client is as simple as running:</p>
 <pre class="prettyprint source lang-sh"><code>npm install firestorm-db
@@ -98,7 +98,7 @@
 <p>The JavaScript <a href="./src/index.js">index.js</a> file is simply an <a href="https://www.npmjs.com/package/axios">Axios</a> wrapper of the PHP backend.</p>
 <h2>JavaScript setup</h2>
 <p>First, set your API address (and your writing token if needed) using the <code>address()</code> and <code>token()</code> functions:</p>
-<pre class="prettyprint source lang-js"><code>// only needed in Node.js, including the script tag in a browser is enough otherwise.
+<pre class="prettyprint source lang-js"><code>// only needed in Node.js; including the script tag in a browser is enough otherwise.
 const firestorm = require(&quot;firestorm-db&quot;);
 
 firestorm.address(&quot;http://example.com/path/to/firestorm/root/&quot;);
@@ -156,7 +156,7 @@ johnDoe.hello(); // &quot;John Doe says hello!&quot;
 </tr>
 <tr>
 <td>searchKeys(keys)</td>
-<td>keys: <code>string[] \| number[]</code></td>
+<td>keys: <code>(string \| number)[]</code></td>
 <td>Get multiple elements from the collection by their keys.</td>
 </tr>
 <tr>
@@ -177,7 +177,64 @@ johnDoe.hello(); // &quot;John Doe says hello!&quot;
 <tr>
 <td>random(max, seed, offset)</td>
 <td>max?: <code>number &gt;= -1</code> seed?: <code>number</code> offset?: <code>number &gt;= 0</code></td>
-<td>Read random elements of the collection.</td>
+<td>Read random collection elements.</td>
+</tr>
+</tbody>
+</table>
+<h2>Write operations</h2>
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Parameters</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>writeRaw(value)</td>
+<td>value: <code>Object</code></td>
+<td>Set the entire content of the collection. <strong>⚠️ Very dangerous! ⚠️</strong></td>
+</tr>
+<tr>
+<td>add(value)</td>
+<td>value: <code>Object</code></td>
+<td>Append a value to the collection. Only works if <code>autoKey</code> is enabled server-side.</td>
+</tr>
+<tr>
+<td>addBulk(values)</td>
+<td>values: <code>Object[]</code></td>
+<td>Append multiple values to the collection. Only works if <code>autoKey</code> is enabled server-side.</td>
+</tr>
+<tr>
+<td>remove(key)</td>
+<td>key: <code>string \| number</code></td>
+<td>Remove an element from the collection by its key.</td>
+</tr>
+<tr>
+<td>removeBulk(keys)</td>
+<td>keys: <code>(string \| number)[]</code></td>
+<td>Remove multiple elements from the collection by their keys.</td>
+</tr>
+<tr>
+<td>set(key, value)</td>
+<td>key: <code>string \| number</code>, value: <code>Object</code></td>
+<td>Set a value in the collection by its key.</td>
+</tr>
+<tr>
+<td>setBulk(keys, values)</td>
+<td>keys: <code>(string \| number)[]</code>, values: <code>Object[]</code></td>
+<td>Set multiple values in the collection by their keys.</td>
+</tr>
+<tr>
+<td>editField(obj)</td>
+<td>option: <code>EditFieldOption</code></td>
+<td>Edit an element's field in the collection.</td>
+</tr>
+<tr>
+<td>editFieldBulk(objArray)</td>
+<td>options: <code>EditFieldOption[]</code></td>
+<td>Edit multiple elements' fields in the collection.</td>
 </tr>
 </tbody>
 </table>
@@ -259,6 +316,11 @@ johnDoe.hello(); // &quot;John Doe says hello!&quot;
 <td>Entry field's array contains at least one value from your array</td>
 </tr>
 <tr>
+<td><code>'array-contains-all'</code></td>
+<td><code>Array</code></td>
+<td>Entry field's array contains every value from your array</td>
+</tr>
+<tr>
 <td><code>'array-length-eq'</code></td>
 <td><code>number</code></td>
 <td>Entry field's array size is equal to your value</td>
@@ -290,65 +352,8 @@ johnDoe.hello(); // &quot;John Doe says hello!&quot;
 </tr>
 </tbody>
 </table>
-<h2>Write operations</h2>
-<table>
-<thead>
-<tr>
-<th>Name</th>
-<th>Parameters</th>
-<th>Description</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>writeRaw(value)</td>
-<td>value: <code>Object</code></td>
-<td>Set the entire content of the collection. <strong>⚠️ Very dangerous! ⚠️</strong></td>
-</tr>
-<tr>
-<td>add(value)</td>
-<td>value: <code>Object</code></td>
-<td>Append a value to the collection. Only works if <code>autoKey</code> is enabled server-side.</td>
-</tr>
-<tr>
-<td>addBulk(values)</td>
-<td>values: <code>Object[]</code></td>
-<td>Append multiple values to the collection. Only works if <code>autoKey</code> is enabled server-side.</td>
-</tr>
-<tr>
-<td>remove(key)</td>
-<td>key: <code>string \| number</code></td>
-<td>Remove an element from the collection by its key.</td>
-</tr>
-<tr>
-<td>removeBulk(keys)</td>
-<td>keys: <code>string[] \| number[]</code></td>
-<td>Remove multiple elements from the collection by their keys.</td>
-</tr>
-<tr>
-<td>set(key, value)</td>
-<td>key: <code>string \| number</code>, value: <code>Object</code></td>
-<td>Set a value in the collection by its key.</td>
-</tr>
-<tr>
-<td>setBulk(keys, values)</td>
-<td>keys: <code>string[] \| number[]</code>, values: <code>Object[]</code></td>
-<td>Set multiple values in the collection by their keys.</td>
-</tr>
-<tr>
-<td>editField(obj)</td>
-<td>option: <code>EditFieldOption</code></td>
-<td>Edit an element's field in the collection.</td>
-</tr>
-<tr>
-<td>editFieldBulk(objArray)</td>
-<td>options: <code>EditFieldOption[]</code></td>
-<td>Edit multiple elements' fields in the collection.</td>
-</tr>
-</tbody>
-</table>
 <h2>Edit field options</h2>
-<p>Edit objects have an <code>id</code> of the element, a <code>field</code> to edit, an <code>operation</code> with what to do to this field, and a possible <code>value</code>. Here is a list of operations:</p>
+<p>Edit objects have an element <code>id</code>, a <code>field</code> to edit, an <code>operation</code> specifying what to do to this field, and optionally a <code>value</code>.</p>
 <table>
 <thead>
 <tr>
@@ -428,7 +433,7 @@ johnDoe.hello(); // &quot;John Doe says hello!&quot;
 // config.php
 require_once './classes/JSONDatabase.php';
 
-$database_list = array();
+$database_list = [];
 
 // without constructor
 $tmp = new JSONDatabase;
@@ -446,19 +451,19 @@ $tmp->folderPath = './files/';
 $database_list[$tmp->fileName] = $tmp;
 </code></pre>
 <ul>
-<li>The database will be stored in <code>&lt;folderPath&gt;/&lt;filename&gt;.json</code> (default folder: <code>./files/</code>).</li>
+<li>The database will be stored in <code>&lt;folderPath&gt;/&lt;fileName&gt;.json</code> (default folder: <code>./files/</code>).</li>
 <li><code>autoKey</code> controls whether to automatically generate the key name or to have explicit key names (default: <code>true</code>).</li>
 <li><code>autoIncrement</code> controls whether to simply start generating key names from zero or to use a <a href="https://www.php.net/manual/en/function.uniqid.php">random ID</a> each time (default: <code>true</code>).</li>
 <li>The key in the <code>$database_list</code> array is what the collection should be referred to in the JavaScript collection constructor. This can be different from the JSON filename if needed.</li>
 </ul>
-<p>If you're working with multiple collections, it's probably easier to initialize them all in the array constructor directly:</p>
+<p>If you're working with multiple collections, it can be easier to initialize them all in the array constructor directly:</p>
 <pre class="prettyprint source lang-php"><code>// config.php
 &lt;?php
 require_once './classes/JSONDatabase.php';
-$database_list = array(
+$database_list = [
     'orders' => new JSONDatabase('orders', true),
     'users' => new JSONDatabase('users', false),
-)
+];
 </code></pre>
 <h2>Permissions</h2>
 <p>The PHP scripts used to write and read files need permissions to edit the JSON files. You can give Firestorm rights to a folder with the following command:</p>
@@ -466,9 +471,9 @@ $database_list = array(
 </code></pre>
 <h1>Firestorm Files</h1>
 <p>Firestorm's file APIs are implemented in <code>files.php</code>. If you don't need file-related features, then simply delete this file.</p>
-<p>To work with files server-side, you need two new configuration variables in <code>config.php</code>:</p>
+<p>To work with files server-side, you need to add two new configuration variables in <code>config.php</code>:</p>
 <pre class="prettyprint source lang-php"><code>// Extension whitelist
-$authorized_file_extension = array('.txt', '.png', '.jpg', '.jpeg');
+$authorized_file_extension = ['.txt', '.png', '.jpg', '.jpeg'];
 
 // Root directory for where files should be uploaded
 // ($_SERVER['SCRIPT_FILENAME']) is a shortcut to the root Firestorm directory.
@@ -520,59 +525,6 @@ deletePromise
     .then(() => console.log(&quot;File successfully deleted&quot;))
     .catch((err) => console.error(err));
 </code></pre>
-<h1>TypeScript Support</h1>
-<p>Firestorm ships with TypeScript support out of the box.</p>
-<h2>Collection types</h2>
-<p>Collections in TypeScript take a generic parameter <code>T</code>, which is the type of each element in the collection. If you aren't using a relational collection, this can simply be set to <code>any</code>.</p>
-<pre class="prettyprint source lang-ts"><code>import firestorm from &quot;firestorm-db&quot;;
-firestorm.address(&quot;ADDRESS_VALUE&quot;);
-
-interface User {
-    name: string;
-    password: string;
-    pets: string[];
-}
-
-const userCollection = firestorm.collection&lt;User>(&quot;users&quot;);
-
-const johnDoe = await userCollection.get(123456789);
-// type: { name: string, password: string, pets: string[] }
-</code></pre>
-<p>Injected methods should also be stored in this interface. They'll get filtered out from write operations to prevent false positives:</p>
-<pre class="prettyprint source lang-ts"><code>import firestorm from &quot;firestorm-db&quot;;
-firestorm.address(&quot;ADDRESS_VALUE&quot;);
-
-interface User {
-    name: string;
-    hello(): string;
-}
-
-const userCollection = firestorm.collection(&quot;users&quot;, (el) => {
-    // interface types should agree with injected methods
-    el.hello = () => `${el.name} says hello!`;
-    return el;
-});
-
-const johnDoe = await userCollection.get(123456789);
-const hello = johnDoe.hello(); // type: string
-
-await userCollection.add({
-    name: &quot;Mary Doe&quot;,
-    // error: 'hello' does not exist in type 'Addable&lt;User>'.
-    hello() {
-        return &quot;Mary Doe says hello!&quot;
-    }
-})
-</code></pre>
-<h2>Additional types</h2>
-<p>Additional types exist for search criteria options, write method return types, configuration methods, the file handler, etc.</p>
-<pre class="prettyprint source lang-ts"><code>import firestorm from &quot;firestorm-db&quot;;
-const address = firestorm.address(&quot;ADDRESS_VALUE&quot;);
-// type: string
-
-const deleteConfirmation = await firestorm.files.delete(&quot;/quote.txt&quot;);
-// type: firestorm.WriteConfirmation
-</code></pre>
 <h1>Advanced Features</h1>
 <h2><code>ID_FIELD</code> and its meaning</h2>
 <p>There's a constant in Firestorm called <code>ID_FIELD</code>, which is a JavaScript-side property added afterwards to each query element.</p>
@@ -589,9 +541,9 @@ console.log(returnedID === returnedUser[firestorm.ID_FIELD]); // true
 
 returnedUser.basicInfo(); // Bob (123456789)
 </code></pre>
-<p>As it's entirely a JavaScript construct, <code>ID_FIELD</code> values will never be in your collection.</p>
+<p>As it's entirely a JavaScript construct, <code>ID_FIELD</code> values will actually never be in the server-side collection JSONs.</p>
 <h2>Add and set operations</h2>
-<p>You may have noticed two different methods that seem to do the same thing: <code>add</code> and <code>set</code> (and their corresponding bulk variants). The key difference is that <code>add</code> is used on collections where <code>autoKey</code> is enabled, and <code>set</code> is used on collections where <code>autoKey</code> is disabled. <code>autoIncrement</code> doesn't affect this behavior.</p>
+<p>You may have noticed two different methods that seem to do the same thing: <code>add</code> and <code>set</code> (and their corresponding bulk variants). The key difference is that <code>add</code> automatically generates a key for the given value, and hence can only be used on collections where <code>autoKey</code> is enabled, but <code>set</code> can be used on any collection type. <code>autoIncrement</code> doesn't affect this behavior.</p>
 <p>For instance, the following PHP configuration will disable add operations:</p>
 <pre class="prettyprint source lang-php"><code>$database_list['users'] = new JSONDatabase('users', false);
 </code></pre>
@@ -600,9 +552,17 @@ returnedUser.basicInfo(); // Bob (123456789)
 await userCollection.add({ name: &quot;John Doe&quot;, age: 30 });
 </code></pre>
 <p>Add operations return the generated ID of the added element, since it isn't known at add time, but set operations simply return a confirmation. If you want to get an element after it's been set, use the ID passed into the method.</p>
-<pre class="prettyprint source lang-js"><code>// this will not work, since set operations don't return the ID
-userCollection.set(123, { name: &quot;John Doe&quot;, age: 30 })
+<pre class="prettyprint source lang-js"><code>// Works, ID is returned
+userCollection.add({ name: &quot;John Doe&quot;, age: 30 })
     .then((id) => userCollection.get(id));
+
+// Works, using already-known ID to retrieve results
+userCollection.set(123, { name: &quot;John Doe&quot;, age: 30 })
+    .then(() => userCollection.get(123));
+
+// Fails, confirmation is returned rather than ID
+userCollection.set(123, { name: &quot;John Doe&quot;, age: 30 })
+    .then((conf) => userCollection.get(conf));
 </code></pre>
 <h2>Combining collections</h2>
 <p>Using add methods in the constructor, you can link multiple collections together.</p>
@@ -626,7 +586,7 @@ const johnDoe = await customers.get(123456789);
 // returns orders where the customer field is John Doe's ID
 await johnDoe.getOrders();
 </code></pre>
-<p>This functionality is particularly useful for complex data hierarchies that store fields as ID values to other collections, and is the main reason why add methods exist in the first place. It can also be used to split deeply nested data structures to increase server-side performance by only loading collections when necessary.</p>
+<p>This functionality is particularly useful for complex data hierarchies with foreign keys spanning multiple collections, and is the main reason why add methods exist in the first place. It can also be used to split deeply nested data structures to increase server-side performance by only loading relevant data.</p>
 <h2>Manually sending data</h2>
 <p>Each operation type requests a different file. In the JavaScript client, the corresponding file gets appended onto your base Firestorm address.</p>
 <ul>
@@ -642,16 +602,74 @@ await johnDoe.getOrders();
     ...
 }
 </code></pre>
-<p>PHP grabs the <code>JSONDatabase</code> instance created in <code>config.php</code> using the <code>collection</code> key in the request as the <code>$database_list</code> key name. From there, the <code>token</code> is used to validate the request if needed and the <code>command</code> is found and executed.</p>
+<p>The requested PHP file then grabs the <code>JSONDatabase</code> instance created in <code>config.php</code> using the <code>collection</code> key in the request as the <code>$database_list</code> key name. From there, the <code>token</code> is used to validate the request if needed and the <code>command</code> is found and executed.</p>
 <h2>Memory management</h2>
 <p>Handling very large collections can cause memory allocation issues:</p>
 <pre class="prettyprint source"><code>Fatal error:
 Allowed memory size of 134217728 bytes exhausted (tried to allocate 32360168 bytes)
 </code></pre>
 <p>If you encounter a memory allocation issue, simply change the memory limit in <code>/etc/php/7.4/apache2/php.ini</code> to be bigger:</p>
-<pre class="prettyprint source"><code>memory_limit = 256M
+<pre class="prettyprint source lang-ini"><code>memory_limit = 256M
 </code></pre>
-<p>If this doesn't help, considering splitting your collection into smaller collections and linking them together with methods.</p></article>
+<p>If this doesn't help, considering splitting your collection into multiple smaller collections and linking them together with methods.</p>
+<h1>TypeScript Support</h1>
+<p>Firestorm ships with TypeScript support out of the box.</p>
+<h2>Collection types</h2>
+<p>Collections in TypeScript take a generic parameter <code>T</code>, which is the type of each element in the collection. If you aren't using a relational collection, this can simply be set to <code>any</code>.</p>
+<p>The generic parameter must contain an <code>ID_FIELD</code> imported from Firestorm (unless you're using a non-relational collection).</p>
+<pre class="prettyprint source lang-ts"><code>import firestorm from &quot;firestorm-db&quot;;
+firestorm.address(&quot;ADDRESS_VALUE&quot;);
+
+interface User {
+    // An ID field is required by a generic constraint
+    // unless the collection is non-relational
+    [firestorm.ID_FIELD]: string;
+    name: string;
+    password: string;
+    pets: string[];
+}
+
+const userCollection = firestorm.collection&lt;User>(&quot;users&quot;);
+
+const johnDoe = await userCollection.get(123456789);
+// type: { [ID_FIELD]: string, name: string, password: string, pets: string[] }
+</code></pre>
+<p>Injected methods should also be stored in this interface. They'll get filtered out from write operations to prevent false positives:</p>
+<pre class="prettyprint source lang-ts"><code>import firestorm from &quot;firestorm-db&quot;;
+firestorm.address(&quot;ADDRESS_VALUE&quot;);
+
+interface User {
+    [firestorm.ID_FIELD]: string;
+    name: string;
+    hello(): string;
+}
+
+const userCollection = firestorm.collection(&quot;users&quot;, (el) => {
+    // interface types should agree with injected methods
+    el.hello = () => `${el.name} says hello!`;
+    return el;
+});
+
+const johnDoe = await userCollection.get(123456789);
+const hello = johnDoe.hello(); // type: string
+
+await userCollection.add({
+    name: &quot;Mary Doe&quot;,
+    // Error: 'hello' does not exist in type 'Addable&lt;User>'.
+    hello() {
+        return &quot;Mary Doe says hello!&quot;
+    }
+})
+</code></pre>
+<h2>Additional types</h2>
+<p>Additional types exist for search criteria options, write method return types, configuration methods, the file handler, etc.</p>
+<pre class="prettyprint source lang-ts"><code>import firestorm from &quot;firestorm-db&quot;;
+const address = firestorm.address(&quot;ADDRESS_VALUE&quot;);
+// type: string
+
+const deleteConfirmation = await firestorm.files.delete(&quot;/quote.txt&quot;);
+// type: firestorm.WriteConfirmation
+</code></pre></article>
     </section>
 
 
@@ -666,7 +684,7 @@ Allowed memory size of 134217728 bytes exhausted (tried to allocate 32360168 byt
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.6.7</a> on Thu May 08 2025 11:29:44 GMT+0000 (Coordinated Universal Time) using the <a href="https://github.com/clenemt/docdash">docdash</a> theme.
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.6.7</a> on Mon Aug 18 2025 20:37:01 GMT+0000 (Coordinated Universal Time) using the <a href="https://github.com/clenemt/docdash">docdash</a> theme.
 </footer>
 
 <script>prettyPrint();</script>
