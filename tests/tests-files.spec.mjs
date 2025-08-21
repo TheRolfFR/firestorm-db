@@ -7,7 +7,7 @@ import { readFile } from "fs/promises";
 import { expect } from "chai";
 import { join } from "path";
 
-import firestorm from "../src/index.js";
+import firestorm from "../dist/index.js";
 
 describe("File upload, download and delete", () => {
 	it("cannot find an unknown file", (done) => {

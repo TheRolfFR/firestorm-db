@@ -1,15 +1,17 @@
 {
   "name": "firestorm-db",
-  "version": "1.13.0",
+  "version": "2.0.0",
   "description": "Self hosted Firestore-like database with API endpoints based on micro bulk operations",
-  "main": "src/index.js",
-  "types": "typings/index.d.ts",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "type": "module",
   "scripts": {
+    "build": "tsc",
     "php:start": "node tests/php_setup.mjs",
     "php:stop": "sh tests/php_server_kill.sh",
-    "php:tests": "pnpm php:stop ; pnpm php:start && pnpm js:tests ; pnpm php:stop",
-    "js:tests": "mocha tests/**/tests-setup.spec.mjs tests/**/*.spec.mjs",
-    "docker:build": "bash docker/docker_image_build.bash",
+    "php:tests": "pnpm build ; pnpm php:stop ; pnpm php:start && pnpm js:tests ; pnpm php:stop",
+    "js:tests": "pnpm build ;mocha tests/**/tests-setup.spec.mjs tests/**/*.spec.mjs",
+    "docker:build": "pnpm build ;bash docker/docker_image_build.bash",
     "docker:alive": "bash docker/docker_image_alive.bash",
     "docker:tests": "bash docker/docker_image_tests.bash",
     "docker:start": "bash docker/docker_image_start.bash",
@@ -17,7 +19,7 @@
     "doc:watch": "nodemon -x pnpm doc:gen --watch src/index.js --watch jsdoc.json --watch README.md",
     "types:gen": "npx tsc",
     "lint:prettier": "prettier \"{,!(node_modules)/**/}*.{cjs,mjs,js,ts}\" --config .prettierrc --write",
-    "coverage": "pnpm php:stop ; pnpm php:start && nyc --reporter=text mocha tests/**/*.spec.js; pnpm php:stop"
+    "coverage": "pnpm build ; pnpm php:stop ; pnpm php:start && nyc --reporter=text mocha tests/**/*.spec.mjs; pnpm php:stop"
   },
   "repository": {
     "type": "git",
@@ -50,6 +52,7 @@
   },
   "devDependencies": {
     "@types/mocha": "^10.0.10",
+    "@types/node": "^24.3.0",
     "chai": "^5.3.1",
     "consola": "^3.4.2",
     "docdash": "^2.0.2",

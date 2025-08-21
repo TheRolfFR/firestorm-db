@@ -3,7 +3,7 @@
 import crypto from "crypto";
 import { expect } from "chai";
 
-import firestorm from "../src/index.js";
+import firestorm from "../dist/index.js";
 import { base, content, resetDatabaseContent } from "./tests.env.mjs";
 
 describe("GET operations", () => {
@@ -41,6 +41,8 @@ describe("GET operations", () => {
 					Object.entries(res).forEach(([k, v]) =>
 						expect(v).to.have.property(firestorm.ID_FIELD, k, "Missing ID field"),
 					);
+
+					// @ts-expect-error
 					Object.keys(res).forEach((key) => delete res[key][firestorm.ID_FIELD]);
 					expect(res).deep.equals(content, "Content different");
 					done();
@@ -69,6 +71,7 @@ describe("GET operations", () => {
 			base
 				.get("0")
 				.then((res) => {
+					// @ts-expect-error
 					delete res[firestorm.ID_FIELD]; // normal, get gives an id field
 					expect(res).deep.equals(content[0], "Content different");
 					done();
@@ -80,6 +83,7 @@ describe("GET operations", () => {
 			base
 				.get(0)
 				.then((res) => {
+					// @ts-expect-error
 					delete res[firestorm.ID_FIELD]; // normal, get gives an id field
 					expect(res).deep.equals(content[0], "Content different");
 					done();
@@ -126,6 +130,7 @@ describe("GET operations", () => {
 				.searchKeys([0, 2])
 				.then((res) => {
 					res = res.map((el) => {
+						// @ts-expect-error
 						delete el[firestorm.ID_FIELD];
 						return el;
 					});
@@ -140,8 +145,8 @@ describe("GET operations", () => {
 
 	describe("search(searchOptions)", () => {
 		/**
-		 * @typedef {import("../src/index.js").SearchOption["criteria"]} Criteria
-		 * @type {Readonly<[Criteria, string, any, string[], boolean?]>[]}
+		 * @typedef {import("../src/index.js").SearchOption<import("./files/base.json")[0]>["criteria"]} Criteria
+		 * @type {Readonly<[Criteria, keyof import("./files/base.json")[0], unknown, string[], boolean?]>[]}
 		 * [criteria, field, value, idsFound, ignoreCase]
 		 */
 		const testArray = [
@@ -230,6 +235,7 @@ describe("GET operations", () => {
 					.search([
 						{
 							criteria: "==",
+							// @ts-expect-error that's the point, we want to test unknown key
 							field: "path.to.the.key",
 							value: "gg",
 						},
@@ -252,6 +258,7 @@ describe("GET operations", () => {
 					])
 					.then((res) => {
 						expect(res).not.to.deep.equal([]);
+						// @ts-expect-error
 						delete res[0][firestorm.ID_FIELD];
 						expect(res).to.deep.equal([
 							{
@@ -389,21 +396,27 @@ describe("GET operations", () => {
 		});
 
 		it("Gives correct value", (done) => {
+			/** @type {(keyof import("./files/base.json")[0])[]} */
 			const chosenFields = ["name", "age"];
+
 			Promise.all([base.readRaw(), base.select({ fields: chosenFields })])
 				.then(([raw, selectResult]) => {
+					// filter raw content to only chosen fields for comparison
 					Object.keys(raw).forEach((k) => {
 						Object.keys(raw[k]).forEach((el) => {
+							// @ts-expect-error, Object.keys returns string[] and not keyof raw[k]
 							if (!chosenFields.includes(el) || typeof raw[k][el] === "function") {
 								delete raw[k][el];
 							}
 						});
 					});
+
+					// remove ID field from selectResult
 					Object.keys(selectResult).forEach((k) => {
 						delete selectResult[k][firestorm.ID_FIELD];
 					});
 
-					expect(selectResult).to.be.deep.equal(raw, `contents are different`);
+					expect(selectResult).to.be.deep.equal(raw, "contents are different");
 					done();
 				})
 				.catch(done);
@@ -436,6 +449,7 @@ describe("GET operations", () => {
 
 		describe("needs string field value", () => {
 			const incorrect = [null, false, 5.5, -5, { key: "val" }, ["asdf"]];
+
 			incorrect.forEach((incor) => {
 				it(`${JSON.stringify(incor)} value rejects`, (done) => {
 					base
