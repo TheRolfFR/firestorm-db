@@ -5,7 +5,7 @@ class FileObject {
     /** File path */
     public string $filepath;
     /** File content as string or JSON */
-    public string | array $content = '';
+    public $content = '';
     /** OS file descriptor (resource) */
     public $fd;
     public function __construct(string $filepath) {
