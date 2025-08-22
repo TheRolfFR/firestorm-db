@@ -15,10 +15,10 @@ export type MethodsOnly<T> = {
  */
 
 /** @see https://github.com/toonvanstrijp/nestjs-i18n/blob/3fc33c105a68b112ed7af6237c5f49902d0864b6/src/types.ts#L27 */
-type IsAny<T> = unknown extends T ? ([keyof T] extends [never] ? false : true) : false;
+export type IsAny<T> = unknown extends T ? ([keyof T] extends [never] ? false : true) : false;
 
 /** @see https://github.com/toonvanstrijp/nestjs-i18n/blob/3fc33c105a68b112ed7af6237c5f49902d0864b6/src/types.ts#L27 */
-type PathImpl<T, Key extends keyof T> = Key extends string
+export type PathImpl<T, Key extends keyof T> = Key extends string
 	? IsAny<T[Key]> extends true
 		? never
 		: T[Key] extends Record<string, any>
@@ -29,7 +29,7 @@ type PathImpl<T, Key extends keyof T> = Key extends string
 	: never;
 
 /** @see https://github.com/toonvanstrijp/nestjs-i18n/blob/3fc33c105a68b112ed7af6237c5f49902d0864b6/src/types.ts#L27 */
-type PathImpl2<T> = PathImpl<T, keyof T> | keyof T;
+export type PathImpl2<T> = PathImpl<T, keyof T> | keyof T;
 
 /** @see https://github.com/toonvanstrijp/nestjs-i18n/blob/3fc33c105a68b112ed7af6237c5f49902d0864b6/src/types.ts#L27 */
 export type Path<T> = keyof T extends string

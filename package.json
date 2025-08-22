@@ -6,20 +6,21 @@
   "types": "dist/index.d.ts",
   "type": "module",
   "scripts": {
-    "build": "tsc",
-    "php:start": "node tests/php_setup.mjs",
-    "php:stop": "sh tests/php_server_kill.sh",
-    "php:tests": "pnpm build ; pnpm php:stop ; pnpm php:start && pnpm js:tests ; pnpm php:stop",
-    "js:tests": "pnpm build ;mocha tests/**/tests-setup.spec.mjs tests/**/*.spec.mjs",
-    "docker:build": "pnpm build ;bash docker/docker_image_build.bash",
+    "js:build": "tsc --build tsconfig.json",
+    "js:tests": "pnpm js:build ; mocha tests/**/tests-setup.spec.mjs tests/**/*.spec.mjs",
+    
+    "php:start": "node tests/php/php_setup.mjs",
+    "php:stop": "sh tests/php/php_server_kill.sh",
+    "php:tests": "pnpm js:build ; pnpm php:stop ; pnpm php:start && pnpm js:tests ; pnpm php:stop",
+
+    "docker:build": "pnpm js:build ; bash docker/docker_image_build.bash",
     "docker:alive": "bash docker/docker_image_alive.bash",
     "docker:tests": "bash docker/docker_image_tests.bash",
     "docker:start": "bash docker/docker_image_start.bash",
-    "doc:gen": "jsdoc src/index.js -c jsdoc.json -R README.md -t ./node_modules/docdash -d out",
-    "doc:watch": "nodemon -x pnpm doc:gen --watch src/index.js --watch jsdoc.json --watch README.md",
-    "types:gen": "npx tsc",
-    "lint:prettier": "prettier \"{,!(node_modules)/**/}*.{cjs,mjs,js,ts}\" --config .prettierrc --write",
-    "coverage": "pnpm build ; pnpm php:stop ; pnpm php:start && nyc --reporter=text mocha tests/**/*.spec.mjs; pnpm php:stop"
+
+    "doc:gen": "pnpm typedoc src/typescript --plugin typedoc-plugin-rename-defaults --plugin typedoc-github-theme --favicon ./resources/img/firestorm-128.png --customCss ./resources/doc.css --jsDocCompatibility --highlightLanguages ts --highlightLanguages json --highlightLanguages php --highlightLanguages sh --highlightLanguages js --highlightLanguages ini",
+    
+    "lint:prettier": "prettier \"{,!(node_modules)/**/}*.{cjs,mjs,js,ts}\" --config .prettierrc --write"
   },
   "repository": {
     "type": "git",
@@ -40,8 +41,8 @@
   },
   "homepage": "https://therolffr.github.io/firestorm-db/",
   "files": [
-    "src/index.js",
-    "typings/index.d.ts"
+    "dist/index.js",
+    "dist/index.d.ts"
   ],
   "engines": {
     "node": ">=20.0.0"
@@ -51,24 +52,17 @@
     "form-data": "^4.0.4"
   },
   "devDependencies": {
-    "@types/mocha": "^10.0.10",
     "@types/node": "^24.3.0",
-    "chai": "^5.3.1",
+    "chai": "^6.0.1",
     "consola": "^3.4.2",
-    "docdash": "^2.0.2",
     "glob": "^11.0.3",
-    "jsdoc": "^4.0.4",
-    "jsdoc-to-markdown": "^9.1.2",
     "mocha": "^11.7.1",
-    "nyc": "^17.1.0",
     "prettier": "^3.6.2",
     "recursive-copy": "^2.0.14",
+    "tsdoc-markdown": "^1.4.1",
+    "typedoc": "^0.28.10",
+    "typedoc-github-theme": "^0.3.1",
+    "typedoc-plugin-rename-defaults": "^0.7.3",
     "typescript": "^5.9.2"
-  },
-  "pnpm": {
-    "overrides": {
-      "cross-spawn@>=7.0.0 <7.0.5": ">=7.0.5",
-      "serialize-javascript@>=6.0.0 <6.0.2": ">=6.0.2"
-    }
   }
 }

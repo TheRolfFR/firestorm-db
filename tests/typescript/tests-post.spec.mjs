@@ -2,7 +2,7 @@
 
 import { expect } from "chai";
 
-import firestorm from "../dist/index.js";
+import firestorm from "../../dist/index.js";
 import { base, content, houseCollection, resetDatabaseContent, TOKEN } from "./tests.env.mjs";
 
 let tmp;

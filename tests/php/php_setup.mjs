@@ -9,7 +9,7 @@ import { glob } from "glob";
 import copy from "recursive-copy";
 import { consola } from "consola";
 
-const PHP_PATH = "php";
+const PHP_PATH = "src/php";
 const PHP_SERVER_START_DELAY = 2000;
 const PORT = 8000;
 
@@ -73,8 +73,8 @@ async function setup_php() {
 		}),
 	);
 
-	const phpCommand = `sh tests/php_server_start.sh ${tmpFolder} ${PORT}`;
-	consola.info(' Starting php server with command "' + phpCommand + '"...');
+	const phpCommand = `sh tests/php/php_server_start.sh ${tmpFolder} ${PORT}`;
+	consola.info(` Starting php server with command:\n${phpCommand}\n`);
 
 	const args = phpCommand.split(" ");
 	const command = args.shift() ?? "";

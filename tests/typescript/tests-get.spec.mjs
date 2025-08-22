@@ -3,7 +3,7 @@
 import crypto from "crypto";
 import { expect } from "chai";
 
-import firestorm from "../dist/index.js";
+import firestorm from "../../dist/index.js";
 import { base, content, resetDatabaseContent } from "./tests.env.mjs";
 
 describe("GET operations", () => {
@@ -145,8 +145,8 @@ describe("GET operations", () => {
 
 	describe("search(searchOptions)", () => {
 		/**
-		 * @typedef {import("../src/index.js").SearchOption<import("./files/base.json")[0]>["criteria"]} Criteria
-		 * @type {Readonly<[Criteria, keyof import("./files/base.json")[0], unknown, string[], boolean?]>[]}
+		 * @typedef {import("../src/index.js").SearchOption<import("../files/base.json")[0]>["criteria"]} Criteria
+		 * @type {Readonly<[Criteria, keyof import("../files/base.json")[0], unknown, string[], boolean?]>[]}
 		 * [criteria, field, value, idsFound, ignoreCase]
 		 */
 		const testArray = [
@@ -396,7 +396,7 @@ describe("GET operations", () => {
 		});
 
 		it("Gives correct value", (done) => {
-			/** @type {(keyof import("./files/base.json")[0])[]} */
+			/** @type {(keyof import("../files/base.json")[0])[]} */
 			const chosenFields = ["name", "age"];
 
 			Promise.all([base.readRaw(), base.select({ fields: chosenFields })])

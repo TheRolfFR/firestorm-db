@@ -1,5 +1,5 @@
 // Stress test for firestorm-db TypeScript types.
-import firestorm from "..";
+import firestorm from "../../dist";
 
 /**
  * I. CREATE A COLLECTION

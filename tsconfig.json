@@ -16,7 +16,7 @@
     /* If transpiling with TypeScript: */
     "module": "NodeNext",
     "outDir": "dist",
-    "rootDir": "src",
+    "rootDir": "src/typescript",
     "sourceMap": true,
     /* AND if you're building for a library: */
     "declaration": true,

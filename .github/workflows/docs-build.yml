@@ -22,8 +22,8 @@ jobs:
           node-version: 20
           cache: 'pnpm'
 
-      - name: Install only developer dependencies
-        run: pnpm install -D
+      - name: Install dependencies
+        run: pnpm install
 
-      - name: Build the goddamn documentation
+      - name: Build the documentation
         run: pnpm run doc:gen

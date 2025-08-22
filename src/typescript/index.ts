@@ -13,7 +13,6 @@ import type { ItemBase, MethodsOnly, WriteConfirmation } from "./types/utils.js"
 const firestorm = {
 	/**
 	 * Change or get the current Firestorm address
-	 * @memberof firestorm
 	 * @param newValue - The new Firestorm address
 	 * @returns The stored Firestorm address
 	 */
@@ -21,7 +20,6 @@ const firestorm = {
 
 	/**
 	 * Change or get the current Firestorm token
-	 * @memberof firestorm
 	 * @param newValue - The new Firestorm write token
 	 * @returns The stored Firestorm write token
 	 */
@@ -29,7 +27,6 @@ const firestorm = {
 
 	/**
 	 * Create a new Firestorm collection instance
-	 * @memberof firestorm
 	 * @template Item - Type of the documents in the collection.
 	 * @template ItemMethods - Type of the methods to add to the collection elements.
 	 *
@@ -49,14 +46,11 @@ const firestorm = {
 
 	/**
 	 * Firestorm file handler
-	 * @memberof firestorm
-	 * @type
 	 * @namespace firestorm.files
 	 */
 	files: {
 		/**
 		 * Get a file by its path
-		 * @memberof firestorm.files
 		 * @template T - Type of file content
 		 * @param path - The wanted file path
 		 * @returns File contents
@@ -67,7 +61,6 @@ const firestorm = {
 
 		/**
 		 * Upload a file
-		 * @memberof firestorm.files
 		 * @param form - Form data with path, filename, and file
 		 * @returns Write confirmation
 		 */
@@ -84,7 +77,6 @@ const firestorm = {
 
 		/**
 		 * Delete a file by its path
-		 * @memberof firestorm.files
 		 * @param path - The file path to delete
 		 * @returns Write confirmation
 		 */

@@ -2,7 +2,7 @@
 
 import { expect } from "chai";
 
-import firestorm from "../dist/index.js";
+import firestorm from "../../dist/index.js";
 import { ADDRESS, TOKEN } from "./tests.env.mjs";
 
 describe("Wrapper information", () => {
