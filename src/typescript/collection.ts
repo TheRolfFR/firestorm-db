@@ -6,7 +6,8 @@ import { extractData } from "./utils.js";
 import type { SearchOption } from "./types/searchOption.js";
 import type { SelectOption } from "./types/selectOption.js";
 import type { ValueOption } from "./types/valueOption.js";
-import type { Id, ItemBase, MethodsOnly, WriteConfirmation } from "./types/utils.js";
+import type { Id, ItemBase, MaybeArray, MethodsOnly, WriteConfirmation } from "./types/utils.js";
+import type { EditFieldOption } from "./types/editFieldOption.js";
 
 /**
  * Represents a Firestorm Collection.
@@ -94,8 +95,8 @@ export class Collection<
 	 */
 	private writeData(
 		command: string,
-		value: Record<string, Item> | undefined = undefined,
-		multiple = false,
+		value: Record<string, Item> | MaybeArray<Item> | MaybeArray<Id> | MaybeArray<EditFieldOption<Item>> | undefined = undefined,
+		multiple: undefined | null | boolean = false,
 	) {
 		const obj: Record<string, unknown> = {
 			token: token(),
@@ -108,9 +109,15 @@ export class Collection<
 
 		if (multiple && Array.isArray(value)) {
 			value.forEach((v) => {
-				if (typeof v === "object" && !Array.isArray(v) && v != null) delete v[ID_FIELD_NAME];
+				if (typeof v === "object" && !Array.isArray(v) && v != null) {
+					// @ts-expect-error -ID_FIELD_NAME is readonly in ItemBase but we need to 
+					// delete it here as we don't store it server-side
+					delete v[ID_FIELD_NAME];
+				}
 			});
-		} else if (
+		} 
+		
+		else if (
 			multiple === false &&
 			value !== null &&
 			value !== undefined &&
@@ -119,6 +126,9 @@ export class Collection<
 			!Array.isArray(value)
 		) {
 			if (typeof value === "object") value = { ...value };
+
+			// @ts-expect-error -ID_FIELD_NAME is readonly in ItemBase but we need to 
+			// delete it here as we don't store it server-side
 			delete value[ID_FIELD_NAME];
 		}
 
@@ -288,7 +298,7 @@ export class Collection<
 	 * @param offset - The offset to use
 	 * @returns The found elements
 	 */
-	async random(max?: number, seed?: number, offset?: number): Promise<Item[]> {
+	public async random(max?: number, seed?: number, offset?: number): Promise<Item[]> {
 		const params: Record<string, number> = {};
 
 		if (max !== undefined) {
@@ -316,5 +326,94 @@ export class Collection<
 
 		const data = await this.getRequest<Record<string, Item>>("random", { random: params });
 		return Object.entries(data).map(([key, item]) => this.addMethods(this.identify(item, key)));
+	}
+
+	/**
+	 * Append a value to the collection.
+	 * @remarks Only works if the autoKey is enabled server-side.
+	 * @param value - The value to add
+	 * @returns The generated key for the added element
+	 */
+	public async add(value: Item): Promise<Id> {
+		const res = await extractData<{ id: Id }>(axios.post(POST(), this.writeData("add", value)));
+		if (typeof res !== "object" || !("id" in res) || typeof res.id !== "string") throw res;
+		return res.id;
+	}
+	
+	/**
+	 * Append multiple values to the collection
+	 * @remarks Only works if autoKey is enabled server-side
+	 * @param values - The values to add
+	 * @returns The generated keys of the added elements
+	 */
+	public async addBulk(values: Item[]): Promise<Id[]> {
+		const res = await extractData<{ ids: Id[] }>(
+			axios.post(POST(), this.writeData("addBulk", values, true)),
+		);
+		return res.ids;
+	}
+
+	/**
+	 * Remove an element from the collection by its key
+	 * @param key The key from the entry to remove
+	 * @returns Write confirmation
+	 */
+	public async remove(key: Id): Promise<WriteConfirmation> {
+		return extractData(axios.post(POST(), this.writeData("remove", key)));
+	}
+	
+	/**
+	 * Remove multiple elements from the collection by their keys
+	 * @param keys The key from the entries to remove
+	 * @returns Write confirmation
+	 */
+	public async removeBulk(keys: Id[]): Promise<WriteConfirmation> {
+		return extractData(axios.post(POST(), this.writeData("removeBulk", keys)));
+	}
+
+	/**
+	 * Set a value in the collection by key
+	 * @param key - The key of the element you want to edit
+	 * @param value - The value you want to edit
+	 * @returns Write confirmation
+	 */
+	public async set(key: Id, value: Item): Promise<WriteConfirmation> {
+		const data = this.writeData("set", value);
+		data["key"] = key;
+
+		return extractData(axios.post(POST(), data));
+	}
+	
+	/**
+	 * Set multiple values in the collection by their keys
+	 * @param keys - The keys of the elements you want to edit
+	 * @param values - The values you want to edit
+	 * @returns Write confirmation
+	 */
+	public async setBulk(keys: Id[], values: Item[]): Promise<WriteConfirmation> {
+		const data = this.writeData("setBulk", values, true);
+
+		data["keys"] = keys;
+		return extractData(axios.post(POST(), data));
+	}
+
+	/**
+	 * Edit an element's field in the collection
+	 * @param option - The edit object
+	 * @returns Edit confirmation
+	 */
+	public async editField(option: EditFieldOption<Item>): Promise<WriteConfirmation> {
+		const data = this.writeData("editField", option, null);
+		return extractData(axios.post(POST(), data));
+	}
+
+	/**
+	 * Edit multiple elements' fields in the collection
+	 * @param options - The edit objects
+	 * @returns  Edit confirmation
+	 */
+	public async editFieldBulk(options: EditFieldOption<Item>[]): Promise<WriteConfirmation> {
+		const data = this.writeData("editFieldBulk", options, undefined);
+		return extractData(axios.post(POST(), data));
 	}
 }

@@ -3,6 +3,8 @@ import type { ID_FIELD_NAME } from "../settings.js";
 export type Id = string | number;
 export type WriteConfirmation = { message: string };
 
+export type MaybeArray<T> = T | T[];
+
 export type ItemBase = { [ID_FIELD_NAME]: Id };
 export type MethodsOnly<T> = {
 	[K in keyof T]: T[K] extends (...args: any[]) => any ? T[K] : never;
