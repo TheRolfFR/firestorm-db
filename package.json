@@ -7,11 +7,11 @@
   "type": "module",
   "scripts": {
     "js:build": "tsc --build tsconfig.json",
-    "js:tests": "pnpm js:build ; mocha tests/**/tests-setup.spec.mjs tests/**/*.spec.mjs",
+    "js:tests": "pnpm js:build && mocha tests/**/tests-setup.spec.mjs tests/**/*.spec.mjs",
     
     "php:start": "node tests/php/php_setup.mjs",
     "php:stop": "sh tests/php/php_server_kill.sh",
-    "php:tests": "pnpm js:build ; pnpm php:stop ; pnpm php:start && pnpm js:tests ; pnpm php:stop",
+    "php:tests": "pnpm php:stop; pnpm php:start && pnpm js:tests && pnpm php:stop",
 
     "docker:build": "pnpm js:build ; bash docker/docker_image_build.bash",
     "docker:alive": "bash docker/docker_image_alive.bash",
