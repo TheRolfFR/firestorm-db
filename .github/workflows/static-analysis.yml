@@ -1,0 +1,69 @@
+name: Static Analysis
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "php/**"
+      - "src/**"
+      - "tsconfig.json"
+      - ".github/workflowsstatic-analysis.yml"
+  pull_request:
+    branches: [main]
+    paths:
+      - "php/**"
+      - "src/**"
+      - "tsconfig.json"
+      - ".github/workflows/static-analysis.yml"
+  workflow_dispatch:
+
+jobs:
+  phpstan:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Copy PHP config files into php folder
+        run: |
+          cp tests/php/*.php php/
+          ls php/
+
+      - name: Set up PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '7.4' # onyly test 7.4 it will be enough
+
+      - name: Download PHPStan (PHAR)
+        run: |
+          curl -L https://github.com/phpstan/phpstan/releases/latest/download/phpstan.phar -o phpstan.phar
+          chmod +x phpstan.phar
+
+      - name: Run PHPStan on php/
+        run: |
+          ./phpstan.phar analyse php --level=8
+
+  typescript:
+    name: TypeScript Check
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install
+
+      - name: Run TypeScript compiler
+        run: npx tsc --noEmit

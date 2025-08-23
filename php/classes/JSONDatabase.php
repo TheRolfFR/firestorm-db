@@ -1,23 +1,23 @@
 <?php
 
-require_once './utils.php';
-require_once './classes/FileAccess.php';
-require_once './classes/HTTPException.php';
-require_once './classes/read/random.php';
-require_once './classes/read/searchArray.php';
+require_once(__DIR__.'/../utils.php');
+require_once(__DIR__.'/../classes/FileAccess.php');
+require_once(__DIR__.'/../classes/HTTPException.php');
+require_once(__DIR__.'/../classes/read/random.php');
+require_once(__DIR__.'/../classes/read/searchArray.php');
 
 class JSONDatabase {
     /** Folder to get the JSON file from */
-    public $folderPath = './files/';
+    public string $folderPath = './files/';
     /** Name of the JSON file */
-    public $fileName = 'db';
+    public string $fileName = 'db';
     /** File extension used in collection name */
-    public $fileExt = '.json';
+    public string $fileExt = '.json';
 
     /** Whether to automatically generate the key name or to have explicit key names */
-    public $autoKey = true;
+    public bool $autoKey = true;
     /** Whether to simply start at 0 and increment or to use a random ID name */
-    public $autoIncrement = true;
+    public bool $autoIncrement = true;
 
     public function __construct(
         string $fileName = 'db',
@@ -85,7 +85,7 @@ class JSONDatabase {
 
     public function sha1() {
         $obj = $this->read_raw();
-        return sha1($obj->content);
+        return sha1($obj->content);  // @phpstan-ignore argument.type
     }
 
     public function read_raw($waitLock = false): FileObject {
@@ -95,7 +95,7 @@ class JSONDatabase {
 
     public function read($waitLock = false) {
         $res = $this->read_raw($waitLock);
-        $res->content = json_decode($res->content, true);
+        $res->content = json_decode($res->content, true);  // @phpstan-ignore argument.type
         return $res;
     }
 
@@ -127,11 +127,16 @@ class JSONDatabase {
         if ($value !== [] and !array_assoc($value))
             throw new HTTPException('Value cannot be a sequential array', 400);
 
+        $encoded_value = json_encode($value);
+        if($encoded_value === false)
+            throw new HTTPException('Failed to encode value', 400);
+
         $key = strval($key);
 
         // set it at the corresponding value
         $obj = $this->read(true);
-        $obj->content[$key] = json_decode(json_encode($value), true);
+
+        $obj->content[$key] = json_decode($encoded_value, true);
         return $this->write($obj);
     }
 
@@ -141,12 +146,21 @@ class JSONDatabase {
         if ($key_var_type != 'array')
             throw new HTTPException('Incorrect keys type');
 
+        $encoded_values = json_encode($values);
+        if($encoded_values === false)
+            throw new HTTPException('Failed to encode values', 400);
+
+        $encoded_keys = json_encode($keys);
+        if($encoded_keys === false)
+            throw new HTTPException('Failed to encode keys', 400);
+
+
         // else set it at the corresponding value
         $obj = $this->read(true);
 
         // decode and add all values
-        $value_decoded = json_decode(json_encode($values), true);
-        $keys_decoded = json_decode(json_encode($keys), true);
+        $value_decoded = json_decode($encoded_values, true);
+        $keys_decoded = json_decode($encoded_keys, true);
 
         // ensure both arrays are valid
         if (!is_array($keys_decoded) || !is_array($value_decoded)) {
@@ -651,7 +665,7 @@ class JSONDatabase {
         if (!array_key_exists('fields', $selectObj))
             throw new HTTPException('Missing required fields field');
 
-        if (!gettype($selectObj['fields']) === 'array' || !array_sequential($selectObj['fields']))
+        if (!(gettype($selectObj['fields']) === 'array') || !(array_sequential($selectObj['fields'])))
             throw new HTTPException('Incorrect fields type, expected an array');
 
         // all field arguments should be strings

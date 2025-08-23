@@ -1,6 +1,6 @@
 <?php
 
-require_once './classes/HTTPException.php';
+require_once(__DIR__.'/../HTTPException.php');
 
 function array_contains($array, $value, $ignoreCase = false) {
     for ($tmp_i = 0; $tmp_i < count($array); ++$tmp_i) {

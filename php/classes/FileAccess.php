@@ -4,9 +4,15 @@
 class FileObject {
     /** File path */
     public string $filepath;
-    /** File content as string or JSON */
-    public string | array $content = '';
-    /** OS file descriptor (resource) */
+    /** 
+     * File content as string or JSON
+     * @var string|array $content
+     */
+    public $content = ''; // @phpstan-ignore missingType.iterableValue
+    /** 
+     * OS file descriptor (resource) has no hint possible 
+     * @var resource $fd
+     * */
     public $fd;
     public function __construct(string $filepath) {
         $this->filepath = $filepath;
@@ -31,7 +37,11 @@ abstract class FileAccess {
             $file = fopen($filepath, 'rb');
         }
 
-        $fileObj->fd = $file;
+        if($file === false) {
+            throw new Exception('Failed to open file');
+        } else {
+            $fileObj->fd = $file;
+        }
 
         // if want the lock, we wait for the shared lock
         if ($waitLock) {

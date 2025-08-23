@@ -2,7 +2,7 @@
 
 function make_seed() {
     [$usec, $sec] = explode(' ', microtime());
-    return intval($sec + $usec * 1000000);
+    return intval($sec . str_repeat($usec,1000000));
 }
 
 function choose_random($json, $seed = false, $max = -1, $offset = 0) {

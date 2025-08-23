@@ -1,0 +1,5 @@
+parameters:
+    ignoreErrors:
+        - identifiers:
+            - missingType.return
+            - missingType.parameter

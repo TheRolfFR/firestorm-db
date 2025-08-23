@@ -9,5 +9,6 @@
     "outDir": "test",
     "declarationMap": false,
     "esModuleInterop": true,
+    "target": "es2022",
   }
 }
