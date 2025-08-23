@@ -1,5 +1,5 @@
 // Stress test for firestorm-db TypeScript types.
-import firestorm from "..";
+import firestorm from "../../dist";
 
 /**
  * I. CREATE A COLLECTION
@@ -15,15 +15,14 @@ interface User {
 firestorm.collection<User>("users");
 
 // we can also declare a collection with methods listed in the interface
-interface UserWithMethods extends User {
+interface UserWithMethods {
 	getNameAsLowerCase: () => string;
 }
 
 // where the method implementation goes in the addMethods
-const usersWithMethods = firestorm.collection<UserWithMethods>("users", (el) => {
-	el.getNameAsLowerCase = (): string => el.name.toLowerCase();
-	return el;
-});
+const usersWithMethods = firestorm.collection<User, UserWithMethods>("users", (el) => ({
+	getNameAsLowerCase: (): string => el.name.toLowerCase(),
+}));
 
 // we can use the methods in all results...
 usersWithMethods.get("someKey").then((res) => res.getNameAsLowerCase());
@@ -66,20 +65,28 @@ interface Family {
 	[firestorm.ID_FIELD]: string;
 	parents: User[];
 	children: User[];
+}
+
+interface FamilyMethods {
 	getDad(): Promise<User>;
 	getMom(): Promise<User>;
 }
 
-firestorm.collection<Family>("families", (el) => {
-	el.getDad = (): Promise<User> =>
+firestorm.collection<Family, FamilyMethods>("families", (el) => ({
+	getDad: (): Promise<User> =>
 		users.search([
 			// === family id
 			{ field: "family", criteria: "==", value: el[firestorm.ID_FIELD] },
 			{ field: "sex", criteria: "==", value: "male" },
-		])[0];
+		])[0],
 
-	return el;
-});
+	getMom: (): Promise<User> =>
+		users.search([
+			// === family id
+			{ field: "family", criteria: "==", value: el[firestorm.ID_FIELD] },
+			{ field: "sex", criteria: "==", value: "female" },
+		])[0],
+}));
 
 /**
  * III. METHODS WITH OBJECT PARAMETERS

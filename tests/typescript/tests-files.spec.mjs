@@ -7,7 +7,7 @@ import { readFile } from "fs/promises";
 import { expect } from "chai";
 import { join } from "path";
 
-import firestorm from "../src/index.js";
+import firestorm from "../../dist/index.js";
 
 describe("File upload, download and delete", () => {
 	it("cannot find an unknown file", (done) => {
@@ -31,7 +31,7 @@ describe("File upload, download and delete", () => {
 	it("finds an uploaded file and get it with same content", (done) => {
 		const timeoutPromise = (timeout) => new Promise((resolve) => setTimeout(resolve, timeout));
 
-		const uploaded = readFileSync(join(process.cwd(), "tests", "lyrics.txt"));
+		const uploaded = readFileSync(join(process.cwd(), "tests", "files", "lyrics.txt"));
 		const formData = new FormData();
 
 		formData.append("path", "/lyrics.txt");
@@ -67,7 +67,7 @@ describe("File upload, download and delete", () => {
 	it("cannot upload an already uploaded file with no overwrite", (done) => {
 		const formData = new FormData();
 		formData.append("path", "/");
-		readFile(join(process.cwd(), "tests", "lyrics.txt"))
+		readFile(join(process.cwd(), "tests", "files", "lyrics.txt"))
 			.catch(() => done(new Error("Should not succeed at first")))
 			.then((res) => {
 				formData.append("file", res, "lyrics.txt");
@@ -95,7 +95,7 @@ describe("File upload, download and delete", () => {
 		formData.append("overwrite", "true");
 
 		// create file read promise
-		const lyricsPromise = readFile(join(process.cwd(), "tests", "lyrics.txt"));
+		const lyricsPromise = readFile(join(process.cwd(), "tests", "files", "lyrics.txt"));
 
 		// get done now
 		lyricsPromise.catch(() => done("File read should not failed"));

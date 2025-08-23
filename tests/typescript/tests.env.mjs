@@ -3,7 +3,7 @@
 import path from "path";
 import fs from "fs";
 
-import firestorm from "../src/index.js";
+import firestorm from "../../dist/index.js";
 
 export const PORT = process.env.PORT || "8000";
 export const ADDRESS = `http://127.0.0.1:${PORT}/`;
@@ -20,7 +20,10 @@ export const HOUSE_DATABASE_FILE = path.join(
 	`${HOUSE_DATABASE_NAME}.json`,
 );
 
+/** @type {import("../../dist/index.js").Collection<import("../files/base.json")["0"] & { id: string }>} */
 export let base = firestorm.collection(DATABASE_NAME);
+
+/** @type {import("../../dist/index.js").Collection<import("../files/house.json")["living_room"] & { id: string }>} */
 export let houseCollection = firestorm.collection(HOUSE_DATABASE_NAME);
 
 export const rawContent = fs.readFileSync(DATABASE_FILE).toString();

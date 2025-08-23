@@ -14,4 +14,4 @@ RUN a2enmod rewrite
 COPY docker/vhost.conf /etc/apache2/sites-available/000-default.conf
 
 # Copy source code
-COPY php/ /var/www/html
+COPY src/php/ /var/www/html

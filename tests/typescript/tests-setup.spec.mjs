@@ -2,7 +2,7 @@
 
 import { expect } from "chai";
 
-import firestorm from "../src/index.js";
+import firestorm from "../../dist/index.js";
 import { ADDRESS, TOKEN } from "./tests.env.mjs";
 
 describe("Wrapper information", () => {
@@ -14,7 +14,7 @@ describe("Wrapper information", () => {
 		firestorm.address(ADDRESS);
 
 		const actual = firestorm.address();
-		expect(actual).to.equal(ADDRESS + "get.php", "Incorrect address bind");
+		expect(actual).to.equal(ADDRESS, "Incorrect address bind");
 	});
 
 	it("throws if no token yet", (done) => {

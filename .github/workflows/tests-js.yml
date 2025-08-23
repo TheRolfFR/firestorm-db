@@ -34,8 +34,9 @@ jobs:
         with:
           php-version: ${{ matrix.php }}
 
-      - name: Install developer dependencies
+      - name: Install dependencies
         run: pnpm install
 
-      - name: Test da code
+      - name: Run tests
         run: pnpm php:tests
+

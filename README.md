@@ -1,5 +1,5 @@
 <div align="center">
-<img src="img/firestorm-128.png">
+<img src="resources/img/firestorm-128.png">
 
 <h1>firestorm-db</h1>
 
@@ -29,7 +29,7 @@ Information about installing Firestorm server-side is given in the [PHP](#php-ba
 
 # JavaScript Client
 
-The JavaScript [index.js](./src/index.js) file is simply an [Axios](https://www.npmjs.com/package/axios) wrapper of the PHP backend.
+The JavaScript client is simply an [Axios](https://www.npmjs.com/package/axios) wrapper of the PHP backend.
 
 ## JavaScript setup
 
@@ -152,7 +152,7 @@ Firestorm's PHP files handle files, read, and writes, through `GET` and `POST` r
 
 ## PHP setup
 
-The server-side files to handle requests can be found and copied to your hosting platform [here](./php/). The two files that need editing are `tokens.php` and `config.php`.
+The server-side files to handle requests can be found and copied to your hosting platform [here](./src/php/). The two files that need editing are `tokens.php` and `config.php`.
 
 - `tokens.php` contains writing tokens declared in a `$db_tokens` array. These correspond to the tokens used with `firestorm.token()` in the JavaScript client.
 - `config.php` stores all of your collections. This file needs to declare a `$database_list` associative array of `JSONDatabase` instances.

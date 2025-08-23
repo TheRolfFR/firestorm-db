@@ -53,7 +53,7 @@ if ($method === 'POST') {
     // avoid hacks to write script or files unauthorized
     if (strpos($absolutePath, $myPath) !== 0) http_error(403, 'Path not authorized');
     // no php script allowed
-    if (str_ends_with($absolutePath, '.php') === 0) http_error(403, 'Cannot write PHP scripts');
+    if (str_ends_with($absolutePath, '.php')) http_error(403, 'Cannot write PHP scripts');
 
     $extensionFound = false;
     $i = 0;

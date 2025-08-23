@@ -108,28 +108,30 @@ switch ($command) {
     case 'select':
         $select = check_key_json('select', $inputJSON, false);
 
-        if ($select === false) http_error('400', 'No select provided');
+        if ($select === false) http_error(400, 'No select provided');
 
         $result = $db->select($select);
         http_response(stringifier($result));
+        break;
     case 'values':
         $values = check_key_json('values', $inputJSON, false);
 
-        if ($values === false) http_error('400', 'No key provided');
+        if ($values === false) http_error(400, 'No key provided');
 
         $result = $db->values($values);
         http_response(stringifier($result));
+        break;
     case 'random':
         $params = check_key_json('random', $inputJSON, false);
-        if ($params === false) http_error('400', 'No random object provided');
+        if ($params === false) http_error(400, 'No random object provided');
 
         http_response(stringifier($db->random($params)));
+        break;
     default:
         break;
 }
 
-http_message(400, 'Bad request');
-
+http_error(400, 'Bad request');
 
 } catch(Exception $e) {
     http_error(500, $e->getMessage());

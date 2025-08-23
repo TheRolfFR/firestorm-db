@@ -7,7 +7,7 @@ function pre_dump($val) {
 }
 
 function check($var) {
-    return isset($var) and !empty($var);
+    return isset($var) && !empty($var);
 }
 
 function sec($var) {
