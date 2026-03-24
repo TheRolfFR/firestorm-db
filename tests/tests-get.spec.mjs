@@ -368,7 +368,7 @@ describe("GET operations", () => {
 						field: "name",
 						value: "Joy",
 					},
-				], false, 1)
+				], false, 0)
 				.then(() => done(new Error("Should have thrown an error for invalid limit")))
 				.catch((err) => {
 					expect(err.message).to.include("limit must be a positive integer");
