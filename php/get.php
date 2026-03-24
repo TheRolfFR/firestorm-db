@@ -87,11 +87,12 @@ switch ($command) {
     case 'search':
         $search = check_key_json('search', $inputJSON, false);
         $random = check_key_json('random', $inputJSON, false);
+        $limit = check_key_json('limit', $inputJSON, false);
 
         if (!$search)
             http_error(400, 'No search provided');
 
-        $result = $db->search($search, $random);
+        $result = $db->search($search, $random, $limit);
 
         http_response(stringifier($result));
         break;

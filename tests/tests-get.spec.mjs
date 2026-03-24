@@ -341,6 +341,42 @@ describe("GET operations", () => {
 		});
 	});
 
+	describe("search(searchOptions) with limit", () => {
+		it("limits the number of results returned", (done) => {
+			base
+				.search([
+					{
+						criteria: "includes",
+						field: "name",
+						value: "Joy",
+					},
+				], false, 1)
+				.then((res) => {
+					expect(res).to.be.an("array", "Search result must be an array");
+					expect(res).to.have.lengthOf(1, "Should return exactly 1 result due to limit");
+					expect(res[0][firestorm.ID_FIELD]).to.be.oneOf(["0", "1", "2"], "Should be one of the matching IDs");
+					done();
+				})
+				.catch(done);
+		});
+
+		it("validates limit must be a positive integer", (done) => {
+			base
+				.search([
+					{
+						criteria: "includes",
+						field: "name",
+						value: "Joy",
+					},
+				], false, 1)
+				.then(() => done(new Error("Should have thrown an error for invalid limit")))
+				.catch((err) => {
+					expect(err.message).to.include("limit must be a positive integer");
+					done();
+				});
+		});
+	});
+
 	describe("select(selectOptions)", () => {
 		it("requires a fields field", (done) => {
 			base

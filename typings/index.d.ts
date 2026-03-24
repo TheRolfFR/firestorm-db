@@ -147,6 +147,8 @@ export type SearchOption<T> = {
 		value?: any;
 		/** Is it case sensitive? (default true) */
 		ignoreCase?: boolean;
+		/** Maximum number of results to return (optional) */
+		limit?: number;
 	};
 }[keyof T];
 

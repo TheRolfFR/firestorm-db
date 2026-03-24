@@ -103,7 +103,7 @@ johnDoe.hello(); // "John Doe says hello!"
 
 There are more options available than the Firestore `where` command, allowing you to get better and faster search results.
 
-The search method can take one or more options to filter entries in a collection. A search option takes a `field` with a `criteria` and compares it to a `value`. You can also use the boolean `ignoreCase` option for string values. Available criteria depends on the field type.
+The search method can take one or more options to filter entries in a collection. A search option takes a `field` with a `criteria` and compares it to a `value`. You can also use the boolean `ignoreCase` option for string values and the `limit` option to restrict the number of results returned. Available criteria depends on the field type.
 
 | Criteria                | Types allowed                 | Description                                                     |
 | ----------------------- | ----------------------------- | --------------------------------------------------------------- |
@@ -127,6 +127,16 @@ The search method can take one or more options to filter entries in a collection
 | `'array-length-gt'`     | `number`                      | Entry field's array size is greater than your value             |
 | `'array-length-le'`     | `number`                      | Entry field's array size is lower or equal to your value        |
 | `'array-length-ge'`     | `number`                      | Entry field's array size is greater or equal to your value      |
+
+### Search Option Properties
+
+| Property    | Type      | Description                                                                 |
+| ----------- | --------- | --------------------------------------------------------------------------- |
+| `field`     | `string`  | The field path to search in (supports dot notation for nested fields)      |
+| `criteria`  | `string`  | The comparison criteria to use (see table above)                           |
+| `value`     | `any`     | The value to compare against                                                |
+| `ignoreCase`| `boolean` | Whether to ignore case sensitivity for string comparisons (default: false) |
+| `limit`     | `number`  | Maximum number of results to return (lowest limit is chosen if multiple)   |
 
 ## Edit field options
 

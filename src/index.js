@@ -11,6 +11,7 @@ try {
  * @property {"!=" | "==" | ">=" | "<=" | "<" | ">" | "in" | "includes" | "startsWith" | "endsWith" | "array-contains" | "array-contains-none" | "array-contains-any" | "array-contains-all" | "array-length-eq" | "array-length-df" | "array-length-gt" | "array-length-le" | "array-length-lt" | "array-length-ge"} criteria - Search criteria to filter results
  * @property {string | number | boolean | Array} value - The value to be searched for
  * @property {boolean} [ignoreCase] - Is it case sensitive? (default true)
+ * @property {number} [limit] - Maximum number of results to return (optional)
  */
 
 /**
@@ -251,11 +252,14 @@ class Collection {
 	 * Search through the collection
 	 * @param {SearchOption[]} options - Array of search options
 	 * @param {boolean | number} [random] - Random result seed, disabled by default, but can activated with true or a given seed
+	 * @param {number?} [limit] - Maximum number of results to return (optional, overridden by individual search option limits)
 	 * @returns {Promise<T[]>} The found elements
 	 */
-	async search(options, random = false) {
+	async search(options, random = false, limit = undefined) {
 		if (!Array.isArray(options)) throw new TypeError("searchOptions shall be an array");
-
+		if (typeof limit !== "number" || limit <= 0 || !Number.isInteger(limit))
+			throw new TypeError(`${JSON.stringify(limit)} search option limit must be a positive integer`);
+				
 		options.forEach((option) => {
 			if (option.field === undefined || option.criteria === undefined || option.value === undefined)
 				throw new TypeError("Missing fields in searchOptions array");
@@ -272,6 +276,10 @@ class Collection {
 		const params = {
 			search: options,
 		};
+
+		if (limit !== undefined) {
+			params.limit = limit;
+		}
 
 		if (random !== false) {
 			if (random === true) {

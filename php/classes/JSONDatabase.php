@@ -403,9 +403,10 @@ class JSONDatabase {
         return false;
     }
 
-    public function search($conditions, $random = false) {
+    public function search($conditions, $random = false, $limit = false) {
         $obj = $this->read();
         $res = [];
+        $has_limit = $limit !== false && is_int($limit) && $limit > 0;
 
         foreach ($obj->content as $key => $el) {
             $el_root = $el;
@@ -453,6 +454,10 @@ class JSONDatabase {
             // if all conditions are met, we can add the value to our output
             if ($add)
                 $res[$key] = $el_root;
+
+            // only stop early if results will not be ordered randomly 
+            if($has_limit && $random === false && count($res) >= $limit)
+                break;
         }
 
         if ($random !== false) {
@@ -463,7 +468,8 @@ class JSONDatabase {
                     throw new HTTPException('Seed not an integer value for random search result');
                 $seed = intval($rawSeed);
             }
-            $res = choose_random($res, $seed);
+            // apply limit during random selection to avoid unnecessary processing
+            $res = choose_random($res, $seed, $has_limit ? $limit : -1);
         }
 
         return $res;
