@@ -130,13 +130,12 @@ The search method can take one or more options to filter entries in a collection
 
 ### Search Option Properties
 
-| Property    | Type      | Description                                                                 |
-| ----------- | --------- | --------------------------------------------------------------------------- |
+| Property    | Type      | Description                                                                |
+| ----------- | --------- | -------------------------------------------------------------------------- |
 | `field`     | `string`  | The field path to search in (supports dot notation for nested fields)      |
 | `criteria`  | `string`  | The comparison criteria to use (see table above)                           |
-| `value`     | `any`     | The value to compare against                                                |
+| `value`     | `any`     | The value to compare against                                               |
 | `ignoreCase`| `boolean` | Whether to ignore case sensitivity for string comparisons (default: false) |
-| `limit`     | `number`  | Maximum number of results to return (lowest limit is chosen if multiple)   |
 
 ## Edit field options
 
