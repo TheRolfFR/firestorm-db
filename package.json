@@ -7,7 +7,7 @@
   "scripts": {
     "php:start": "node tests/php_setup.mjs",
     "php:stop": "sh tests/php_server_kill.sh",
-    "php:tests": "pnpm php:stop ; pnpm php:start && pnpm js:tests ; pnpm php:stop",
+    "php:tests": "pnpm php:stop ; pnpm php:start && pnpm js:tests ; e=$? ; pnpm php:stop ; exit $e",
     "js:tests": "mocha tests/**/tests-setup.spec.mjs tests/**/*.spec.mjs",
     "docker:build": "bash docker/docker_image_build.bash",
     "docker:alive": "bash docker/docker_image_alive.bash",

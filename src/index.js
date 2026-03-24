@@ -257,7 +257,7 @@ class Collection {
 	 */
 	async search(options, random = false, limit = undefined) {
 		if (!Array.isArray(options)) throw new TypeError("searchOptions shall be an array");
-		if (typeof limit !== "number" || limit <= 0 || !Number.isInteger(limit))
+		if (limit !== undefined && (typeof limit !== "number" || limit <= 0 || !Number.isInteger(limit)))
 			throw new TypeError(`${JSON.stringify(limit)} search option limit must be a positive integer`);
 				
 		options.forEach((option) => {

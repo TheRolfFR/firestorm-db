@@ -147,8 +147,6 @@ export type SearchOption<T> = {
 		value?: any;
 		/** Is it case sensitive? (default true) */
 		ignoreCase?: boolean;
-		/** Maximum number of results to return (optional) */
-		limit?: number;
 	};
 }[keyof T];
 
@@ -225,9 +223,10 @@ declare class Collection<T extends { [ID_FIELD]: string }> {
 	 * Search through the collection
 	 * @param options - Array of search options
 	 * @param random - Random result seed, disabled by default, but can activated with true or a given seed
+	 * @param limit - Limit the number of results returned (only applies if random is false)
 	 * @returns The found elements
 	 */
-	public search(options: SearchOption<RemoveMethods<T>>[], random?: boolean | number): Promise<T[]>;
+	public search(options: SearchOption<RemoveMethods<T>>[], random?: boolean | number, limit?: number): Promise<T[]>;
 
 	/**
 	 * Read the entire collection
