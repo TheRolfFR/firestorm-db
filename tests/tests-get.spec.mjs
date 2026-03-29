@@ -223,7 +223,7 @@ describe("GET operations", () => {
 		});
 	});
 
-	describe("search(searchOptions, random)", () => {
+	describe("search(searchOptions)", () => {
 		describe("Nested keys test", () => {
 			it("doesn't crash if unknown nested key", (done) => {
 				base
@@ -274,7 +274,7 @@ describe("GET operations", () => {
 		});
 
 		// undefined works because random becomes default parameter false, so false works too
-		const incorrect = [null, "gg", ""];
+		const incorrect = ["gg", "", { random: "gg"}, { random: ""}];
 		incorrect.forEach((incor) => {
 			it(`${JSON.stringify(incor)} seed rejects`, (done) => {
 				base
@@ -294,22 +294,24 @@ describe("GET operations", () => {
 			});
 		});
 
-		it("true seed succeeds", (done) => {
-			base
-				.search(
-					[
-						{
-							criteria: "includes",
-							field: "name",
-							value: "",
-						},
-					],
-					true,
-				)
-				.then(() => done())
-				.catch((err) => {
-					done("Should not reject with error " + JSON.stringify(err));
-				});
+		[true, { random: true }].forEach(trueval => {
+			it(`${JSON.stringify(trueval)} seed succeeds`, (done) => {
+				base
+					.search(
+						[
+							{
+								criteria: "includes",
+								field: "name",
+								value: "",
+							},
+						],
+						trueval,
+					)
+					.then(() => done())
+					.catch((err) => {
+						done("Should not reject with error " + JSON.stringify(err));
+					});
+			});
 		});
 
 		it("Gives the same result for the same seed", (done) => {
@@ -350,7 +352,9 @@ describe("GET operations", () => {
 						field: "name",
 						value: "Joy",
 					},
-				], false, 1)
+				], {
+					limit: 1,
+				})
 				.then((res) => {
 					expect(res).to.be.an("array", "Search result must be an array");
 					expect(res).to.have.lengthOf(1, "Should return exactly 1 result due to limit");
@@ -368,7 +372,9 @@ describe("GET operations", () => {
 						field: "name",
 						value: "Joy",
 					},
-				], false, 0)
+				], {
+					limit: -5,
+				})
 				.then(() => done(new Error("Should have thrown an error for invalid limit")))
 				.catch((err) => {
 					expect(err.message).to.include("limit must be a positive integer");

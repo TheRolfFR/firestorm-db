@@ -11,7 +11,12 @@ try {
  * @property {"!=" | "==" | ">=" | "<=" | "<" | ">" | "in" | "includes" | "startsWith" | "endsWith" | "array-contains" | "array-contains-none" | "array-contains-any" | "array-contains-all" | "array-length-eq" | "array-length-df" | "array-length-gt" | "array-length-le" | "array-length-lt" | "array-length-ge"} criteria - Search criteria to filter results
  * @property {string | number | boolean | Array} value - The value to be searched for
  * @property {boolean} [ignoreCase] - Is it case sensitive? (default true)
- * @property {number} [limit] - Maximum number of results to return (optional)
+ */
+
+/**
+ * @typedef {Object} SearchResultOptions
+ * @property {(boolean | number)?} [random] - Random result seed, disabled by default, but can activated with true or a given seed
+ * @property {number?} [limit] - Maximum number of results to return
  */
 
 /**
@@ -251,15 +256,22 @@ class Collection {
 	/**
 	 * Search through the collection
 	 * @param {SearchOption[]} options - Array of search options
-	 * @param {boolean | number} [random] - Random result seed, disabled by default, but can activated with true or a given seed
-	 * @param {number?} [limit] - Maximum number of results to return (optional, overridden by individual search option limits)
+	 * @param {(boolean|number|SearchResultOptions)?} [resultOptions] - Search result options
 	 * @returns {Promise<T[]>} The found elements
 	 */
-	async search(options, random = false, limit = undefined) {
+	async search(options, resultOptions = undefined) {
 		if (!Array.isArray(options)) throw new TypeError("searchOptions shall be an array");
+		if (resultOptions !== undefined && typeof(resultOptions) !== "number" && typeof(resultOptions) !== "boolean"
+			&& typeof(resultOptions) !== "object") throw new TypeError("Incorrect search result options");
+		
+		const { random = false, limit = undefined } = resultOptions || {};
+
 		if (limit !== undefined && (typeof limit !== "number" || limit <= 0 || !Number.isInteger(limit)))
 			throw new TypeError(`${JSON.stringify(limit)} search option limit must be a positive integer`);
-				
+
+		if (random !== undefined && random !== false && random !== true && (typeof random !== "number" || !Number.isInteger(random)))
+			throw new TypeError(`${JSON.stringify(random)} search option random must be a boolean or an integer`);
+
 		options.forEach((option) => {
 			if (option.field === undefined || option.criteria === undefined || option.value === undefined)
 				throw new TypeError("Missing fields in searchOptions array");
@@ -281,14 +293,12 @@ class Collection {
 			params.limit = limit;
 		}
 
-		if (random !== false) {
+		if(random !== undefined && random !== false) {
+			params.random = parseInt(random);
 			if (random === true) {
 				params.random = {};
 			} else {
 				const seed = parseInt(random);
-				if (isNaN(seed))
-					throw new TypeError("random takes as parameter true, false or an integer value");
-
 				params.random = { seed };
 			}
 		}
