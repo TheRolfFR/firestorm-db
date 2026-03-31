@@ -16,7 +16,8 @@
     "doc:gen": "jsdoc src/index.js -c jsdoc.json -R README.md -t ./node_modules/docdash -d out",
     "doc:watch": "nodemon -x pnpm doc:gen --watch src/index.js --watch jsdoc.json --watch README.md",
     "types:gen": "npx tsc",
-    "lint:prettier": "prettier \"{,!(node_modules)/**/}*.{cjs,mjs,js,ts}\" --config .prettierrc --write",
+    "lint:write": "prettier \"{,!(node_modules)/**/}*.{cjs,mjs,js,ts}\" --config .prettierrc --write",
+    "lint:check": "prettier \"{,!(node_modules)/**/}*.{cjs,mjs,js,ts}\" --config .prettierrc --check",
     "coverage": "pnpm php:stop ; pnpm php:start && nyc --reporter=text mocha tests/**/*.spec.js; pnpm php:stop"
   },
   "repository": {
