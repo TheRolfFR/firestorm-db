@@ -233,7 +233,10 @@ declare class Collection<T extends { [ID_FIELD]: string }> {
 	 * @param limit - Limit the number of results returned (only applies if random is false)
 	 * @returns The found elements
 	 */
-	public search(options: SearchOption<RemoveMethods<T>>[], random?: boolean | number | SearchResultOptions): Promise<T[]>;
+	public search(
+		options: SearchOption<RemoveMethods<T>>[],
+		random?: boolean | number | SearchResultOptions,
+	): Promise<T[]>;
 
 	/**
 	 * Read the entire collection

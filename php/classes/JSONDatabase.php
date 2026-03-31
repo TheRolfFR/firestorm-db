@@ -404,9 +404,14 @@ class JSONDatabase {
     }
 
     public function search($conditions, $random = false, $limit = false) {
+        $has_limit = false;
+        if(gettype($limit) === 'integer' && $limit > 0)
+            $has_limit = true;
+        else if($limit !== false)
+            throw new HTTPException('search option limit must be a positive integer');
+
         $obj = $this->read();
         $res = [];
-        $has_limit = $limit !== false && is_int($limit) && $limit > 0;
 
         foreach ($obj->content as $key => $el) {
             $el_root = $el;

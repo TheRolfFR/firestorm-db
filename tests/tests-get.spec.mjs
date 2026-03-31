@@ -4,7 +4,8 @@ import crypto from "crypto";
 import { expect } from "chai";
 
 import firestorm from "../src/index.js";
-import { base, content, resetDatabaseContent } from "./tests.env.mjs";
+import { base, content, resetDatabaseContent, ADDRESS, TOKEN } from "./tests.env.mjs";
+import { request } from "http";
 
 describe("GET operations", () => {
 	before(async () => await resetDatabaseContent());
@@ -274,7 +275,7 @@ describe("GET operations", () => {
 		});
 
 		// undefined works because random becomes default parameter false, so false works too
-		const incorrect = ["gg", "", { random: "gg"}, { random: ""}];
+		const incorrect = ["gg", "", { random: "gg" }, { random: "" }];
 		incorrect.forEach((incor) => {
 			it(`${JSON.stringify(incor)} seed rejects`, (done) => {
 				base
@@ -294,7 +295,7 @@ describe("GET operations", () => {
 			});
 		});
 
-		[true, { random: true }].forEach(trueval => {
+		[true, { random: true }].forEach((trueval) => {
 			it(`${JSON.stringify(trueval)} seed succeeds`, (done) => {
 				base
 					.search(
@@ -346,19 +347,25 @@ describe("GET operations", () => {
 	describe("search(searchOptions) with limit", () => {
 		it("limits the number of results returned", (done) => {
 			base
-				.search([
+				.search(
+					[
+						{
+							criteria: "includes",
+							field: "name",
+							value: "Joy",
+						},
+					],
 					{
-						criteria: "includes",
-						field: "name",
-						value: "Joy",
+						limit: 1,
 					},
-				], {
-					limit: 1,
-				})
+				)
 				.then((res) => {
 					expect(res).to.be.an("array", "Search result must be an array");
 					expect(res).to.have.lengthOf(1, "Should return exactly 1 result due to limit");
-					expect(res[0][firestorm.ID_FIELD]).to.be.oneOf(["0", "1", "2"], "Should be one of the matching IDs");
+					expect(res[0][firestorm.ID_FIELD]).to.be.oneOf(
+						["0", "1", "2"],
+						"Should be one of the matching IDs",
+					);
 					done();
 				})
 				.catch(done);
@@ -366,20 +373,119 @@ describe("GET operations", () => {
 
 		it("validates limit must be a positive integer", (done) => {
 			base
-				.search([
+				.search(
+					[
+						{
+							criteria: "includes",
+							field: "name",
+							value: "Joy",
+						},
+					],
 					{
-						criteria: "includes",
-						field: "name",
-						value: "Joy",
+						limit: -5,
 					},
-				], {
-					limit: -5,
-				})
+				)
 				.then(() => done(new Error("Should have thrown an error for invalid limit")))
 				.catch((err) => {
 					expect(err.message).to.include("limit must be a positive integer");
 					done();
 				});
+		});
+
+		describe("With raw cURL HTTP request", () => {
+			it("limits the number of results returned", (done) => {
+				const url = `${ADDRESS}/get.php`;
+				const collection_body = {
+					collection: base.collectionName,
+					command: "search",
+					search: [
+						{
+							criteria: "includes",
+							field: "name",
+							value: "Joy",
+						},
+					],
+					limit: 1,
+				};
+				const body = JSON.stringify(collection_body);
+
+				const req = request(
+					new URL(url),
+					{
+						method: "POST",
+						headers: {
+							"Content-Type": "application/json",
+							"Content-Length": Buffer.byteLength(body),
+						},
+					},
+					(res) => {
+						let data = "";
+						res.on("data", (chunk) => (data += chunk));
+						res.on("end", () => {
+							try {
+								expect(res.statusCode, data).to.equal(200);
+								const json = JSON.parse(data);
+								expect(json).to.have.all.keys("0");
+								done();
+							} catch (err) {
+								done(err);
+							}
+						});
+					},
+				);
+
+				req.on("error", done);
+				req.write(body);
+				req.end();
+			});
+
+			it("limit value throws error", (done) => {
+				const url = `${ADDRESS}/get.php`;
+				const collection_body = {
+					collection: base.collectionName,
+					command: "search",
+					search: [
+						{
+							criteria: "includes",
+							field: "name",
+							value: "Joy",
+						},
+					],
+					limit: 0,
+				};
+				const body = JSON.stringify(collection_body);
+
+				const req = request(
+					new URL(url),
+					{
+						method: "POST",
+						headers: {
+							"Content-Type": "application/json",
+							"Content-Length": Buffer.byteLength(body),
+						},
+					},
+					(res) => {
+						let data = "";
+						res.on("data", (chunk) => (data += chunk));
+						res.on("end", () => {
+							try {
+								expect(res.statusCode, data).to.be.eq(400);
+								const json = JSON.parse(data);
+								expect(json).deep.equals({
+									error: "search option limit must be a positive integer",
+								});
+								done();
+							} catch (err) {
+								done(err);
+							}
+						});
+					},
+				);
+
+				req.on("error", done);
+				req.write(body);
+				req.end();
+			});
 		});
 	});
 

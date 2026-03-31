@@ -131,7 +131,8 @@ switch ($command) {
 
 http_message(400, 'Bad request');
 
-
+} catch(HTTPException $e) {
+    http_error($e->getCode(), $e->getMessage());
 } catch(Exception $e) {
-    http_error(500, $e->getMessage());
+    http_error(400, $e->getMessage());
 }

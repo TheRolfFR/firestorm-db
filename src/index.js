@@ -261,16 +261,33 @@ class Collection {
 	 */
 	async search(options, resultOptions = undefined) {
 		if (!Array.isArray(options)) throw new TypeError("searchOptions shall be an array");
-		if (resultOptions !== undefined && typeof(resultOptions) !== "number" && typeof(resultOptions) !== "boolean"
-			&& typeof(resultOptions) !== "object") throw new TypeError("Incorrect search result options");
-		
+		if (
+			resultOptions !== undefined &&
+			typeof resultOptions !== "number" &&
+			typeof resultOptions !== "boolean" &&
+			typeof resultOptions !== "object"
+		)
+			throw new TypeError("Incorrect search result options");
+
 		const { random = false, limit = undefined } = resultOptions || {};
 
-		if (limit !== undefined && (typeof limit !== "number" || limit <= 0 || !Number.isInteger(limit)))
-			throw new TypeError(`${JSON.stringify(limit)} search option limit must be a positive integer`);
+		if (
+			limit !== undefined &&
+			(typeof limit !== "number" || limit <= 0 || !Number.isInteger(limit))
+		)
+			throw new TypeError(
+				`${JSON.stringify(limit)} search option limit must be a positive integer`,
+			);
 
-		if (random !== undefined && random !== false && random !== true && (typeof random !== "number" || !Number.isInteger(random)))
-			throw new TypeError(`${JSON.stringify(random)} search option random must be a boolean or an integer`);
+		if (
+			random !== undefined &&
+			random !== false &&
+			random !== true &&
+			(typeof random !== "number" || !Number.isInteger(random))
+		)
+			throw new TypeError(
+				`${JSON.stringify(random)} search option random must be a boolean or an integer`,
+			);
 
 		options.forEach((option) => {
 			if (option.field === undefined || option.criteria === undefined || option.value === undefined)
@@ -293,7 +310,7 @@ class Collection {
 			params.limit = limit;
 		}
 
-		if(random !== undefined && random !== false) {
+		if (random !== undefined && random !== false) {
 			params.random = parseInt(random);
 			if (random === true) {
 				params.random = {};
