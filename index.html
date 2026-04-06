@@ -97,15 +97,18 @@
 <h1>JavaScript Client</h1>
 <p>The JavaScript <a href="./src/index.js">index.js</a> file is simply an <a href="https://www.npmjs.com/package/axios">Axios</a> wrapper of the PHP backend.</p>
 <h2>JavaScript setup</h2>
-<p>First, set your API address (and your writing token if needed) using the <code>address()</code> and <code>token()</code> functions:</p>
+<p>First, set your API address (and your writing token if needed) using the <code>address()</code> and <code>token()</code> setters. If you need to later retrieve these values, you can use the same functions as getters with no parameters:</p>
 <pre class="prettyprint source lang-js"><code>// only needed in Node.js; including the script tag in a browser is enough otherwise.
 const firestorm = require(&quot;firestorm-db&quot;);
 
-firestorm.address(&quot;http://example.com/path/to/firestorm/root/&quot;);
+firestorm.address(&quot;https://example.com/path/to/firestorm/root/&quot;);
 
 // only necessary if you want to write or access private collections
 // must match token stored in tokens.php file
 firestorm.token(&quot;my_secret_token_probably_from_an_env_file&quot;);
+
+const address = firestorm.address();
+// returns &quot;https://example.com/path/to/firestorm/root&quot;
 </code></pre>
 <p>Now you can use Firestorm to its full potential.</p>
 <h2>Create your first collection</h2>
@@ -125,7 +128,7 @@ const userCollection = firestorm.collection(&quot;users&quot;, (el) => {
 
 // all methods return promises
 const johnDoe = await userCollection.get(123456789);
-// gives { name: &quot;John Doe&quot;, hello: Function }
+// returns { name: &quot;John Doe&quot;, hello: Function }
 
 johnDoe.hello(); // &quot;John Doe says hello!&quot;
 </code></pre>
@@ -240,7 +243,7 @@ johnDoe.hello(); // &quot;John Doe says hello!&quot;
 </table>
 <h2>Search options</h2>
 <p>There are more options available than the Firestore <code>where</code> command, allowing you to get better and faster search results.</p>
-<p>The search method can take one or more options to filter entries in a collection. A search option takes a <code>field</code> with a <code>criteria</code> and compares it to a <code>value</code>. You can also use the boolean <code>ignoreCase</code> option for string values. Available criteria depends on the field type.</p>
+<p>The search method can take one or more options to filter entries in a collection. A search option takes a <code>field</code> with a <code>criteria</code> and compares it to a <code>value</code>. You can also use the boolean <code>ignoreCase</code> option for string values and the <code>limit</code> option to restrict the number of results returned. Available criteria depends on the field type.</p>
 <table>
 <thead>
 <tr>
@@ -352,6 +355,38 @@ johnDoe.hello(); // &quot;John Doe says hello!&quot;
 </tr>
 </tbody>
 </table>
+<h3>Search Option Properties</h3>
+<table>
+<thead>
+<tr>
+<th>Property</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>field</code></td>
+<td><code>string</code></td>
+<td>The field path to search in (supports dot notation for nested fields)</td>
+</tr>
+<tr>
+<td><code>criteria</code></td>
+<td><code>string</code></td>
+<td>The comparison criteria to use (see table above)</td>
+</tr>
+<tr>
+<td><code>value</code></td>
+<td><code>any</code></td>
+<td>The value to compare against</td>
+</tr>
+<tr>
+<td><code>ignoreCase</code></td>
+<td><code>boolean</code></td>
+<td>Whether to ignore case sensitivity for string comparisons (default: false)</td>
+</tr>
+</tbody>
+</table>
 <h2>Edit field options</h2>
 <p>Edit objects have an element <code>id</code>, a <code>field</code> to edit, an <code>operation</code> specifying what to do to this field, and optionally a <code>value</code>.</p>
 <table>
@@ -420,11 +455,11 @@ johnDoe.hello(); // &quot;John Doe says hello!&quot;
 </tr>
 </tbody>
 </table>
-<p>Various other methods and constants exist in the JavaScript client, which will make more sense once you learn what's actually happening behind the scenes.</p>
+<p>Various other methods and constants exist in the JavaScript client, which make more sense once you learn what's actually happening behind the scenes.</p>
 <h1>PHP Backend</h1>
 <p>Firestorm's PHP files handle files, read, and writes, through <code>GET</code> and <code>POST</code> requests sent by the JavaScript client. All JavaScript methods correspond to an equivalent Axios request to the relevant PHP file.</p>
 <h2>PHP setup</h2>
-<p>The server-side files to handle requests can be found and copied to your hosting platform <a href="./php/">here</a>. The two files that need editing are <code>tokens.php</code> and <code>config.php</code>.</p>
+<p>The server-side files to handle requests can be found and copied to your hosting platform <a href="./php/">here</a>, which are compatible with both PHP 7 and 8. Two files will need editing: <code>tokens.php</code> and <code>config.php</code>.</p>
 <ul>
 <li><code>tokens.php</code> contains writing tokens declared in a <code>$db_tokens</code> array. These correspond to the tokens used with <code>firestorm.token()</code> in the JavaScript client.</li>
 <li><code>config.php</code> stores all of your collections. This file needs to declare a <code>$database_list</code> associative array of <code>JSONDatabase</code> instances.</li>
@@ -592,7 +627,7 @@ await johnDoe.getOrders();
 <ul>
 <li>Read requests are <code>GET</code> requests sent to <code>&lt;your_address_here&gt;/get.php</code>.</li>
 <li>Write requests are <code>POST</code> requests sent to <code>&lt;your_address_here&gt;/post.php</code> with JSON data.</li>
-<li>File requests are sent to <code>&lt;your_address_here&gt;/files.php</code> with form data.</li>
+<li>File requests are <code>POST</code> requests sent to <code>&lt;your_address_here&gt;/files.php</code> with form data.</li>
 </ul>
 <p>The first keys in a Firestorm request will always be the same regardless of its type, and further keys will depend on the specific method:</p>
 <pre class="prettyprint source lang-json"><code>{
@@ -608,21 +643,22 @@ await johnDoe.getOrders();
 <pre class="prettyprint source"><code>Fatal error:
 Allowed memory size of 134217728 bytes exhausted (tried to allocate 32360168 bytes)
 </code></pre>
-<p>If you encounter a memory allocation issue, simply change the memory limit in <code>/etc/php/7.4/apache2/php.ini</code> to be bigger:</p>
-<pre class="prettyprint source lang-ini"><code>memory_limit = 256M
+<p>If you encounter a memory allocation issue, simply change the memory limit in <code>/etc/php/&lt;php_version_here&gt;/apache2/php.ini</code> to be bigger:</p>
+<pre class="prettyprint source lang-ini"><code>; Default is 128M
+memory_limit = 256M
 </code></pre>
 <p>If this doesn't help, considering splitting your collection into multiple smaller collections and linking them together with methods.</p>
 <h1>TypeScript Support</h1>
 <p>Firestorm ships with TypeScript support out of the box.</p>
 <h2>Collection types</h2>
 <p>Collections in TypeScript take a generic parameter <code>T</code>, which is the type of each element in the collection. If you aren't using a relational collection, this can simply be set to <code>any</code>.</p>
-<p>The generic parameter must contain an <code>ID_FIELD</code> imported from Firestorm (unless you're using a non-relational collection).</p>
+<p>The generic parameter must contain a string field named <code>ID_FIELD</code> imported from Firestorm (unless you're using a non-relational collection).</p>
 <pre class="prettyprint source lang-ts"><code>import firestorm from &quot;firestorm-db&quot;;
 firestorm.address(&quot;ADDRESS_VALUE&quot;);
 
 interface User {
     // An ID field is required by a generic constraint
-    // unless the collection is non-relational
+    // (unless the collection is non-relational)
     [firestorm.ID_FIELD]: string;
     name: string;
     password: string;
@@ -634,7 +670,7 @@ const userCollection = firestorm.collection&lt;User>(&quot;users&quot;);
 const johnDoe = await userCollection.get(123456789);
 // type: { [ID_FIELD]: string, name: string, password: string, pets: string[] }
 </code></pre>
-<p>Injected methods should also be stored in this interface. They'll get filtered out from write operations to prevent false positives:</p>
+<p>Injected methods should also be stored in this interface. They'll be filtered out from write operations correctly, so don't worry about potential typing inaccuracies:</p>
 <pre class="prettyprint source lang-ts"><code>import firestorm from &quot;firestorm-db&quot;;
 firestorm.address(&quot;ADDRESS_VALUE&quot;);
 
@@ -684,7 +720,7 @@ const deleteConfirmation = await firestorm.files.delete(&quot;/quote.txt&quot;);
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.6.7</a> on Thu Nov 20 2025 18:19:33 GMT+0000 (Coordinated Universal Time) using the <a href="https://github.com/clenemt/docdash">docdash</a> theme.
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.6.7</a> on Mon Apr 06 2026 10:42:33 GMT+0000 (Coordinated Universal Time) using the <a href="https://github.com/clenemt/docdash">docdash</a> theme.
 </footer>
 
 <script>prettyPrint();</script>
