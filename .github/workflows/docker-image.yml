@@ -14,6 +14,8 @@ jobs:
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
@@ -50,7 +52,7 @@ jobs:
       - name: Extract latest version tag
         id: version
         run: |
-          VERSION=$(git describe --tags --abbrev=0 || echo "v1.0.0")
+          VERSION=$(git describe --tags --abbrev=0)
           MAJOR_VERSION=$(echo $VERSION | cut -d'.' -f1)
           echo "VERSION=${VERSION}" >> $GITHUB_ENV
           echo "MAJOR_VERSION=${MAJOR_VERSION}" >> $GITHUB_ENV
