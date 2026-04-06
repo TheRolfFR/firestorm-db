@@ -5,10 +5,11 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## Unreleased
+## [1.14.0] - 2026-04-06
 
 ### Added
 
+- `limit` search result options.
 - `array-contains-all` option for array fields.
 - `Collection.search` option now has a `limit` option, compatible with `random` to restrict the number of elements displayed
 
@@ -25,6 +26,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 - Fixed `ID_FIELD` TypeScript type.
+- Updated dependencies.
 
 ## [1.13.0] - 2024-05-09
 
