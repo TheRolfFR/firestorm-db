@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - `array-contains-all` option for array fields.
+- `Collection.search` option now has a `limit` option, compatible with `random` to restrict the number of elements displayed
 
 ### Changed
 

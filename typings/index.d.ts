@@ -150,6 +150,13 @@ export type SearchOption<T> = {
 	};
 }[keyof T];
 
+export type SearchResultOptions = {
+	/** Random result seed, disabled by default, but can activated with true or a given seed */
+	random?: boolean | number;
+	/** Limit the number of results returned (only applies if random is false) */
+	limit?: number;
+};
+
 export interface SelectOption<T extends any[]> {
 	/** Selected fields to be returned */
 	fields: T;
@@ -223,9 +230,13 @@ declare class Collection<T extends { [ID_FIELD]: string }> {
 	 * Search through the collection
 	 * @param options - Array of search options
 	 * @param random - Random result seed, disabled by default, but can activated with true or a given seed
+	 * @param limit - Limit the number of results returned (only applies if random is false)
 	 * @returns The found elements
 	 */
-	public search(options: SearchOption<RemoveMethods<T>>[], random?: boolean | number): Promise<T[]>;
+	public search(
+		options: SearchOption<RemoveMethods<T>>[],
+		random?: boolean | number | SearchResultOptions,
+	): Promise<T[]>;
 
 	/**
 	 * Read the entire collection

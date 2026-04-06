@@ -33,17 +33,20 @@ The JavaScript [index.js](./src/index.js) file is simply an [Axios](https://www.
 
 ## JavaScript setup
 
-First, set your API address (and your writing token if needed) using the `address()` and `token()` functions:
+First, set your API address (and your writing token if needed) using the `address()` and `token()` setters. If you need to later retrieve these values, you can use the same functions as getters with no parameters:
 
 ```js
 // only needed in Node.js; including the script tag in a browser is enough otherwise.
 const firestorm = require("firestorm-db");
 
-firestorm.address("http://example.com/path/to/firestorm/root/");
+firestorm.address("https://example.com/path/to/firestorm/root/");
 
 // only necessary if you want to write or access private collections
 // must match token stored in tokens.php file
 firestorm.token("my_secret_token_probably_from_an_env_file");
+
+const address = firestorm.address();
+// returns "https://example.com/path/to/firestorm/root"
 ```
 
 Now you can use Firestorm to its full potential.
@@ -67,7 +70,7 @@ const userCollection = firestorm.collection("users", (el) => {
 
 // all methods return promises
 const johnDoe = await userCollection.get(123456789);
-// gives { name: "John Doe", hello: Function }
+// returns { name: "John Doe", hello: Function }
 
 johnDoe.hello(); // "John Doe says hello!"
 ```
@@ -103,7 +106,7 @@ johnDoe.hello(); // "John Doe says hello!"
 
 There are more options available than the Firestore `where` command, allowing you to get better and faster search results.
 
-The search method can take one or more options to filter entries in a collection. A search option takes a `field` with a `criteria` and compares it to a `value`. You can also use the boolean `ignoreCase` option for string values. Available criteria depends on the field type.
+The search method can take one or more options to filter entries in a collection. A search option takes a `field` with a `criteria` and compares it to a `value`. You can also use the boolean `ignoreCase` option for string values and the `limit` option to restrict the number of results returned. Available criteria depends on the field type.
 
 | Criteria                | Types allowed                 | Description                                                     |
 | ----------------------- | ----------------------------- | --------------------------------------------------------------- |
@@ -128,6 +131,15 @@ The search method can take one or more options to filter entries in a collection
 | `'array-length-le'`     | `number`                      | Entry field's array size is lower or equal to your value        |
 | `'array-length-ge'`     | `number`                      | Entry field's array size is greater or equal to your value      |
 
+### Search Option Properties
+
+| Property    | Type      | Description                                                                |
+| ----------- | --------- | -------------------------------------------------------------------------- |
+| `field`     | `string`  | The field path to search in (supports dot notation for nested fields)      |
+| `criteria`  | `string`  | The comparison criteria to use (see table above)                           |
+| `value`     | `any`     | The value to compare against                                               |
+| `ignoreCase`| `boolean` | Whether to ignore case sensitivity for string comparisons (default: false) |
+
 ## Edit field options
 
 Edit objects have an element `id`, a `field` to edit, an `operation` specifying what to do to this field, and optionally a `value`.
@@ -144,7 +156,7 @@ Edit objects have an element `id`, a `field` to edit, an `operation` specifying 
 | `array-delete` | Yes         | `number`                 | Removes an array element by index.                                                                                                     |
 | `array-splice` | Yes         | `[number, number, any?]` | Last argument is optional. Check the PHP [array_splice](https://www.php.net/manual/function.array-splice) documentation for more info. |
 
-Various other methods and constants exist in the JavaScript client, which will make more sense once you learn what's actually happening behind the scenes.
+Various other methods and constants exist in the JavaScript client, which make more sense once you learn what's actually happening behind the scenes.
 
 # PHP Backend
 
@@ -152,7 +164,7 @@ Firestorm's PHP files handle files, read, and writes, through `GET` and `POST` r
 
 ## PHP setup
 
-The server-side files to handle requests can be found and copied to your hosting platform [here](./php/). The two files that need editing are `tokens.php` and `config.php`.
+The server-side files to handle requests can be found and copied to your hosting platform [here](./php/), which are compatible with both PHP 7 and 8. Two files will need editing: `tokens.php` and `config.php`.
 
 - `tokens.php` contains writing tokens declared in a `$db_tokens` array. These correspond to the tokens used with `firestorm.token()` in the JavaScript client.
 - `config.php` stores all of your collections. This file needs to declare a `$database_list` associative array of `JSONDatabase` instances.
@@ -371,7 +383,7 @@ Each operation type requests a different file. In the JavaScript client, the cor
 
 - Read requests are `GET` requests sent to `<your_address_here>/get.php`.
 - Write requests are `POST` requests sent to `<your_address_here>/post.php` with JSON data.
-- File requests are sent to `<your_address_here>/files.php` with form data.
+- File requests are `POST` requests sent to `<your_address_here>/files.php` with form data.
 
 The first keys in a Firestorm request will always be the same regardless of its type, and further keys will depend on the specific method:
 
@@ -395,9 +407,10 @@ Fatal error:
 Allowed memory size of 134217728 bytes exhausted (tried to allocate 32360168 bytes)
 ```
 
-If you encounter a memory allocation issue, simply change the memory limit in `/etc/php/7.4/apache2/php.ini` to be bigger:
+If you encounter a memory allocation issue, simply change the memory limit in `/etc/php/<php_version_here>/apache2/php.ini` to be bigger:
 
 ```ini
+; Default is 128M
 memory_limit = 256M
 ```
 
@@ -411,7 +424,7 @@ Firestorm ships with TypeScript support out of the box.
 
 Collections in TypeScript take a generic parameter `T`, which is the type of each element in the collection. If you aren't using a relational collection, this can simply be set to `any`.
 
-The generic parameter must contain an `ID_FIELD` imported from Firestorm (unless you're using a non-relational collection).
+The generic parameter must contain a string field named `ID_FIELD` imported from Firestorm (unless you're using a non-relational collection).
 
 ```ts
 import firestorm from "firestorm-db";
@@ -419,7 +432,7 @@ firestorm.address("ADDRESS_VALUE");
 
 interface User {
     // An ID field is required by a generic constraint
-    // unless the collection is non-relational
+    // (unless the collection is non-relational)
     [firestorm.ID_FIELD]: string;
     name: string;
     password: string;
@@ -432,7 +445,7 @@ const johnDoe = await userCollection.get(123456789);
 // type: { [ID_FIELD]: string, name: string, password: string, pets: string[] }
 ```
 
-Injected methods should also be stored in this interface. They'll get filtered out from write operations to prevent false positives:
+Injected methods should also be stored in this interface. They'll be filtered out from write operations correctly, so don't worry about potential typing inaccuracies:
 
 ```ts
 import firestorm from "firestorm-db";
