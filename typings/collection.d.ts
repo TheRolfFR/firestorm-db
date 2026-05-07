@@ -43,7 +43,7 @@ export interface Collection<T> {
 	 * @param option - Additional filter options
 	 * @returns The found elements
 	 */
-	search(filter: SearchFilter<RemoveMethods<T>>[], option?: SearchOption): Promise<T[]>;
+	search(filter: SearchOption<RemoveMethods<T>>[], option?: SearchOption): Promise<T[]>;
 
 	/**
 	 * Read the entire collection
@@ -285,7 +285,7 @@ export type EditFieldOption<T> = {
 		);
 }[keyof T];
 
-export type SearchFilter<T> = {
+export type SearchOption<T> = {
 	[K in keyof T]: {
 		/** The field to be searched for */
 		field: Path<T>;

@@ -4,7 +4,7 @@ const { applyAddMethods, extractRequest, getData, createPostData } = require("./
 const ID_FIELD_NAME = "id";
 
 /**
- * @typedef {Object} SearchFilter
+ * @typedef {Object} SearchOption
  * @property {string} field - The field to be searched for
  * @property {"!=" | "==" | ">=" | "<=" | "<" | ">" | "in" | "includes" | "startsWith" | "endsWith" | "array-contains" | "array-contains-none" | "array-contains-any" | "array-contains-all" | "array-length-eq" | "array-length-df" | "array-length-gt" | "array-length-le" | "array-length-lt" | "array-length-ge"} criteria - Search criteria to filter results
  * @property {string | number | boolean | Array} value - The value to be searched for
@@ -152,7 +152,7 @@ class Collection {
 
 	/**
 	 * Search through the collection
-	 * @param {SearchFilter[]} filter - Array of search options
+	 * @param {SearchOption[]} filter - Array of search options
 	 * @param {SearchOption} [option] - Search result options
 	 * @returns {Promise<T[]>} The found elements
 	 */

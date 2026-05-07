@@ -57,6 +57,7 @@ try {
         http_error(400, 'No command provided');
 
     $available_commands = [
+        'write_raw',
         'writeRaw',
         'add',
         'addBulk',
@@ -78,6 +79,7 @@ try {
         http_error(400, "No $valueKeyName provided");
 
     switch ($command) {
+        case 'write_raw':
         case 'writeRaw':
             $db->writeRaw($value);
             http_success("Successful $command command");

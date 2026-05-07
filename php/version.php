@@ -1,12 +1,13 @@
 <?php
-// Server-side version of Firestorm, used for client validation
-// Make sure this matches your installed server version!
-$FIRESTORM_VERSION = '2.0.0';
 
 // require a token for checking the version to prevent being able to search for vulnerable versions
 require_once './utils.php';
 
 cors();
+
+function load_version() {
+    return file_get_contents("./version.ini");
+}
 
 $method = sec($_SERVER['REQUEST_METHOD']);
 if ($method !== 'GET' && $method !== 'POST') {
@@ -36,4 +37,9 @@ if (!$db_tokens)
 if (!in_array($token, $db_tokens))
 	http_error(403, 'Invalid token');
 
-http_response($FIRESTORM_VERSION);
+$version_found = get_version();
+
+if($version_found === false)
+    http_response(500, 'Firestorm version not found');
+
+http_response($version_found);

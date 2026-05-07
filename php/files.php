@@ -63,8 +63,9 @@ if ($method === 'POST') {
         http_error(403, 'Cannot write PHP scripts');
 
     $extensionFound = false;
-    for ($i = 0; $i < count($authorized_file_extension) && !$extensionFound; ++$i) {
+    while (($i < count($authorized_file_extension)) && ($extensionFound === false)) {
         $extensionFound = str_ends_with($absolutePath, $authorized_file_extension[$i]);
+        $i = $i + 1;
     }
 
     if (!$extensionFound)

@@ -48,6 +48,7 @@ try {
         http_error(400, 'No command provided');
 
     $available_commands = [
+        'read_raw',
         'readRaw',
         'get',
         'search',
@@ -67,6 +68,7 @@ try {
             http_response($res);
             break;
         case 'readRaw':
+        case 'read_raw':
             $res = $db->readRaw();
             $res = $res->content;
             http_response($res);

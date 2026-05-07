@@ -77,7 +77,7 @@ johnDoe.hello(); // "John Doe says hello!"
 | readRaw(original)         | original?: `boolean`                                        | Read the entire collection. `original` disables ID field injection, for non-relational collections.    |
 | get(key)                  | key: `string \| number`                                     | Get an element from the collection by its key.                                                         |
 | searchKeys(keys)          | keys: `(string \| number)[]`                                | Get multiple elements from the collection by their keys.                                               |
-| search(filter, options)   | filter: `SearchFilter[]` option?: `SearchOption`            | Search through the collection. You can randomize the output order with random as true or a given seed. |
+| search(filter, options)   | filter: `SearchOption[]` option?: `SearchOption`            | Search through the collection. You can randomize the output order with random as true or a given seed. |
 | select(option)            | option: `SelectOption`                                      | Get only selected fields from the collection. Essentially an upgraded version of readRaw.              |
 | values(option)            | option: `ValueOption`                                       | Get all distinct non-null values for a given key across a collection.                                  |
 | random(max, seed, offset) | max?: `number >= -1` seed?: `number` offset?: `number >= 0` | Read random collection elements.                                                                       |
