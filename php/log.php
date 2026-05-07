@@ -12,10 +12,10 @@ class Log {
         $path = LOG_PATH_DEFAULT;
 
         $env_log_path = getenv(LOG_PATH_ENV);
-        if(is_string($env_log) and strlen(trim($env_log_path)) > 0)
+        if($env_log_path !== false and strlen(trim($env_log_path)) > 0)
         {
-            $path = trim($env_log);
-        } else if($log_path and is_string($log_path) and strlen(trim(log_path)) > 0) {
+            $path = trim($env_log_path);
+        } else if($log_path and is_string($log_path) and strlen(trim($log_path)) > 0) {
             $path = $log_path;
         }
 

@@ -16,7 +16,7 @@ let tmp;
 describe("POST operations", () => {
 	describe("writeRaw operations", () => {
 		it("Rejects when incorrect token", (done) => {
-		    firestorm_instance.token("LetsGoToTheMall");
+			firestorm_instance.token("LetsGoToTheMall");
 
 			base
 				.writeRaw({})

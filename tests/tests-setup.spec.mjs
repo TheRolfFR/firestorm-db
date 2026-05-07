@@ -3,11 +3,10 @@
 import { expect } from "chai";
 
 import firestorm from "../src/index.js";
-import { firestorm_instance as firestorm_instance, ADDRESS, TOKEN } from "./tests.env.mjs";
-
+import { firestorm_instance, ADDRESS, TOKEN } from "./tests.env.mjs";
 
 describe("Legacy with default instance", () => {
-    it("throws if no address yet", () => {
+	it("throws if no address yet", () => {
 		expect(firestorm.address).to.throw(Error, "Firestorm address was not configured");
 	});
 
@@ -33,7 +32,7 @@ describe("Legacy with default instance", () => {
 		const actual = firestorm.token();
 		expect(actual).to.equal(TOKEN, "Incorrect token bind");
 	});
-})
+});
 
 describe("Wrapper information", () => {
 	it("binds usable address", () => {

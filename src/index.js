@@ -64,12 +64,12 @@ class Firestorm {
 	/** @ignore */
 	set name(newValue) {
 		this._name = String(newValue);
-    }
+	}
 
-    name(newValue) {
-        this.name = newValue;
-        return this.name;
-    }
+	name(newValue) {
+		this.name = newValue;
+		return this.name;
+	}
 
 	/** @type {string} */
 	get token() {
@@ -79,12 +79,12 @@ class Firestorm {
 	/** @ignore */
 	set token(newValue) {
 		this._token = newValue;
-    }
+	}
 
-    token(newValue) {
-        this.token = newValue;
-        return this.token;
-    }
+	token(newValue) {
+		this.token = newValue;
+		return this.token;
+	}
 
 	/** @type {string} */
 	get address() {
@@ -95,12 +95,12 @@ class Firestorm {
 	set address(newValue) {
 		if (newValue && !newValue.endsWith("/")) newValue += "/";
 		this._address = newValue;
-    }
+	}
 
-    address(newValue) {
-        this.address = newValue;
-        return this.address;
-    }
+	address(newValue) {
+		this.address = newValue;
+		return this.address;
+	}
 
 	/**
 	 * Get the current version of Firestorm
@@ -151,9 +151,8 @@ const firestorm = {
 	 * @returns {string} The stored Firestorm address
 	 */
 	address(newValue = undefined) {
-    	if(newValue !== undefined)
-            this.__default_instance.address = newValue;
-        return this.__default_instance.address;
+		if (newValue !== undefined) this.__default_instance.address = newValue;
+		return this.__default_instance.address;
 	},
 
 	/**
@@ -161,10 +160,9 @@ const firestorm = {
 	 * @param {string} [newValue] - The new Firestorm write token
 	 * @returns {string} The stored Firestorm write token
 	 */
-    token(newValue = undefined) {
-        if(newValue !== undefined)
-            this.__default_instance.token = newValue;
-        return this.__default_instance.token;
+	token(newValue = undefined) {
+		if (newValue !== undefined) this.__default_instance.token = newValue;
+		return this.__default_instance.token;
 	},
 
 	/**
@@ -175,7 +173,7 @@ const firestorm = {
 	 * @returns {Collection<T>} The collection instance
 	 */
 	collection(name, addMethods = (el) => el) {
-        return this.__default_instance.collection(name, addMethods);
+		return this.__default_instance.collection(name, addMethods);
 	},
 
 	/**
@@ -195,12 +193,12 @@ const firestorm = {
 	 * @param {FirestormCreationOption} [params] - Firestorm instance name, server address, and write token
 	 * @returns {Firestorm} New Firestorm instance
 	 */
-	create: function(params = {}) {
-	    return new Firestorm(params);
+	create: function (params = {}) {
+		return new Firestorm(params);
 	},
 
 	/** @type {Firestorm} */
-    __default_instance: new Firestorm({}),
+	__default_instance: new Firestorm({}),
 
 	/** Value for the ID field when searching content */
 	ID_FIELD: ID_FIELD_NAME,

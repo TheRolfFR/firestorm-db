@@ -30,14 +30,14 @@ if (file_exists('./tokens.php') == false)
 // add tokens
 require_once './tokens.php';
 
-if (!$db_tokens)
-	http_error(400, 'Developer is dumb and forgot to create tokens');
+if (!isset($db_tokens))
+	http_error(500, 'Developer is dumb and forgot to create tokens');
 
 // verifying token
 if (!in_array($token, $db_tokens))
 	http_error(403, 'Invalid token');
 
-$version_found = get_version();
+$version_found = load_version();
 
 if($version_found === false)
     http_response(500, 'Firestorm version not found');
