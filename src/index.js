@@ -150,13 +150,13 @@ const firestorm = {
 	 * @param {string} [newValue] - The new Firestorm address
 	 * @returns {string} The stored Firestorm address
 	 */
-    address(newValue = undefined) {
-        const current_address = firestorm.__default_instance.address;
-        if (newValue === undefined && current_address === undefined)
-            throw new Error("Firestorm address was not configured");
+	address(newValue = undefined) {
+		const current_address = firestorm.__default_instance.address;
+		if (newValue === undefined && current_address === undefined)
+			throw new Error("Firestorm address was not configured");
 
-        if (newValue !== undefined && !newValue.endsWith("/")) newValue += "/";
-        if (newValue !== undefined) firestorm.__default_instance.address = newValue;
+		if (newValue !== undefined && !newValue.endsWith("/")) newValue += "/";
+		if (newValue !== undefined) firestorm.__default_instance.address = newValue;
 
 		return firestorm.__default_instance.collection("_").__read_address;
 	},
@@ -166,9 +166,10 @@ const firestorm = {
 	 * @param {string} [newValue] - The new Firestorm write token
 	 * @returns {string} The stored Firestorm write token
 	 */
-    token(newValue = undefined) {
-        const current_token = firestorm.__default_instance.token;
-        if (newValue === undefined && current_token === undefined) throw new Error("Firestorm token was not configured");
+	token(newValue = undefined) {
+		const current_token = firestorm.__default_instance.token;
+		if (newValue === undefined && current_token === undefined)
+			throw new Error("Firestorm token was not configured");
 		if (newValue !== undefined) firestorm.__default_instance.token = newValue;
 		return firestorm.__default_instance.token;
 	},
@@ -215,9 +216,9 @@ const firestorm = {
 	 * Firestorm file manager
 	 * @type {FirestormFiles}
 	 */
-    get files() {
-        return new FirestormFiles(firestorm.__default_instance);
-	}
+	get files() {
+		return new FirestormFiles(firestorm.__default_instance);
+	},
 };
 
 module.exports = firestorm;

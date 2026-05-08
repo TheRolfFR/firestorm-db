@@ -44,8 +44,10 @@ export interface Collection<T> {
 	 * @param limit - Limit the number of results returned (only applies if random is false)
 	 * @returns The found elements
 	 */
-	search(filter: SearchOption<RemoveMethods<T>>[],
-	random?: boolean | number | SearchResultOptions,): Promise<T[]>;
+	search(
+		filter: SearchOption<RemoveMethods<T>>[],
+		random?: boolean | number | SearchResultOptions,
+	): Promise<T[]>;
 
 	/**
 	 * Read the entire collection
@@ -300,7 +302,7 @@ export type SearchOption<T> = {
 	};
 }[keyof T];
 
-export type SearchResultOptions  = {
+export type SearchResultOptions = {
 	/** Random result seed, disabled by default, but can activated with true or a given seed */
 	random?: boolean | number;
 	/** Limit the number of results returned (only applies if random is false) */

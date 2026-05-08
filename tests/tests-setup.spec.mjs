@@ -6,7 +6,7 @@ import firestorm from "../src/index.js";
 import { firestorm_instance, ADDRESS, TOKEN } from "./tests.env.mjs";
 
 describe("Legacy with default instance", () => {
-    it("throws if no address yet", () => {
+	it("throws if no address yet", () => {
 		expect(firestorm.address).to.throw(Error, "Firestorm address was not configured");
 	});
 

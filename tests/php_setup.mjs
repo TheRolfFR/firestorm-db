@@ -25,7 +25,7 @@ async function setup_php() {
 
 	consola.info(" Get PHP source files, get tests data files, creating temp directory...");
 	const [phpPaths, jsonPaths] = await Promise.all([
-		glob(join(process.cwd(), PHP_PATH, "**/*.php")),
+		glob(join(process.cwd(), PHP_PATH, "**/*.*")),
 		glob(join(process.cwd(), "tests", "files", "*.json")),
 		mkdir(join(tmpFolder, "files")),
 	]);
