@@ -41,7 +41,7 @@ describe("File upload, download and delete", () => {
 		firestorm.files
 			.upload(formData)
 			.then((res) => {
-                expect(res).not.to.be.undefined;
+				expect(res).not.to.be.undefined;
 				expect(res).to.deep.equal(
 					{ message: "Written file successfully to /lyrics.txt" },
 					"Message returned should match",

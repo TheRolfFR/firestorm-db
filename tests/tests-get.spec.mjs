@@ -4,7 +4,7 @@ import crypto from "crypto";
 import { expect } from "chai";
 
 import firestorm from "../src/index.js";
-import { base, content, resetDatabaseContent, firestorm_instance, ADDRESS } from "./tests.env.mjs";
+import { base, content, resetDatabaseContent, ADDRESS, TOKEN } from "./tests.env.mjs";
 import { request } from "http";
 
 describe("GET operations", () => {
@@ -12,7 +12,7 @@ describe("GET operations", () => {
 
 	describe("readRaw()", () => {
 		it("fails if table not found", (done) => {
-			firestorm_instance
+			firestorm
 				.collection("unknown")
 				.readRaw()
 				.then(() => done(new Error("Request should not fulfill")))
