@@ -9,7 +9,7 @@ importers:
   .:
     dependencies:
       axios:
-        specifier: '>=1.15.2'
+        specifier: ^1.16.0
         version: 1.16.0
       form-data:
         specifier: ^4.0.5
