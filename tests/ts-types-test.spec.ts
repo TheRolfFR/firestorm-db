@@ -1,7 +1,7 @@
 // Stress test for firestorm-db TypeScript types.
-import { createFirestorm } from "..";
+import firestorm from "..";
 
-const firestorm = createFirestorm();
+const firestorm_instance = firestorm.create();
 
 /**
  * I. CREATE A COLLECTION
@@ -13,7 +13,7 @@ interface User {
 }
 
 // then we add that interface in our constructor
-firestorm.collection<User>("users");
+firestorm_instance.collection<User>("users");
 
 // we can also declare a collection with methods listed in the interface
 interface UserWithMethods extends User {
@@ -21,7 +21,7 @@ interface UserWithMethods extends User {
 }
 
 // where the method implementation goes in the addMethods
-const usersWithMethods = firestorm.collection<UserWithMethods>("users", (el) => {
+const usersWithMethods = firestorm_instance.collection<UserWithMethods>("users", (el) => {
 	el.getNameAsLowerCase = (): string => el.name.toLowerCase();
 	return el;
 });
@@ -44,7 +44,7 @@ interface User {
 	emails: string[];
 }
 
-const users = firestorm.collection<User>("users");
+const users = firestorm_instance.collection<User>("users");
 
 // search all users that have the name 'john' (not case sensitive)
 users.search([{ field: "name", criteria: "==", value: "John", ignoreCase: true }]);
@@ -69,7 +69,7 @@ interface Family {
 	getMom(): Promise<User>;
 }
 
-firestorm.collection<Family>("families", (el, col) => {
+firestorm_instance.collection<Family>("families", (el, col) => {
 	el.getDad = (): Promise<User> =>
 		users
 			.search([

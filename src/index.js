@@ -150,9 +150,15 @@ const firestorm = {
 	 * @param {string} [newValue] - The new Firestorm address
 	 * @returns {string} The stored Firestorm address
 	 */
-	address(newValue = undefined) {
-		if (newValue !== undefined) this.__default_instance.address = newValue;
-		return this.__default_instance.address;
+    address(newValue = undefined) {
+        const current_address = firestorm.__default_instance.address;
+        if (newValue === undefined && current_address === undefined)
+            throw new Error("Firestorm address was not configured");
+
+        if (newValue !== undefined && !newValue.endsWith("/")) newValue += "/";
+        if (newValue !== undefined) firestorm.__default_instance.address = newValue;
+
+		return firestorm.__default_instance.collection("_").__read_address;
 	},
 
 	/**
@@ -160,9 +166,11 @@ const firestorm = {
 	 * @param {string} [newValue] - The new Firestorm write token
 	 * @returns {string} The stored Firestorm write token
 	 */
-	token(newValue = undefined) {
-		if (newValue !== undefined) this.__default_instance.token = newValue;
-		return this.__default_instance.token;
+    token(newValue = undefined) {
+        const current_token = firestorm.__default_instance.token;
+        if (newValue === undefined && current_token === undefined) throw new Error("Firestorm token was not configured");
+		if (newValue !== undefined) firestorm.__default_instance.token = newValue;
+		return firestorm.__default_instance.token;
 	},
 
 	/**
@@ -173,7 +181,7 @@ const firestorm = {
 	 * @returns {Collection<T>} The collection instance
 	 */
 	collection(name, addMethods = (el) => el) {
-		return this.__default_instance.collection(name, addMethods);
+		return firestorm.__default_instance.collection(name, addMethods);
 	},
 
 	/**
@@ -198,72 +206,18 @@ const firestorm = {
 	},
 
 	/** @type {Firestorm} */
-	__default_instance: new Firestorm({}),
+	__default_instance: new Firestorm({ name: "__default" }),
 
 	/** Value for the ID field when searching content */
 	ID_FIELD: ID_FIELD_NAME,
 
 	/**
-	 * Firestorm file handler
-	 * @memberof firestorm
-	 * @type {Object}
-	 * @namespace firestorm.files
+	 * Firestorm file manager
+	 * @type {FirestormFiles}
 	 */
-	files: {
-		/**
-		 * Get a file by its path
-		 * @memberof firestorm.files
-		 * @template T - Type of file content
-		 * @param {string} path - The wanted file path
-		 * @returns {Promise<T>} File contents
-		 */
-		get(path) {
-			return __extract_data(
-				axios.get(fileAddress(), {
-					params: {
-						path,
-					},
-				}),
-			);
-		},
-
-		/**
-		 * Upload a file
-		 * @memberof firestorm.files
-		 * @param {FormData} form - Form data with path, filename, and file
-		 * @returns {Promise<WriteConfirmation>} Write confirmation
-		 */
-		upload(form) {
-			form.append("token", firestorm.token());
-			return __extract_data(
-				axios.post(fileAddress(), form, {
-					headers: {
-						...form.getHeaders(),
-					},
-				}),
-			);
-		},
-
-		/**
-		 * Delete a file by its path
-		 * @memberof firestorm.files
-		 * @param {string} path - The file path to delete
-		 * @returns {Promise<WriteConfirmation>} Write confirmation
-		 */
-		delete(path) {
-			return __extract_data(
-				axios.delete(fileAddress(), {
-					data: {
-						path,
-						token: firestorm.token(),
-					},
-				}),
-			);
-		},
-	},
+    get files() {
+        return new FirestormFiles(firestorm.__default_instance);
+	}
 };
 
-// browser check
-try {
-	if (IS_NODE) module.exports = firestorm;
-} catch {}
+module.exports = firestorm;

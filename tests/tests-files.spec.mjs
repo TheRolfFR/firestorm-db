@@ -1,12 +1,13 @@
 // @ts-check
 
 import FormData from "form-data";
-import { firestorm } from "./tests.env.mjs";
-import { expect } from "chai";
-
 import { readFileSync, writeFileSync } from "fs";
 import { readFile } from "fs/promises";
+
+import { expect } from "chai";
 import { join } from "path";
+
+import firestorm from "../src/index.js";
 
 describe("File upload, download and delete", () => {
 	it("cannot find an unknown file", (done) => {
@@ -28,7 +29,6 @@ describe("File upload, download and delete", () => {
 	});
 
 	it("finds an uploaded file and get it with same content", (done) => {
-		/** @param {number} timeout */
 		const timeoutPromise = (timeout) => new Promise((resolve) => setTimeout(resolve, timeout));
 
 		const uploaded = readFileSync(join(process.cwd(), "tests", "lyrics.txt"));
@@ -41,7 +41,7 @@ describe("File upload, download and delete", () => {
 		firestorm.files
 			.upload(formData)
 			.then((res) => {
-				expect(res).not.to.be.undefined;
+                expect(res).not.to.be.undefined;
 				expect(res).to.deep.equal(
 					{ message: "Written file successfully to /lyrics.txt" },
 					"Message returned should match",

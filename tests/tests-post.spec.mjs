@@ -2,21 +2,16 @@
 
 import { expect } from "chai";
 
-import {
-	base,
-	content,
-	houseCollection,
-	resetDatabaseContent,
-	firestorm_instance,
-	TOKEN,
-} from "./tests.env.mjs";
+import firestorm from "../src/index.js";
+import { base, content, houseCollection, resetDatabaseContent, TOKEN } from "./tests.env.mjs";
 
+/** @type any */
 let tmp;
 
 describe("POST operations", () => {
 	describe("writeRaw operations", () => {
 		it("Rejects when incorrect token", (done) => {
-			firestorm_instance.token("LetsGoToTheMall");
+			firestorm.token("LetsGoToTheMall");
 
 			base
 				.writeRaw({})
@@ -28,7 +23,7 @@ describe("POST operations", () => {
 					}
 					done(new Error("Should return 403"));
 				})
-				.finally(() => firestorm_instance.token(TOKEN));
+				.finally(() => firestorm.token(TOKEN));
 		});
 
 		describe("You must give a correct value", () => {
@@ -264,7 +259,7 @@ describe("POST operations", () => {
 						const idsGenerated = results[0];
 						// modify results and add ID
 						inValue.map((el, index) => {
-							el[firestorm_instance.ID_FIELD] = idsGenerated[index];
+							el[firestorm.ID_FIELD] = idsGenerated[index];
 							return el;
 						});
 
@@ -477,7 +472,7 @@ describe("POST operations", () => {
 					return base.get(42);
 				})
 				.then((expected) => {
-					tmp[firestorm_instance.ID_FIELD] = "42";
+					tmp[firestorm.ID_FIELD] = "42";
 					expect(expected).to.deep.equals(tmp);
 					done();
 				})
@@ -565,7 +560,7 @@ describe("POST operations", () => {
 					return base.get("6");
 				})
 				.then((found) => {
-					tmp[firestorm_instance.ID_FIELD] = "6"; // add id field
+					tmp[firestorm.ID_FIELD] = "6"; // add id field
 
 					expect(tmp).to.deep.equal(found);
 					done();

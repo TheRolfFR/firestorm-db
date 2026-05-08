@@ -39,7 +39,10 @@
     "url": "https://github.com/TheRolfFR/firestorm/issues"
   },
   "homepage": "https://therolffr.github.io/firestorm-db/",
-  "files": ["src/", "typings/"],
+  "files": [
+    "src/",
+    "typings/"
+  ],
   "engines": {
     "node": ">=20.0.0"
   },
@@ -50,6 +53,7 @@
   "devDependencies": {
     "@types/chai": "^5.2.3",
     "@types/mocha": "^10.0.10",
+    "@types/node": "^25.6.0",
     "chai": "^6.2.2",
     "consola": "^3.4.2",
     "docdash": "^2.0.2",
