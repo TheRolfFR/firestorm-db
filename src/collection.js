@@ -153,15 +153,20 @@ class Collection {
 	/**
 	 * Search through the collection
 	 * @param {SearchOption[]} filter - Array of search options
-	 * @param {SearchOption} [option] - Search result options
+	 * @param {(boolean|number|SearchResultOptions)?} [resultOptions] - Search result options
 	 * @returns {Promise<T[]>} The found elements
 	 */
-	async search(filter, option) {
-		if (!Array.isArray(filter)) throw new TypeError("Search filters must be in an array");
-		if (option !== undefined && typeof option !== "object")
-			throw new TypeError("Search options must be an object");
+	async search(filter, resultOptions = undefined) {
+		if (!Array.isArray(filter)) throw new TypeError("searchOptions shall be an array");
+		if (
+			resultOptions !== undefined &&
+			typeof resultOptions !== "number" &&
+			typeof resultOptions !== "boolean" &&
+			typeof resultOptions !== "object"
+		)
+			throw new TypeError("Incorrect search result options");
 
-		const { random = false, limit = undefined } = option || {};
+		const { random = false, limit = undefined } = resultOptions || {};
 
 		if (
 			limit !== undefined &&
