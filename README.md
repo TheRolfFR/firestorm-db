@@ -23,13 +23,13 @@ The JavaScript client is a fairly simple wrapper around the backend PHP endpoint
 
 ## JavaScript setup
 
-Every Firestorm database starts by creating a new server instance with the `createFirestorm` function. This takes an object of optional configuration options as an argument, which can then be retrieved or set using the corresponding fields.
+Every Firestorm database starts by creating a new server instance with the `firestorm.create()` function. This takes an object of optional configuration options as an argument, which can then be retrieved or set using the corresponding fields.
 
 ```js
-const { createFirestorm } = require("firestorm-db");
+const firestorm = require("firestorm-db");
 
 // All of these arguments are optional and can be specified by directly setting the fields if needed.
-const firestorm = createFirestorm({
+const firestorm_instance = firestorm.create({
     /** The name of the instance internally, useful for reflection and error messages */
     name: "production",
     /** The base address of your Firestorm setup, with a slash at the end. */
@@ -38,8 +38,8 @@ const firestorm = createFirestorm({
     token: "my_secret_token_probably_from_an_env_file",
 });
 
-firestorm.address // returns "https://example.com/path/to/firestorm/root"
-firestorm.name = "dev"; // sets the debugging name to dev
+firestorm_instance.address // returns "https://example.com/path/to/firestorm/root"
+firestorm_instance.name = "dev"; // sets the debugging name to dev
 ```
 
 After setting your server address and token fields, you can begin using Firestorm to its full potential.
@@ -52,10 +52,10 @@ Firestorm is based around the concept of a `Collection`, which is akin to an SQL
 - A method adder, which lets you inject methods to query results. It's implemented similarly to [`Array.prototype.map`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/map), taking a queried element as an argument, modifying the element with methods and data inside a callback, and returning the modified element at the end.
 
 ```js
-const { createFirestorm } = require("firestorm-db");
-const firestorm = createFirestorm({ address, token });
+const firestorm = require("firestorm-db");
+const firestorm_instance = firestorm.create({ address, token });
 
-const userCollection = firestorm.collection("users", (el) => {
+const userCollection = firestorm_instance.collection("users", (el) => {
     // assumes you have a 'users' table with a printable field called 'name'
     el.hello = () => `${el.name} says hello!`;
     // return the modified element back with the injected method
@@ -71,16 +71,16 @@ johnDoe.hello(); // "John Doe says hello!"
 
 ## Read operations
 
-| Name                      | Parameters                                                  | Description                                                                                            |
-| ------------------------- | ----------------------------------------------------------- | ------------------------------------------------------------------------------------------------------ |
-| sha1()                    | none                                                        | Get the SHA-1 hash of the file. Can be used to compare file content without downloading the JSON.      |
-| readRaw(original)         | original?: `boolean`                                        | Read the entire collection. `original` disables ID field injection, for non-relational collections.    |
-| get(key)                  | key: `string \| number`                                     | Get an element from the collection by its key.                                                         |
-| searchKeys(keys)          | keys: `(string \| number)[]`                                | Get multiple elements from the collection by their keys.                                               |
-| search(filter, options)   | filter: `SearchOption[]` option?: `SearchOption`            | Search through the collection. You can randomize the output order with random as true or a given seed. |
-| select(option)            | option: `SelectOption`                                      | Get only selected fields from the collection. Essentially an upgraded version of readRaw.              |
-| values(option)            | option: `ValueOption`                                       | Get all distinct non-null values for a given key across a collection.                                  |
-| random(max, seed, offset) | max?: `number >= -1` seed?: `number` offset?: `number >= 0` | Read random collection elements.                                                                       |
+| Name                          | Parameters                                                                                | Description                                                                                            |
+| ----------------------------- | ----------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------ |
+| sha1()                        | none                                                                                      | Get the SHA-1 hash of the file. Can be used to compare file content without downloading the JSON.      |
+| readRaw(original)             | original?: `boolean`                                                                      | Read the entire collection. `original` disables ID field injection, for non-relational collections.    |
+| get(key)                      | key: `string \| number`                                                                   | Get an element from the collection by its key.                                                         |
+| searchKeys(keys)              | keys: `(string \| number)[]`                                                              | Get multiple elements from the collection by their keys.                                               |
+| search(filter, resultOptions) | filter: `SearchOption[]` resultOptions?: boolean\|number\|SearchResultOptions             | Search through the collection. You can randomize the output order with random as true or a given seed. |
+| select(option)                | option: `SelectOption`                                                                    | Get only selected fields from the collection. Essentially an upgraded version of readRaw.              |
+| values(option)                | option: `ValueOption`                                                                     | Get all distinct non-null values for a given key across a collection.                                  |
+| random(max, seed, offset)     | max?: `number >= -1` seed?: `number` offset?: `number >= 0`                               | Read random collection elements.                                                                       |
 
 ## Write operations
 
@@ -231,8 +231,8 @@ There is additionally an overwrite option in order to avoid mistakes.
 
 ```js
 const FormData = require("form-data");
-const { createFirestorm } = require("firestorm-db");
-const firestorm = createFirestorm({ address, token });
+const firestorm = require("firestorm-db");
+const firestorm_instance = firestorm.create({ address, token });
 
 const form = new FormData();
 form.append("path", "/quote.txt");
@@ -241,7 +241,7 @@ form.append("file", "but your kids are gonna love it.", "quote.txt");
 // override is false by default; don't append it if you don't need to
 form.append("overwrite", "true");
 
-const uploadPromise = firestorm.files.upload(form);
+const uploadPromise = firestorm_instance.files.upload(form);
 
 uploadPromise
     .then(() => console.log("Upload successful"))
@@ -250,15 +250,15 @@ uploadPromise
 
 ## Get a file
 
-`firestorm.files.get` takes a file's direct URL location or its content as its parameter. If your upload folder is accessible from a server URL, you can directly use its address to retrieve the file without this method.
+`Firestorm.files.get` takes a file's direct URL location or its content as its parameter. If your upload folder is accessible from a server URL, you can directly use its address to retrieve the file without this method.
 
 ```js
-const { createFirestorm } = require("firestorm-db");
+const firestorm = require("firestorm-db");
 
 // no write token is required to use this method
-const firestorm = createFirestorm({ address });
+const firestorm_instance = firestorm.create({ address });
 
-const getPromise = firestorm.files.get("/quote.txt");
+const getPromise = firestorm_instance.files.get("/quote.txt");
 
 getPromise
     .then((fileContent) => console.log(fileContent)) // but your kids are gonna love it.
@@ -267,14 +267,13 @@ getPromise
 
 ## Delete a file
 
-`firestorm.files.delete` has the same interface as `firestorm.files.get`, but as the name suggests, it deletes the file.
+`Firestorm.files.delete` has the same interface as `Firestorm.files.get`, but as the name suggests, it deletes the file.
 
 ```js
+const firestorm = require("firestorm-db");
+const firestorm_instance = firestorm.create({ address, token });
 
-const { createFirestorm } = require("firestorm-db");
-const firestorm = createFirestorm({ address, token });
-
-const deletePromise = firestorm.files.delete("/quote.txt");
+const deletePromise = firestorm_instance.files.delete("/quote.txt");
 
 deletePromise
     .then(() => console.log("File successfully deleted"))
@@ -290,7 +289,7 @@ There's a constant field in all Firestorm collections called `ID_FIELD`, which i
 Its value will always be the key of the element its in, which allows you to use `Object.values` on results without worrying about losing the elements' key names. Additionally, it can be used in the method adder in the constructor, and is convenient for collections where the key name is significant. By default, it's set to the literal `"id"`, but can be changed by setting the value on the collection instance if the key name is already used elsewhere in your database schema (Note: changing the value of ID_FIELD is not recommended due to the lack of typing support).
 
 ```js
-const userCollection = firestorm.collection("users", (el, collection) => {
+const userCollection = firestorm_instance.collection("users", (el, collection) => {
     el.basicInfo = () => `${el.name} (${el[collection.ID_FIELD]})`;
     return el;
 });
@@ -316,7 +315,7 @@ $database_list['users'] = new JSONDatabase('users', false);
 ```
 
 ```js
-const userCollection = firestorm.collection("users");
+const userCollection = firestorm_instance.collection("users");
 // Error: Automatic key generation is disabled
 await userCollection.add({ name: "John Doe", age: 30 });
 ```
@@ -342,10 +341,10 @@ userCollection.set(123, { name: "John Doe", age: 30 })
 Using add methods in the constructor, you can link multiple collections together.
 
 ```js
-const orders = firestorm.collection("orders");
+const orders = firestorm_instance.collection("orders");
 
 // using the example of a customer having orders
-const customers = firestorm.collection("customers", (el, collection) => {
+const customers = firestorm_instance.collection("customers", (el, collection) => {
     el.getOrders = () => orders.search([
         {
             field: "customer",
@@ -391,20 +390,20 @@ The requested PHP file then grabs the `JSONDatabase` instance created in `config
 Firestorm comes with a few utility methods to ensure the server and client versions are compatible. These are the `clientVersion` and `serverVersion` getters, and the `isCompatibleAddress()` function. Since `serverVersion` needs to make a request, it returns a `Promise<string>` despite looking like a field.
 
 ```js
-const { createFirestorm } = require("firestorm-db");
-const firestorm = createFirestorm({ address: "https://example.com/firestorm" });
+const firestorm = require("firestorm-db");
+const firestorm_instance = firestorm.create({ address: "https://example.com/firestorm" });
 
 // returns the npm version of the client code
-firestorm.clientVersion;
+firestorm_instance.clientVersion;
 
 // returns the server-side version string
-await firestorm.serverVersion;
+await firestorm_instance.serverVersion;
 
 // returns true if these values match and false if they don't
-await firestorm.isCompatibleAddress();
+await firestorm_instance.isCompatibleAddress();
 ```
 
-Whenever updating Firestorm on your server, be sure to update the `$FIRESTORM_VERSION` global in `version.php`.
+Whenever updating Firestorm on your server, be sure to update the `version.ini` file.
 
 ## Memory management
 
@@ -433,8 +432,8 @@ Firestorm ships with TypeScript support out of the box.
 Collections in TypeScript take a generic parameter `T`, which is the type of each element in the collection. If you aren't using a relational collection, this can simply be set to `any`.
 
 ```ts
-const { createFirestorm } = require("firestorm-db");
-const firestorm = createFirestorm({ address, token });
+const firestorm = require("firestorm-db");
+const firestorm_instance = firestorm.create({ address, token });
 
 interface User {
     name: string;
@@ -442,7 +441,7 @@ interface User {
     pets: string[];
 }
 
-const userCollection = firestorm.collection<User>("users");
+const userCollection = firestorm_instance.collection<User>("users");
 
 const johnDoe = await userCollection.get(123456789);
 // type: { [userCollection.ID_FIELD]: string, name: string, password: string, pets: string[] }
@@ -451,15 +450,15 @@ const johnDoe = await userCollection.get(123456789);
 Injected methods should also be stored in this interface. They'll be filtered out from write operations correctly, so don't worry about potential typing inaccuracies:
 
 ```ts
-const { createFirestorm } = require("firestorm-db");
-const firestorm = createFirestorm({ address, token });
+const firestorm = require("firestorm-db");
+const firestorm_instance = firestorm.create({ address, token });
 
 interface User {
     name: string;
     hello(): string;
 }
 
-const userCollection = firestorm.collection("users", (el) => {
+const userCollection = firestorm_instance.collection("users", (el) => {
     // interface types should agree with injected methods
     el.hello = () => `${el.name} says hello!`;
     return el;

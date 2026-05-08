@@ -16,13 +16,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - Multiple Firestorm instances with different configurations at the same time are now possible.
-- Instead of directly importing the Firestorm global, all functions require using the `createFirestorm` function to create a unique instance first.
-- `firestorm.address()` and `firestorm.token()` are now getter/setter fields rather than functions, and can be set directly from the `createFirestorm` constructor.
-- `ID_FIELD` is now a collection attribute rather than a global attribute, and can be modified per-collection.
-- Removed `Collection.read_raw`, `Collection.write_raw`, and `Firestorm.table` deprecated methods.
+- On top of the existing legacy methods, you can use the `firestorm.create` function to create a unique instance first.
+- Instances can now use getter/setter for `address` and `token` or can be set directly as a parameter in the `create` method.
+- Instance can now have their own `ID_FIELD` rather than using the global attribute.
 - Add methods now receive the collection instance as a second parameter, since `ID_FIELD` is now attached to the instance rather than globally.
 - Added `WithID` helper type, which adds the ID field to the input type.
-- Slightly cleaned up PHP folder structure.
+- Separated and cleaned up PHP folder structure.
 
 ## [1.14.0] - 2026-04-06
 
