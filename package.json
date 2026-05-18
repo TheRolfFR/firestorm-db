@@ -54,7 +54,7 @@
     "chai": "^5.2.1",
     "consola": "^3.4.2",
     "docdash": "^2.0.2",
-    "glob": "^11.0.3",
+    "glob": "^13.0.6",
     "jsdoc": "^4.0.4",
     "jsdoc-to-markdown": "^9.1.2",
     "mocha": "^11.7.1",
