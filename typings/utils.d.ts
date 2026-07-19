@@ -9,9 +9,8 @@ type PathImpl<T, Key extends keyof T> = Key extends string
 	? IsAny<T[Key]> extends true
 		? never
 		: T[Key] extends Record<string, any>
-			?
-					| `${Key}.${PathImpl<T[Key], Exclude<keyof T[Key], keyof any[]>> & string}`
-					| `${Key}.${Exclude<keyof T[Key], keyof any[]> & string}`
+			? | `${Key}.${PathImpl<T[Key], Exclude<keyof T[Key], keyof any[]>> & string}`
+				| `${Key}.${Exclude<keyof T[Key], keyof any[]> & string}`
 			: never
 	: never;
 
