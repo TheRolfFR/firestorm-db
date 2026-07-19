@@ -21,8 +21,8 @@ jobs:
           node-version: '22'
           cache: 'pnpm'
 
-      - name: Publish package to NPM
-        run:
-          npm publish
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+      - run: npm adduser --registry=https://registry.npmjs.org/
+      - run: npm set //registry.npmjs.org/:_authToken "${{ secrets.NPM_TOKEN }}"
+      - run: npm config get registry
+      - run: npm config list
+      - run: npm publish --provenance --access public
