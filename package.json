@@ -1,6 +1,6 @@
 {
   "name": "firestorm-db",
-  "version": "1.15.0",
+  "version": "1.15.1",
   "description": "Self hosted Firestore-like database with API endpoints based on micro bulk operations",
   "main": "src/index.js",
   "types": "typings/index.d.ts",
@@ -39,8 +39,8 @@
   },
   "homepage": "https://therolffr.github.io/firestorm-db/",
   "files": [
-    "src/index.js",
-    "typings/index.d.ts"
+    "src/*.js",
+    "typings/*.d.ts"
   ],
   "engines": {
     "node": ">=20.0.0"
