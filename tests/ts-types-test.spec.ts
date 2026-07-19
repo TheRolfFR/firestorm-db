@@ -1,18 +1,19 @@
 // Stress test for firestorm-db TypeScript types.
 import firestorm from "..";
 
+const firestorm_instance = firestorm.create();
+
 /**
  * I. CREATE A COLLECTION
  */
 
 // let's declare an interface for our collection
 interface User {
-	[firestorm.ID_FIELD]: string;
 	name: string;
 }
 
 // then we add that interface in our constructor
-firestorm.collection<User>("users");
+firestorm_instance.collection<User>("users");
 
 // we can also declare a collection with methods listed in the interface
 interface UserWithMethods extends User {
@@ -20,7 +21,7 @@ interface UserWithMethods extends User {
 }
 
 // where the method implementation goes in the addMethods
-const usersWithMethods = firestorm.collection<UserWithMethods>("users", (el) => {
+const usersWithMethods = firestorm_instance.collection<UserWithMethods>("users", (el) => {
 	el.getNameAsLowerCase = (): string => el.name.toLowerCase();
 	return el;
 });
@@ -36,7 +37,6 @@ usersWithMethods.select({ fields: ["name", "family"] }); // getNameAsLowerCase n
 
 // 1. search through a collection
 interface User {
-	[firestorm.ID_FIELD]: string;
 	name: string;
 	age: number;
 	sex: "female" | "male" | "other";
@@ -44,7 +44,7 @@ interface User {
 	emails: string[];
 }
 
-const users = firestorm.collection<User>("users");
+const users = firestorm_instance.collection<User>("users");
 
 // search all users that have the name 'john' (not case sensitive)
 users.search([{ field: "name", criteria: "==", value: "John", ignoreCase: true }]);
@@ -63,20 +63,21 @@ users.search([
 
 // 2. collections can interface with each other
 interface Family {
-	[firestorm.ID_FIELD]: string;
 	parents: User[];
 	children: User[];
 	getDad(): Promise<User>;
 	getMom(): Promise<User>;
 }
 
-firestorm.collection<Family>("families", (el) => {
+firestorm_instance.collection<Family>("families", (el, col) => {
 	el.getDad = (): Promise<User> =>
-		users.search([
-			// === family id
-			{ field: "family", criteria: "==", value: el[firestorm.ID_FIELD] },
-			{ field: "sex", criteria: "==", value: "male" },
-		])[0];
+		users
+			.search([
+				// === family id
+				{ field: "family", criteria: "==", value: col.ID_FIELD },
+				{ field: "sex", criteria: "==", value: "male" },
+			])
+			.then((res) => res[0]);
 
 	return el;
 });

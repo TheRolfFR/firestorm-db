@@ -64,6 +64,17 @@ describe("File upload, download and delete", () => {
 			});
 	});
 
+	it("cannot upload a php script (code injection)", (done) => {
+		const formData = new FormData();
+		formData.append("path", "/malicious.php");
+		formData.append("file", "<?php\necho 'hello from php';", "malicious.php");
+
+		firestorm.files
+			.upload(formData)
+			.then(() => done("Was able to upload PHP script"))
+			.catch(() => done());
+	});
+
 	it("cannot upload an already uploaded file with no overwrite", (done) => {
 		const formData = new FormData();
 		formData.append("path", "/");

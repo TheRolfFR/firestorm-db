@@ -3,3 +3,4 @@ parameters:
         - identifiers:
             - missingType.return
             - missingType.parameter
+            - variable.undefined

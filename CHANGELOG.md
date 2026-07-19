@@ -5,6 +5,24 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## Unreleased
+
+### Added
+
+- `Firestorm.clientVersion` field.
+- `Firestorm.serverVersion` getter (returns a `Promise<string>`).
+- `Firestorm.name` instance field, for debugging purposes.
+
+### Changed
+
+- Multiple Firestorm instances with different configurations at the same time are now possible.
+- On top of the existing legacy methods, you can use the `firestorm.create` function to create a unique instance first.
+- Instances can now use getter/setter for `address` and `token` or can be set directly as a parameter in the `create` method.
+- Instance can now have their own `ID_FIELD` rather than using the global attribute.
+- Add methods now receive the collection instance as a second parameter, since `ID_FIELD` is now attached to the instance rather than globally.
+- Added `WithID` helper type, which adds the ID field to the input type.
+- Separated and cleaned up PHP folder structure.
+
 ## [1.14.0] - 2026-04-06
 
 ### Added

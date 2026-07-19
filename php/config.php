@@ -1,16 +1,16 @@
 <?php
-
 require_once './utils.php';
 require_once './classes/JSONDatabase.php';
 
 $log_path = 'firestorm.log';
-$database_list = array();
 
 /**
  * Example server-side collection creation:
  * The class has most things set by default, so this is intentionally verbose
  * For adding multiple collections, you can declare them directly in the array constructor.
  */
+
+$database_list = [];
 
 $db = new JSONDatabase;
 // This will be the name of the JSON file
@@ -37,7 +37,7 @@ $database_list['my_collection_name'] = new JSONDatabase('my_json_name', true, tr
  */
 
 // Extension whitelist
-$authorized_file_extension = array('.txt', '.png', '.jpg', '.jpeg');
+$authorized_file_extension = ['.txt', '.png', '.jpg', '.jpeg'];
 
 // Root directory for where files should be uploaded
 // ($_SERVER['SCRIPT_FILENAME']) is a shortcut to the root Firestorm directory.

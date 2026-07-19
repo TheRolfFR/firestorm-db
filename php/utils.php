@@ -27,7 +27,7 @@ function http_json_response($json, $code = 200) {
 }
 
 function http_message($message, $key = 'message', $code = 200) {
-    $arr = array($key => $message);
+    $arr = [$key => $message];
     http_json_response($arr, $code);
 }
 
@@ -64,7 +64,8 @@ function check_key_json($key, $arr, $parse = false) {
 }
 
 function array_assoc($arr) {
-    if (array() === $arr || !is_array($arr)) return false;
+    if ($arr === [] || !is_array($arr))
+        return false;
     return array_keys($arr) !== range(0, count($arr) - 1);
 }
 
@@ -73,11 +74,12 @@ function array_sequential($arr) {
 }
 
 function stringifier($obj, $depth = 1) {
-    if ($depth == 0) return json_encode($obj);
+    if ($depth == 0)
+        return json_encode($obj);
 
     $res = "{";
 
-    $formed = array();
+    $formed = [];
     foreach (array_keys($obj) as $key) {
         array_push($formed, '"' . strval($key) . '":' . stringifier($obj[$key], $depth - 1));
     }
@@ -113,11 +115,14 @@ function remove_dots($path) {
     $root = ($path[0] === '/') ? '/' : '';
 
     $segments = explode('/', trim($path, '/'));
-    $ret = array();
+    $ret = [];
     foreach ($segments as $segment) {
-        if ($segment == '.' || strlen($segment) === 0) continue;
-        if ($segment == '..') array_pop($ret);
-        else array_push($ret, $segment);
+        if ($segment == '.' || strlen($segment) === 0)
+            continue;
+        if ($segment == '..')
+            array_pop($ret);
+        else
+            array_push($ret, $segment);
     }
     return $root . implode('/', $ret);
 }

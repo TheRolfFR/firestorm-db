@@ -1,13 +1,14 @@
 <?php
 
 // display all errors
-ini_set('display_errors', 1);
-ini_set('display_startup_errors', 1);
+ini_set('display_errors', '1');
+ini_set('display_startup_errors', '1');
 error_reporting(E_ALL - E_NOTICE);
 
 require_once './config.php';
 
-if (!$STORAGE_LOCATION) http_error(501, 'Developer forgot the $STORAGE_LOCATION');
+if (!$STORAGE_LOCATION)
+    http_error(501, 'Developer forgot the $STORAGE_LOCATION');
 
 // import useful functions
 require_once './utils.php';
@@ -39,11 +40,14 @@ if ($method === 'POST') {
     $token = p('token');
 
     // verifying token
-    if ($token === false) http_error(400, 'No token provided');
-    if (!in_array($token, $db_tokens)) http_error(403, 'Invalid token');
+    if ($token === false)
+        http_error(400, 'No token provided');
+    if (!in_array($token, $db_tokens))
+        http_error(403, 'Invalid token');
 
     $path = trim(p('path'));
-    if ($path === false) http_error(400, 'No path provided');
+    if (strlen($path) === 0)
+        http_error(400, 'No path provided');
 
     // check path lower than me
     $relativePath = remove_dots($path);
@@ -51,29 +55,31 @@ if ($method === 'POST') {
     $myPath = remove_dots($STORAGE_LOCATION);
 
     // avoid hacks to write script or files unauthorized
-    if (strpos($absolutePath, $myPath) !== 0) http_error(403, 'Path not authorized');
+    if (strpos($absolutePath, $myPath) !== 0)
+        http_error(403, 'Path not authorized');
+
     // no php script allowed
-    if (str_ends_with($absolutePath, '.php') === 0) http_error(403, 'Cannot write PHP scripts');
+    if (str_ends_with($absolutePath, '.php'))
+        http_error(403, 'Cannot write PHP scripts');
 
     $extensionFound = false;
     $i = 0;
-    while ($i < count($authorized_file_extension) && !$extensionFound) {
+    while (($i < count($authorized_file_extension)) && ($extensionFound === false)) {
         $extensionFound = str_ends_with($absolutePath, $authorized_file_extension[$i]);
         $i = $i + 1;
     }
 
-    if (!$extensionFound) {
+    if (!$extensionFound)
         http_error(403, 'Extension not allowed');
-    }
 
-    if (!check($_FILES) || !check($_FILES['file'])) {
+    if (!check($_FILES) || !check($_FILES['file']))
         http_error(400, 'No file provided or the provided file did not contain an original name');
-    }
 
     // overwrite parameter
     $overwrite = !!p('overwrite');
 
-    if (!$overwrite && file_exists($absolutePath)) http_error(403, 'File already exists');
+    if (!$overwrite && file_exists($absolutePath))
+        http_error(403, 'File already exists');
 
     $uploadDir = dirname($absolutePath);
 
@@ -84,29 +90,27 @@ if ($method === 'POST') {
 
     // mkdir(path, rw-r--r--, recursive=true)
     if (!is_dir($uploadDir) && !mkdir($uploadDir, 0766, true)) {
-        http_error(500, "PHP script can't create folder " . $uploadDir . ". Check permission, group and owner.");
+        http_error(500, "PHP script can't create folder $uploadDir. Check permission, group and owner.");
     }
 
     $errorMessages = [
-        UPLOAD_ERR_INI_SIZE   => "File exceeds allowed size.",
-        UPLOAD_ERR_FORM_SIZE  => "File too large.",
-        UPLOAD_ERR_PARTIAL    => "File only partially uploaded.",
-        UPLOAD_ERR_NO_FILE    => "No file uploaded.",
+        UPLOAD_ERR_INI_SIZE => "File exceeds allowed size.",
+        UPLOAD_ERR_FORM_SIZE => "File too large.",
+        UPLOAD_ERR_PARTIAL => "File only partially uploaded.",
+        UPLOAD_ERR_NO_FILE => "No file uploaded.",
         UPLOAD_ERR_NO_TMP_DIR => "Missing temp folder.",
         UPLOAD_ERR_CANT_WRITE => "Cannot write file to disk.",
-        UPLOAD_ERR_EXTENSION  => "File upload blocked by extension.",
+        UPLOAD_ERR_EXTENSION => "File upload blocked by extension.",
     ];
 
     $errorCode = $_FILES['file']['error'] ?? UPLOAD_ERR_OK;
-    if ($errorCode !== UPLOAD_ERR_OK) {
+    if ($errorCode !== UPLOAD_ERR_OK)
         http_error(500, $errorMessages[$errorCode] ?? "Unknown error.");
-    }
 
     $tmpName = $_FILES['file']['tmp_name'];
 
-    if (!is_uploaded_file($tmpName)) {
+    if (!is_uploaded_file($tmpName))
         http_error(403, "Possible file upload attack.");
-    }
 
     // eventually write the file
     if (move_uploaded_file($tmpName, $absolutePath)) {
@@ -118,22 +122,29 @@ if ($method === 'POST') {
     die();
 } else if ($method === 'GET') {
     $path = trim(g('path'));
-    if ($path === false) http_error(400, 'No path provided');
+    if (strlen($path) === 0)
+        http_error(400, 'No path provided');
 
     // check path lower than me
     $absolutePath = remove_dots($STORAGE_LOCATION . $path);
     $myPath = remove_dots($STORAGE_LOCATION);
-    // avoid hacks to write script or files unauthorized
-    if (strpos($absolutePath, $myPath) !== 0) http_error(403, 'Path not authorized');
-    // no php script allowed
-    if (substr_compare($absolutePath, ".php", -strlen(".php"), null, true) === 0) http_error(403, 'Cannot read PHP scripts');
 
-    if (!file_exists($absolutePath)) http_error(404, 'File not found');
+    // avoid hacks to write unauthorized script or files
+    if (strpos($absolutePath, $myPath) !== 0)
+        http_error(403, 'Path not authorized');
+
+    // no php script allowed
+    if (str_ends_with(strtolower($absolutePath), ".php"))
+        http_error(403, 'Cannot read PHP scripts');
+
+    if (!file_exists($absolutePath))
+        http_error(404, 'File not found');
 
     try {
         // try to read the image
         $imgInfo = getimagesize($absolutePath);
-        if ($imgInfo === false) throw new Exception('Not an image');
+        if ($imgInfo === false)
+            throw new Exception('Not an image');
 
         header("Content-Type: {$imgInfo['mime']}");
         header('Expires: 0');
@@ -172,21 +183,24 @@ if ($method === 'POST') {
     if (!$db_tokens)
         http_error(501, 'Developer is dumb and forgot to create tokens');
 
-    $data = json_decode(file_get_contents('php://input'), true);
-    if ($data === false) http_error(400, 'Could not parse input data');
+    $data = json_decode(file_get_contents('php://input') ?: "", true);
+    if ($data === false)
+        http_error(400, 'Could not parse input data');
 
-    try {
-        $token = $data['token'];
-    } catch(Exception $e) {
+    if (!array_key_exists('token', $data))
         http_error(400, 'Failed parsing input data');
-    }
+
+    $token = $data['token'];
 
     // verifying token
-    if ($token === false) http_error(400, 'No token provided');
-    if (!in_array($token, $db_tokens)) http_error(403, 'Invalid token');
+    if ($token === false)
+        http_error(400, 'No token provided');
+    if (!in_array($token, $db_tokens))
+        http_error(403, 'Invalid token');
 
     $path = trim($data['path']);
-    if ($path === false) http_error(400, 'No path provided');
+    if (strlen($path) === 0)
+        http_error(400, 'No path provided');
 
     // check path lower than me
     $relativePath = remove_dots($path);
@@ -194,13 +208,16 @@ if ($method === 'POST') {
     $myPath = remove_dots($STORAGE_LOCATION);
 
     // avoid hacks to write script or files unauthorized
-    if (strpos($absolutePath, $myPath) !== 0) http_error(403, 'Path not authorized');
+    if (strpos($absolutePath, $myPath) !== 0)
+        http_error(403, 'Path not authorized');
 
-    if (!file_exists($absolutePath)) http_error(404, 'File not found');
+    if (!file_exists($absolutePath))
+        http_error(404, 'File not found');
 
     $is_deleted = unlink($absolutePath);
 
-    if ($is_deleted) http_success('File successfully deleted');
+    if ($is_deleted)
+        http_success('File successfully deleted');
 
     http_error(500, 'Deletion failed');
 }
@@ -209,7 +226,8 @@ http_error(501, 'Request unhandled by developer');
 
 function p($var) {
     try {
-        if (!check($_POST[$var])) return false;
+        if (!check($_POST[$var]))
+            return false;
     } catch (Throwable $th) {
         return false;
     }
@@ -218,7 +236,8 @@ function p($var) {
 
 function g($var) {
     try {
-        if (!check($_GET[$var])) return false;
+        if (!check($_GET[$var]))
+            return false;
     } catch (Throwable $th) {
         return false;
     }

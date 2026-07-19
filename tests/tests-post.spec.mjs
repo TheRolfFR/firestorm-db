@@ -5,6 +5,7 @@ import { expect } from "chai";
 import firestorm from "../src/index.js";
 import { base, content, houseCollection, resetDatabaseContent, TOKEN } from "./tests.env.mjs";
 
+/** @type any */
 let tmp;
 
 describe("POST operations", () => {

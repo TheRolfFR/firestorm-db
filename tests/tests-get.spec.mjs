@@ -141,7 +141,7 @@ describe("GET operations", () => {
 
 	describe("search(searchOptions)", () => {
 		/**
-		 * @typedef {import("../src/index.js").SearchOption["criteria"]} Criteria
+		 * @typedef {import("../src/collection.js").SearchOption["criteria"]} Criteria
 		 * @type {Readonly<[Criteria, string, any, string[], boolean?]>[]}
 		 * [criteria, field, value, idsFound, ignoreCase]
 		 */

@@ -17,39 +17,32 @@
 
 *Self hosted Firestore-like database with API endpoints based on micro bulk operations.*
 
-# Installation
-
-Installing the JavaScript client is as simple as running:
-
-```sh
-npm install firestorm-db
-```
-
-Information about installing Firestorm server-side is given in the [PHP](#php-backend) section.
-
 # JavaScript Client
 
-The JavaScript [index.js](./src/index.js) file is simply an [Axios](https://www.npmjs.com/package/axios) wrapper of the PHP backend.
+The JavaScript client is a fairly simple wrapper around the backend PHP endpoints, using [Axios](https://www.npmjs.com/package/axios) to handle requests. Any server errors will hence be returned to the client as Axios error objects.
 
 ## JavaScript setup
 
-First, set your API address (and your writing token if needed) using the `address()` and `token()` setters. If you need to later retrieve these values, you can use the same functions as getters with no parameters:
+Every Firestorm database starts by creating a new server instance with the `firestorm.create()` function. This takes an object of optional configuration options as an argument, which can then be retrieved or set using the corresponding fields.
 
 ```js
-// only needed in Node.js; including the script tag in a browser is enough otherwise.
 const firestorm = require("firestorm-db");
 
-firestorm.address("https://example.com/path/to/firestorm/root/");
+// All of these arguments are optional and can be specified by directly setting the fields if needed.
+const firestorm_instance = firestorm.create({
+    /** The name of the instance internally, useful for reflection and error messages */
+    name: "production",
+    /** The base address of your Firestorm setup, with a slash at the end. */
+    address: "https://example.com/path/to/firestorm/root/",
+    /** Your write token, if it exists. It must exactly match a value from your tokens.php file. */
+    token: "my_secret_token_probably_from_an_env_file",
+});
 
-// only necessary if you want to write or access private collections
-// must match token stored in tokens.php file
-firestorm.token("my_secret_token_probably_from_an_env_file");
-
-const address = firestorm.address();
-// returns "https://example.com/path/to/firestorm/root"
+firestorm_instance.address // returns "https://example.com/path/to/firestorm/root"
+firestorm_instance.name = "dev"; // sets the debugging name to dev
 ```
 
-Now you can use Firestorm to its full potential.
+After setting your server address and token fields, you can begin using Firestorm to its full potential.
 
 ## Create your first collection
 
@@ -60,8 +53,9 @@ Firestorm is based around the concept of a `Collection`, which is akin to an SQL
 
 ```js
 const firestorm = require("firestorm-db");
+const firestorm_instance = firestorm.create({ address, token });
 
-const userCollection = firestorm.collection("users", (el) => {
+const userCollection = firestorm_instance.collection("users", (el) => {
     // assumes you have a 'users' table with a printable field called 'name'
     el.hello = () => `${el.name} says hello!`;
     // return the modified element back with the injected method
@@ -77,46 +71,46 @@ johnDoe.hello(); // "John Doe says hello!"
 
 ## Read operations
 
-| Name                      | Parameters                                                  | Description                                                                                            |
-| ------------------------- | ----------------------------------------------------------- | ------------------------------------------------------------------------------------------------------ |
-| sha1()                    | none                                                        | Get the SHA-1 hash of the file. Can be used to compare file content without downloading the JSON.      |
-| readRaw(original)         | original?: `boolean`                                        | Read the entire collection. `original` disables ID field injection, for non-relational collections.    |
-| get(key)                  | key: `string \| number`                                     | Get an element from the collection by its key.                                                         |
-| searchKeys(keys)          | keys: `(string \| number)[]`                                | Get multiple elements from the collection by their keys.                                               |
-| search(options, random)   | options: `SearchOption[]` random?:`boolean \| number`       | Search through the collection. You can randomize the output order with random as true or a given seed. |
-| select(option)            | option: `SelectOption`                                      | Get only selected fields from the collection. Essentially an upgraded version of readRaw.              |
-| values(option)            | option: `ValueOption`                                       | Get all distinct non-null values for a given key across a collection.                                  |
-| random(max, seed, offset) | max?: `number >= -1` seed?: `number` offset?: `number >= 0` | Read random collection elements.                                                                |
+| Name                          | Parameters                                                                                | Description                                                                                            |
+| ----------------------------- | ----------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------ |
+| sha1()                        | none                                                                                      | Get the SHA-1 hash of the file. Can be used to compare file content without downloading the JSON.      |
+| readRaw(original)             | original?: `boolean`                                                                      | Read the entire collection. `original` disables ID field injection, for non-relational collections.    |
+| get(key)                      | key: `string \| number`                                                                   | Get an element from the collection by its key.                                                         |
+| searchKeys(keys)              | keys: `(string \| number)[]`                                                              | Get multiple elements from the collection by their keys.                                               |
+| search(filter, resultOptions) | filter: `SearchOption[]` resultOptions?: boolean\|number\|SearchResultOptions             | Search through the collection. You can randomize the output order with random as true or a given seed. |
+| select(option)                | option: `SelectOption`                                                                    | Get only selected fields from the collection. Essentially an upgraded version of readRaw.              |
+| values(option)                | option: `ValueOption`                                                                     | Get all distinct non-null values for a given key across a collection.                                  |
+| random(max, seed, offset)     | max?: `number >= -1` seed?: `number` offset?: `number >= 0`                               | Read random collection elements.                                                                       |
 
 ## Write operations
 
-| Name                    | Parameters                                       | Description                                                                               |
-| ----------------------- | ------------------------------------------------ | ----------------------------------------------------------------------------------------- |
-| writeRaw(value)         | value: `Object`                                  | Set the entire content of the collection. **⚠️ Very dangerous! ⚠️**                         |
-| add(value)              | value: `Object`                                  | Append a value to the collection. Only works if `autoKey` is enabled server-side.         |
-| addBulk(values)         | values: `Object[]`                               | Append multiple values to the collection. Only works if `autoKey` is enabled server-side. |
-| remove(key)             | key: `string \| number`                          | Remove an element from the collection by its key.                                         |
-| removeBulk(keys)        | keys: `(string \| number)[]`                     | Remove multiple elements from the collection by their keys.                               |
-| set(key, value)         | key: `string \| number`, value: `Object`         | Set a value in the collection by its key.                                                 |
-| setBulk(keys, values)   | keys: `(string \| number)[]`, values: `Object[]` | Set multiple values in the collection by their keys.                                      |
-| editField(obj)          | option: `EditFieldOption`                        | Edit an element's field in the collection.                                                |
-| editFieldBulk(objArray) | options: `EditFieldOption[]`                     | Edit multiple elements' fields in the collection.                                         |
+| Name                   | Parameters                                       | Description                                                                               |
+| ---------------------- | ------------------------------------------------ | ----------------------------------------------------------------------------------------- |
+| writeRaw(value)        | value: `Object`                                  | Set the entire content of the collection. **⚠️ Very dangerous! ⚠️**                         |
+| add(value)             | value: `Object`                                  | Append a value to the collection. Only works if `autoKey` is enabled server-side.         |
+| addBulk(values)        | values: `Object[]`                               | Append multiple values to the collection. Only works if `autoKey` is enabled server-side. |
+| remove(key)            | key: `string \| number`                          | Remove an element from the collection by its key.                                         |
+| removeBulk(keys)       | keys: `(string \| number)[]`                     | Remove multiple elements from the collection by their keys.                               |
+| set(key, value)        | key: `string \| number`, value: `Object`         | Set a value in the collection by its key.                                                 |
+| setBulk(keys, values)  | keys: `(string \| number)[]`, values: `Object[]` | Set multiple values in the collection by their keys.                                      |
+| editField(option)      | option: `EditFieldOption`                        | Edit an element's field in the collection.                                                |
+| editFieldBulk(options) | options: `EditFieldOption[]`                     | Edit multiple elements' fields in the collection.                                         |
 
 ## Search options
 
-There are more options available than the Firestore `where` command, allowing you to get better and faster search results.
+There are more options available than the Firestore `where` command, allowing you to get better search results more quickly.
 
 The search method can take one or more options to filter entries in a collection. A search option takes a `field` with a `criteria` and compares it to a `value`. You can also use the boolean `ignoreCase` option for string values and the `limit` option to restrict the number of results returned. Available criteria depends on the field type.
 
 | Criteria                | Types allowed                 | Description                                                     |
 | ----------------------- | ----------------------------- | --------------------------------------------------------------- |
-| `'!='`                  | `boolean`, `number`, `string` | Entry field's value is different from yours                     |
-| `'=='`                  | `boolean`, `number`, `string` | Entry field's value is equal to yours                           |
-| `'>='`                  | `number`, `string`            | Entry field's value is greater or equal than yours              |
-| `'<='`                  | `number`, `string`            | Entry field's value is equal to than yours                      |
-| `'>'`                   | `number`, `string`            | Entry field's value is greater than yours                       |
-| `'<'`                   | `number`, `string`            | Entry field's value is lower than yours                         |
-| `'in'`                  | `number`, `string`            | Entry field's value is in the array of values you gave          |
+| `'!='`                  | `boolean \| number \| string` | Entry field's value is different from yours                     |
+| `'=='`                  | `boolean \| number \| string` | Entry field's value is equal to yours                           |
+| `'>='`                  | `number \| string`            | Entry field's value is greater or equal than yours              |
+| `'<='`                  | `number \| string`            | Entry field's value is equal to than yours                      |
+| `'>'`                   | `number \| string`            | Entry field's value is greater than yours                       |
+| `'<'`                   | `number \| string`            | Entry field's value is lower than yours                         |
+| `'in'`                  | `number \| string`            | Entry field's value is in the array of values you gave          |
 | `'includes'`            | `string`                      | Entry field's value includes your substring                     |
 | `'startsWith'`          | `string`                      | Entry field's value starts with your substring                  |
 | `'endsWith'`            | `string`                      | Entry field's value ends with your substring                    |
@@ -131,14 +125,8 @@ The search method can take one or more options to filter entries in a collection
 | `'array-length-le'`     | `number`                      | Entry field's array size is lower or equal to your value        |
 | `'array-length-ge'`     | `number`                      | Entry field's array size is greater or equal to your value      |
 
-### Search Option Properties
 
-| Property    | Type      | Description                                                                |
-| ----------- | --------- | -------------------------------------------------------------------------- |
-| `field`     | `string`  | The field path to search in (supports dot notation for nested fields)      |
-| `criteria`  | `string`  | The comparison criteria to use (see table above)                           |
-| `value`     | `any`     | The value to compare against                                               |
-| `ignoreCase`| `boolean` | Whether to ignore case sensitivity for string comparisons (default: false) |
+The second argument of the `search` method takes an object of modifiers to the result. You can use the `limit` option to cap the searched results to a provided maximum for computationally expensive searches, or use the `random` option to read random results. This argument is optional.
 
 ## Edit field options
 
@@ -155,8 +143,6 @@ Edit objects have an element `id`, a `field` to edit, an `operation` specifying 
 | `array-push `  | Yes         | `any`                    | Pushes an element to the end of an array field.                                                                                        |
 | `array-delete` | Yes         | `number`                 | Removes an array element by index.                                                                                                     |
 | `array-splice` | Yes         | `[number, number, any?]` | Last argument is optional. Check the PHP [array_splice](https://www.php.net/manual/function.array-splice) documentation for more info. |
-
-Various other methods and constants exist in the JavaScript client, which make more sense once you learn what's actually happening behind the scenes.
 
 # PHP Backend
 
@@ -203,6 +189,7 @@ If you're working with multiple collections, it can be easier to initialize them
 // config.php
 <?php
 require_once './classes/JSONDatabase.php';
+
 $database_list = [
     'orders' => new JSONDatabase('orders', true),
     'users' => new JSONDatabase('users', false),
@@ -245,8 +232,7 @@ There is additionally an overwrite option in order to avoid mistakes.
 ```js
 const FormData = require("form-data");
 const firestorm = require("firestorm-db");
-firestorm.address("ADDRESS_VALUE");
-firestorm.token("TOKEN_VALUE");
+const firestorm_instance = firestorm.create({ address, token });
 
 const form = new FormData();
 form.append("path", "/quote.txt");
@@ -255,7 +241,7 @@ form.append("file", "but your kids are gonna love it.", "quote.txt");
 // override is false by default; don't append it if you don't need to
 form.append("overwrite", "true");
 
-const uploadPromise = firestorm.files.upload(form);
+const uploadPromise = firestorm_instance.files.upload(form);
 
 uploadPromise
     .then(() => console.log("Upload successful"))
@@ -264,13 +250,15 @@ uploadPromise
 
 ## Get a file
 
-`firestorm.files.get` takes a file's direct URL location or its content as its parameter. If your upload folder is accessible from a server URL, you can directly use its address to retrieve the file without this method.
+`Firestorm.files.get` takes a file's direct URL location or its content as its parameter. If your upload folder is accessible from a server URL, you can directly use its address to retrieve the file without this method.
 
 ```js
 const firestorm = require("firestorm-db");
-firestorm.address("ADDRESS_VALUE");
 
-const getPromise = firestorm.files.get("/quote.txt");
+// no write token is required to use this method
+const firestorm_instance = firestorm.create({ address });
+
+const getPromise = firestorm_instance.files.get("/quote.txt");
 
 getPromise
     .then((fileContent) => console.log(fileContent)) // but your kids are gonna love it.
@@ -279,14 +267,13 @@ getPromise
 
 ## Delete a file
 
-`firestorm.files.delete` has the same interface as `firestorm.files.get`, but as the name suggests, it deletes the file.
+`Firestorm.files.delete` has the same interface as `Firestorm.files.get`, but as the name suggests, it deletes the file.
 
 ```js
 const firestorm = require("firestorm-db");
-firestorm.address("ADDRESS_VALUE");
-firestorm.token("TOKEN_VALUE");
+const firestorm_instance = firestorm.create({ address, token });
 
-const deletePromise = firestorm.files.delete("/quote.txt");
+const deletePromise = firestorm_instance.files.delete("/quote.txt");
 
 deletePromise
     .then(() => console.log("File successfully deleted"))
@@ -297,20 +284,20 @@ deletePromise
 
 ## `ID_FIELD` and its meaning
 
-There's a constant in Firestorm called `ID_FIELD`, which is a JavaScript-side property added afterwards to each query element.
+There's a constant field in all Firestorm collections called `ID_FIELD`, which is a JavaScript-side property added afterwards to each query element.
 
-Its value will always be the key of the element its in, which allows you to use `Object.values` on results without worrying about losing the elements' key names. Additionally, it can be used in the method adder in the constructor, and is convenient for collections where the key name is significant.
+Its value will always be the key of the element its in, which allows you to use `Object.values` on results without worrying about losing the elements' key names. Additionally, it can be used in the method adder in the constructor, and is convenient for collections where the key name is significant. By default, it's set to the literal `"id"`, but can be changed by setting the value on the collection instance if the key name is already used elsewhere in your database schema (Note: changing the value of ID_FIELD is not recommended due to the lack of typing support).
 
 ```js
-const userCollection = firestorm.collection("users", (el) => {
-    el.basicInfo = () => `${el.name} (${el[firestorm.ID_FIELD]})`;
+const userCollection = firestorm_instance.collection("users", (el, collection) => {
+    el.basicInfo = () => `${el.name} (${el[collection.ID_FIELD]})`;
     return el;
 });
 
 const returnedID = await userCollection.add({ name: "Bob", age: 30 });
 const returnedUser = await userCollection.get(returnedID);
 
-console.log(returnedID === returnedUser[firestorm.ID_FIELD]); // true
+console.log(returnedID === returnedUser[userCollection.ID_FIELD]); // true
 
 returnedUser.basicInfo(); // Bob (123456789)
 ```
@@ -328,7 +315,7 @@ $database_list['users'] = new JSONDatabase('users', false);
 ```
 
 ```js
-const userCollection = firestorm.collection("users");
+const userCollection = firestorm_instance.collection("users");
 // Error: Automatic key generation is disabled
 await userCollection.add({ name: "John Doe", age: 30 });
 ```
@@ -354,16 +341,16 @@ userCollection.set(123, { name: "John Doe", age: 30 })
 Using add methods in the constructor, you can link multiple collections together.
 
 ```js
-const orders = firestorm.collection("orders");
+const orders = firestorm_instance.collection("orders");
 
 // using the example of a customer having orders
-const customers = firestorm.collection("customers", (el) => {
+const customers = firestorm_instance.collection("customers", (el, collection) => {
     el.getOrders = () => orders.search([
         {
             field: "customer",
             criteria: "==",
             // assuming the customers field in the orders collection is a user ID
-            value: el[firestorm.ID_FIELD]
+            value: el[collection.ID_FIELD]
         }
     ])
     return el;
@@ -398,6 +385,26 @@ The first keys in a Firestorm request will always be the same regardless of its 
 
 The requested PHP file then grabs the `JSONDatabase` instance created in `config.php` using the `collection` key in the request as the `$database_list` key name. From there, the `token` is used to validate the request if needed and the `command` is found and executed.
 
+## Compatibility
+
+Firestorm comes with a few utility methods to ensure the server and client versions are compatible. These are the `clientVersion` and `serverVersion` getters, and the `isCompatibleAddress()` function. Since `serverVersion` needs to make a request, it returns a `Promise<string>` despite looking like a field.
+
+```js
+const firestorm = require("firestorm-db");
+const firestorm_instance = firestorm.create({ address: "https://example.com/firestorm" });
+
+// returns the npm version of the client code
+firestorm_instance.clientVersion;
+
+// returns the server-side version string
+await firestorm_instance.serverVersion;
+
+// returns true if these values match and false if they don't
+await firestorm_instance.isCompatibleAddress();
+```
+
+Whenever updating Firestorm on your server, be sure to update the `version.ini` file.
+
 ## Memory management
 
 Handling very large collections can cause memory allocation issues:
@@ -424,40 +431,34 @@ Firestorm ships with TypeScript support out of the box.
 
 Collections in TypeScript take a generic parameter `T`, which is the type of each element in the collection. If you aren't using a relational collection, this can simply be set to `any`.
 
-The generic parameter must contain a string field named `ID_FIELD` imported from Firestorm (unless you're using a non-relational collection).
-
 ```ts
-import firestorm from "firestorm-db";
-firestorm.address("ADDRESS_VALUE");
+const firestorm = require("firestorm-db");
+const firestorm_instance = firestorm.create({ address, token });
 
 interface User {
-    // An ID field is required by a generic constraint
-    // (unless the collection is non-relational)
-    [firestorm.ID_FIELD]: string;
     name: string;
     password: string;
     pets: string[];
 }
 
-const userCollection = firestorm.collection<User>("users");
+const userCollection = firestorm_instance.collection<User>("users");
 
 const johnDoe = await userCollection.get(123456789);
-// type: { [ID_FIELD]: string, name: string, password: string, pets: string[] }
+// type: { [userCollection.ID_FIELD]: string, name: string, password: string, pets: string[] }
 ```
 
 Injected methods should also be stored in this interface. They'll be filtered out from write operations correctly, so don't worry about potential typing inaccuracies:
 
 ```ts
-import firestorm from "firestorm-db";
-firestorm.address("ADDRESS_VALUE");
+const firestorm = require("firestorm-db");
+const firestorm_instance = firestorm.create({ address, token });
 
 interface User {
-    [firestorm.ID_FIELD]: string;
     name: string;
     hello(): string;
 }
 
-const userCollection = firestorm.collection("users", (el) => {
+const userCollection = firestorm_instance.collection("users", (el) => {
     // interface types should agree with injected methods
     el.hello = () => `${el.name} says hello!`;
     return el;
@@ -469,10 +470,8 @@ const hello = johnDoe.hello(); // type: string
 await userCollection.add({
     name: "Mary Doe",
     // Error: 'hello' does not exist in type 'Addable<User>'.
-    hello() {
-        return "Mary Doe says hello!"
-    }
-})
+    hello: () => "Mary Doe says hello!",
+});
 ```
 
 ## Additional types
@@ -480,9 +479,17 @@ await userCollection.add({
 Additional types exist for search criteria options, write method return types, configuration methods, the file handler, etc.
 
 ```ts
-import firestorm from "firestorm-db";
-const address = firestorm.address("ADDRESS_VALUE");
-// type: string
+const searchOptions: SearchOption<User>[] = [
+    {
+        field: "name",
+        criteria: "==",
+        value: "John Doe",
+    },
+];
+// type: SearchOption<User>[]
+
+userCollection.search(searchOptions, { limit: 300 });
+// type: User[]
 
 const deleteConfirmation = await firestorm.files.delete("/quote.txt");
 // type: firestorm.WriteConfirmation

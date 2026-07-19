@@ -10,5 +10,6 @@
     "declarationMap": false,
     "esModuleInterop": true,
     "target": "es2022",
+    "types": ["mocha"],
   }
 }
