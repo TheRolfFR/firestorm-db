@@ -211,18 +211,18 @@ export type Criteria<T> = T extends Function
 
 export type AnyOperation =
 	| "set" /** @param value - set the field to the given value */
-	| "remove" /** @param value - remove the field */;
+	| "remove"; /** @param value - remove the field */
 
-export type StringOperation = "append" /** @param value - append the given value to the field */;
+export type StringOperation = "append"; /** @param value - append the given value to the field */
 
 export type NumberOperation =
 	| "increment" /** @param value - increment the field by the given value, or by one */
-	| "decrement" /** @param value - decrement the field by the given value, or by one */;
+	| "decrement"; /** @param value - decrement the field by the given value, or by one */
 
 export type ArrayOperation =
 	| "array-push" /** @param value - push the given value to the field */
 	| "array-delete" /** @param index - delete the value at the given index @see https://www.php.net/manual/fr/function.array-splice */
-	| "array-splice" /** @param indexes - remove certain elements of the array field @see https://www.php.net/manual/fr/function.array-splice */;
+	| "array-splice"; /** @param indexes - remove certain elements of the array field @see https://www.php.net/manual/fr/function.array-splice */
 
 type _Operation<T> = T extends string
 	? StringOperation
