@@ -57,12 +57,16 @@ jobs:
           echo "VERSION=${VERSION}" >> $GITHUB_ENV
           echo "MAJOR_VERSION=${MAJOR_VERSION}" >> $GITHUB_ENV
 
-      - name: Push Docker Image (only on main)
+      - name: Push latest Docker Image (only if main)
         if: github.ref == 'refs/heads/main'
         run: |
-          docker tag firestorm-db:latest ${{ secrets.DOCKERHUB_USERNAME }}/firestorm-db:$VERSION
           docker tag firestorm-db:latest ${{ secrets.DOCKERHUB_USERNAME }}/firestorm-db:latest
-          docker tag firestorm-db:latest ${{ secrets.DOCKERHUB_USERNAME }}/firestorm-db:$MAJOR_VERSION
           docker push ${{ secrets.DOCKERHUB_USERNAME }}/firestorm-db:latest
+
+      - name: Push version Docker Image (only if main and triggered manually)
+        if: github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main'
+        run: |
           docker push ${{ secrets.DOCKERHUB_USERNAME }}/firestorm-db:$VERSION
           docker push ${{ secrets.DOCKERHUB_USERNAME }}/firestorm-db:$MAJOR_VERSION
+          docker tag firestorm-db:latest ${{ secrets.DOCKERHUB_USERNAME }}/firestorm-db:$VERSION
+          docker tag firestorm-db:latest ${{ secrets.DOCKERHUB_USERNAME }}/firestorm-db:$MAJOR_VERSION
