@@ -43,7 +43,7 @@
     <input type="text" id="nav-search" placeholder="Search" />
     
     
-    <h2><a href="index.html">Home</a></h2><h2><a href="https://github.com/TheRolfFR/firestorm" target="_blank" class="menu-item" id="repository" >Repository</a></h2><h2><a href="https://www.npmjs.com/package/firestorm-db" target="_blank" class="menu-item" id="npm" >npm</a></h2><h3>Classes</h3><ul><li><a href="Collection.html">Collection</a><ul class='methods'><li data-type='method'><a href="Collection.html#add">add</a></li><li data-type='method'><a href="Collection.html#addBulk">addBulk</a></li><li data-type='method'><a href="Collection.html#editField">editField</a></li><li data-type='method'><a href="Collection.html#editFieldBulk">editFieldBulk</a></li><li data-type='method'><a href="Collection.html#get">get</a></li><li data-type='method'><a href="Collection.html#random">random</a></li><li data-type='method'><a href="Collection.html#read_raw">read_raw</a></li><li data-type='method'><a href="Collection.html#readRaw">readRaw</a></li><li data-type='method'><a href="Collection.html#remove">remove</a></li><li data-type='method'><a href="Collection.html#removeBulk">removeBulk</a></li><li data-type='method'><a href="Collection.html#search">search</a></li><li data-type='method'><a href="Collection.html#searchKeys">searchKeys</a></li><li data-type='method'><a href="Collection.html#select">select</a></li><li data-type='method'><a href="Collection.html#set">set</a></li><li data-type='method'><a href="Collection.html#setBulk">setBulk</a></li><li data-type='method'><a href="Collection.html#sha1">sha1</a></li><li data-type='method'><a href="Collection.html#values">values</a></li><li data-type='method'><a href="Collection.html#write_raw">write_raw</a></li><li data-type='method'><a href="Collection.html#writeRaw">writeRaw</a></li></ul></li></ul><h3>Namespaces</h3><ul><li><a href="firestorm.html">firestorm</a><ul class='members'><li data-type='member'><a href="firestorm.html#.ID_FIELD">ID_FIELD</a></li></ul><ul class='methods'><li data-type='method'><a href="firestorm.html#.address">address</a></li><li data-type='method'><a href="firestorm.html#.collection">collection</a></li><li data-type='method'><a href="firestorm.html#.table">table</a></li><li data-type='method'><a href="firestorm.html#.token">token</a></li></ul></li><li><a href="firestorm.files.html">firestorm.files</a><ul class='methods'><li data-type='method'><a href="firestorm.files.html#.delete">delete</a></li><li data-type='method'><a href="firestorm.files.html#.get">get</a></li><li data-type='method'><a href="firestorm.files.html#.upload">upload</a></li></ul></li></ul><h3><a href="global.html">Global</a></h3>
+    <h2><a href="index.html">Home</a></h2><h2><a href="https://github.com/TheRolfFR/firestorm" target="_blank" class="menu-item" id="repository" >Repository</a></h2><h2><a href="https://www.npmjs.com/package/firestorm-db" target="_blank" class="menu-item" id="npm" >npm</a></h2><h3>Classes</h3><ul><li><a href="Firestorm.html">Firestorm</a><ul class='methods'><li data-type='method'><a href="Firestorm.html#collection">collection</a></li><li data-type='method'><a href="Firestorm.html#isCompatibleAddress">isCompatibleAddress</a></li></ul></li></ul><h3>Namespaces</h3><ul><li><a href="firestorm_.html">firestorm</a><ul class='members'><li data-type='member'><a href="firestorm_.html#.__default_instance">__default_instance</a></li><li data-type='member'><a href="firestorm_.html#.files">files</a></li><li data-type='member'><a href="firestorm_.html#.ID_FIELD">ID_FIELD</a></li></ul><ul class='methods'><li data-type='method'><a href="firestorm_.html#.address">address</a></li><li data-type='method'><a href="firestorm_.html#.collection">collection</a></li><li data-type='method'><a href="firestorm_.html#.create">create</a></li><li data-type='method'><a href="firestorm_.html#.table">table</a></li><li data-type='method'><a href="firestorm_.html#.token">token</a></li></ul></li></ul><h3><a href="global.html">Global</a></h3>
     
 </nav>
 
@@ -89,28 +89,26 @@
 </a>
 </div>
 <p><em>Self hosted Firestore-like database with API endpoints based on micro bulk operations.</em></p>
-<h1>Installation</h1>
-<p>Installing the JavaScript client is as simple as running:</p>
-<pre class="prettyprint source lang-sh"><code>npm install firestorm-db
-</code></pre>
-<p>Information about installing Firestorm server-side is given in the <a href="#php-backend">PHP</a> section.</p>
 <h1>JavaScript Client</h1>
-<p>The JavaScript <a href="./src/index.js">index.js</a> file is simply an <a href="https://www.npmjs.com/package/axios">Axios</a> wrapper of the PHP backend.</p>
+<p>The JavaScript client is a fairly simple wrapper around the backend PHP endpoints, using <a href="https://www.npmjs.com/package/axios">Axios</a> to handle requests. Any server errors will hence be returned to the client as Axios error objects.</p>
 <h2>JavaScript setup</h2>
-<p>First, set your API address (and your writing token if needed) using the <code>address()</code> and <code>token()</code> setters. If you need to later retrieve these values, you can use the same functions as getters with no parameters:</p>
-<pre class="prettyprint source lang-js"><code>// only needed in Node.js; including the script tag in a browser is enough otherwise.
-const firestorm = require(&quot;firestorm-db&quot;);
+<p>Every Firestorm database starts by creating a new server instance with the <code>firestorm.create()</code> function. This takes an object of optional configuration options as an argument, which can then be retrieved or set using the corresponding fields.</p>
+<pre class="prettyprint source lang-js"><code>const firestorm = require(&quot;firestorm-db&quot;);
 
-firestorm.address(&quot;https://example.com/path/to/firestorm/root/&quot;);
+// All of these arguments are optional and can be specified by directly setting the fields if needed.
+const firestorm_instance = firestorm.create({
+    /** The name of the instance internally, useful for reflection and error messages */
+    name: &quot;production&quot;,
+    /** The base address of your Firestorm setup, with a slash at the end. */
+    address: &quot;https://example.com/path/to/firestorm/root/&quot;,
+    /** Your write token, if it exists. It must exactly match a value from your tokens.php file. */
+    token: &quot;my_secret_token_probably_from_an_env_file&quot;,
+});
 
-// only necessary if you want to write or access private collections
-// must match token stored in tokens.php file
-firestorm.token(&quot;my_secret_token_probably_from_an_env_file&quot;);
-
-const address = firestorm.address();
-// returns &quot;https://example.com/path/to/firestorm/root&quot;
+firestorm_instance.address // returns &quot;https://example.com/path/to/firestorm/root&quot;
+firestorm_instance.name = &quot;dev&quot;; // sets the debugging name to dev
 </code></pre>
-<p>Now you can use Firestorm to its full potential.</p>
+<p>After setting your server address and token fields, you can begin using Firestorm to its full potential.</p>
 <h2>Create your first collection</h2>
 <p>Firestorm is based around the concept of a <code>Collection</code>, which is akin to an SQL table or Firestore document. The Firestorm collection constructor takes one required argument and one optional argument:</p>
 <ul>
@@ -118,8 +116,9 @@ const address = firestorm.address();
 <li>A method adder, which lets you inject methods to query results. It's implemented similarly to <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/map"><code>Array.prototype.map</code></a>, taking a queried element as an argument, modifying the element with methods and data inside a callback, and returning the modified element at the end.</li>
 </ul>
 <pre class="prettyprint source lang-js"><code>const firestorm = require(&quot;firestorm-db&quot;);
+const firestorm_instance = firestorm.create({ address, token });
 
-const userCollection = firestorm.collection(&quot;users&quot;, (el) => {
+const userCollection = firestorm_instance.collection(&quot;users&quot;, (el) => {
     // assumes you have a 'users' table with a printable field called 'name'
     el.hello = () => `${el.name} says hello!`;
     // return the modified element back with the injected method
@@ -163,8 +162,8 @@ johnDoe.hello(); // &quot;John Doe says hello!&quot;
 <td>Get multiple elements from the collection by their keys.</td>
 </tr>
 <tr>
-<td>search(options, random)</td>
-<td>options: <code>SearchOption[]</code> random?:<code>boolean \| number</code></td>
+<td>search(filter, resultOptions)</td>
+<td>filter: <code>SearchOption[]</code> resultOptions?: boolean|number|SearchResultOptions</td>
 <td>Search through the collection. You can randomize the output order with random as true or a given seed.</td>
 </tr>
 <tr>
@@ -230,19 +229,19 @@ johnDoe.hello(); // &quot;John Doe says hello!&quot;
 <td>Set multiple values in the collection by their keys.</td>
 </tr>
 <tr>
-<td>editField(obj)</td>
+<td>editField(option)</td>
 <td>option: <code>EditFieldOption</code></td>
 <td>Edit an element's field in the collection.</td>
 </tr>
 <tr>
-<td>editFieldBulk(objArray)</td>
+<td>editFieldBulk(options)</td>
 <td>options: <code>EditFieldOption[]</code></td>
 <td>Edit multiple elements' fields in the collection.</td>
 </tr>
 </tbody>
 </table>
 <h2>Search options</h2>
-<p>There are more options available than the Firestore <code>where</code> command, allowing you to get better and faster search results.</p>
+<p>There are more options available than the Firestore <code>where</code> command, allowing you to get better search results more quickly.</p>
 <p>The search method can take one or more options to filter entries in a collection. A search option takes a <code>field</code> with a <code>criteria</code> and compares it to a <code>value</code>. You can also use the boolean <code>ignoreCase</code> option for string values and the <code>limit</code> option to restrict the number of results returned. Available criteria depends on the field type.</p>
 <table>
 <thead>
@@ -255,37 +254,37 @@ johnDoe.hello(); // &quot;John Doe says hello!&quot;
 <tbody>
 <tr>
 <td><code>'!='</code></td>
-<td><code>boolean</code>, <code>number</code>, <code>string</code></td>
+<td><code>boolean \| number \| string</code></td>
 <td>Entry field's value is different from yours</td>
 </tr>
 <tr>
 <td><code>'=='</code></td>
-<td><code>boolean</code>, <code>number</code>, <code>string</code></td>
+<td><code>boolean \| number \| string</code></td>
 <td>Entry field's value is equal to yours</td>
 </tr>
 <tr>
 <td><code>'&gt;='</code></td>
-<td><code>number</code>, <code>string</code></td>
+<td><code>number \| string</code></td>
 <td>Entry field's value is greater or equal than yours</td>
 </tr>
 <tr>
 <td><code>'&lt;='</code></td>
-<td><code>number</code>, <code>string</code></td>
+<td><code>number \| string</code></td>
 <td>Entry field's value is equal to than yours</td>
 </tr>
 <tr>
 <td><code>'&gt;'</code></td>
-<td><code>number</code>, <code>string</code></td>
+<td><code>number \| string</code></td>
 <td>Entry field's value is greater than yours</td>
 </tr>
 <tr>
 <td><code>'&lt;'</code></td>
-<td><code>number</code>, <code>string</code></td>
+<td><code>number \| string</code></td>
 <td>Entry field's value is lower than yours</td>
 </tr>
 <tr>
 <td><code>'in'</code></td>
-<td><code>number</code>, <code>string</code></td>
+<td><code>number \| string</code></td>
 <td>Entry field's value is in the array of values you gave</td>
 </tr>
 <tr>
@@ -355,38 +354,7 @@ johnDoe.hello(); // &quot;John Doe says hello!&quot;
 </tr>
 </tbody>
 </table>
-<h3>Search Option Properties</h3>
-<table>
-<thead>
-<tr>
-<th>Property</th>
-<th>Type</th>
-<th>Description</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><code>field</code></td>
-<td><code>string</code></td>
-<td>The field path to search in (supports dot notation for nested fields)</td>
-</tr>
-<tr>
-<td><code>criteria</code></td>
-<td><code>string</code></td>
-<td>The comparison criteria to use (see table above)</td>
-</tr>
-<tr>
-<td><code>value</code></td>
-<td><code>any</code></td>
-<td>The value to compare against</td>
-</tr>
-<tr>
-<td><code>ignoreCase</code></td>
-<td><code>boolean</code></td>
-<td>Whether to ignore case sensitivity for string comparisons (default: false)</td>
-</tr>
-</tbody>
-</table>
+<p>The second argument of the <code>search</code> method takes an object of modifiers to the result. You can use the <code>limit</code> option to cap the searched results to a provided maximum for computationally expensive searches, or use the <code>random</code> option to read random results. This argument is optional.</p>
 <h2>Edit field options</h2>
 <p>Edit objects have an element <code>id</code>, a <code>field</code> to edit, an <code>operation</code> specifying what to do to this field, and optionally a <code>value</code>.</p>
 <table>
@@ -455,7 +423,6 @@ johnDoe.hello(); // &quot;John Doe says hello!&quot;
 </tr>
 </tbody>
 </table>
-<p>Various other methods and constants exist in the JavaScript client, which make more sense once you learn what's actually happening behind the scenes.</p>
 <h1>PHP Backend</h1>
 <p>Firestorm's PHP files handle files, read, and writes, through <code>GET</code> and <code>POST</code> requests sent by the JavaScript client. All JavaScript methods correspond to an equivalent Axios request to the relevant PHP file.</p>
 <h2>PHP setup</h2>
@@ -495,6 +462,7 @@ $database_list[$tmp->fileName] = $tmp;
 <pre class="prettyprint source lang-php"><code>// config.php
 &lt;?php
 require_once './classes/JSONDatabase.php';
+
 $database_list = [
     'orders' => new JSONDatabase('orders', true),
     'users' => new JSONDatabase('users', false),
@@ -521,8 +489,7 @@ $STORAGE_LOCATION = dirname($_SERVER['SCRIPT_FILENAME']) . '/uploads/';
 <p>There is additionally an overwrite option in order to avoid mistakes.</p>
 <pre class="prettyprint source lang-js"><code>const FormData = require(&quot;form-data&quot;);
 const firestorm = require(&quot;firestorm-db&quot;);
-firestorm.address(&quot;ADDRESS_VALUE&quot;);
-firestorm.token(&quot;TOKEN_VALUE&quot;);
+const firestorm_instance = firestorm.create({ address, token });
 
 const form = new FormData();
 form.append(&quot;path&quot;, &quot;/quote.txt&quot;);
@@ -531,30 +498,31 @@ form.append(&quot;file&quot;, &quot;but your kids are gonna love it.&quot;, &quo
 // override is false by default; don't append it if you don't need to
 form.append(&quot;overwrite&quot;, &quot;true&quot;);
 
-const uploadPromise = firestorm.files.upload(form);
+const uploadPromise = firestorm_instance.files.upload(form);
 
 uploadPromise
     .then(() => console.log(&quot;Upload successful&quot;))
     .catch((err) => console.error(err));
 </code></pre>
 <h2>Get a file</h2>
-<p><code>firestorm.files.get</code> takes a file's direct URL location or its content as its parameter. If your upload folder is accessible from a server URL, you can directly use its address to retrieve the file without this method.</p>
+<p><code>Firestorm.files.get</code> takes a file's direct URL location or its content as its parameter. If your upload folder is accessible from a server URL, you can directly use its address to retrieve the file without this method.</p>
 <pre class="prettyprint source lang-js"><code>const firestorm = require(&quot;firestorm-db&quot;);
-firestorm.address(&quot;ADDRESS_VALUE&quot;);
 
-const getPromise = firestorm.files.get(&quot;/quote.txt&quot;);
+// no write token is required to use this method
+const firestorm_instance = firestorm.create({ address });
+
+const getPromise = firestorm_instance.files.get(&quot;/quote.txt&quot;);
 
 getPromise
     .then((fileContent) => console.log(fileContent)) // but your kids are gonna love it.
     .catch((err) => console.error(err));
 </code></pre>
 <h2>Delete a file</h2>
-<p><code>firestorm.files.delete</code> has the same interface as <code>firestorm.files.get</code>, but as the name suggests, it deletes the file.</p>
+<p><code>Firestorm.files.delete</code> has the same interface as <code>Firestorm.files.get</code>, but as the name suggests, it deletes the file.</p>
 <pre class="prettyprint source lang-js"><code>const firestorm = require(&quot;firestorm-db&quot;);
-firestorm.address(&quot;ADDRESS_VALUE&quot;);
-firestorm.token(&quot;TOKEN_VALUE&quot;);
+const firestorm_instance = firestorm.create({ address, token });
 
-const deletePromise = firestorm.files.delete(&quot;/quote.txt&quot;);
+const deletePromise = firestorm_instance.files.delete(&quot;/quote.txt&quot;);
 
 deletePromise
     .then(() => console.log(&quot;File successfully deleted&quot;))
@@ -562,17 +530,17 @@ deletePromise
 </code></pre>
 <h1>Advanced Features</h1>
 <h2><code>ID_FIELD</code> and its meaning</h2>
-<p>There's a constant in Firestorm called <code>ID_FIELD</code>, which is a JavaScript-side property added afterwards to each query element.</p>
-<p>Its value will always be the key of the element its in, which allows you to use <code>Object.values</code> on results without worrying about losing the elements' key names. Additionally, it can be used in the method adder in the constructor, and is convenient for collections where the key name is significant.</p>
-<pre class="prettyprint source lang-js"><code>const userCollection = firestorm.collection(&quot;users&quot;, (el) => {
-    el.basicInfo = () => `${el.name} (${el[firestorm.ID_FIELD]})`;
+<p>There's a constant field in all Firestorm collections called <code>ID_FIELD</code>, which is a JavaScript-side property added afterwards to each query element.</p>
+<p>Its value will always be the key of the element its in, which allows you to use <code>Object.values</code> on results without worrying about losing the elements' key names. Additionally, it can be used in the method adder in the constructor, and is convenient for collections where the key name is significant. By default, it's set to the literal <code>&quot;id&quot;</code>, but can be changed by setting the value on the collection instance if the key name is already used elsewhere in your database schema (Note: changing the value of ID_FIELD is not recommended due to the lack of typing support).</p>
+<pre class="prettyprint source lang-js"><code>const userCollection = firestorm_instance.collection(&quot;users&quot;, (el, collection) => {
+    el.basicInfo = () => `${el.name} (${el[collection.ID_FIELD]})`;
     return el;
 });
 
 const returnedID = await userCollection.add({ name: &quot;Bob&quot;, age: 30 });
 const returnedUser = await userCollection.get(returnedID);
 
-console.log(returnedID === returnedUser[firestorm.ID_FIELD]); // true
+console.log(returnedID === returnedUser[userCollection.ID_FIELD]); // true
 
 returnedUser.basicInfo(); // Bob (123456789)
 </code></pre>
@@ -582,7 +550,7 @@ returnedUser.basicInfo(); // Bob (123456789)
 <p>For instance, the following PHP configuration will disable add operations:</p>
 <pre class="prettyprint source lang-php"><code>$database_list['users'] = new JSONDatabase('users', false);
 </code></pre>
-<pre class="prettyprint source lang-js"><code>const userCollection = firestorm.collection(&quot;users&quot;);
+<pre class="prettyprint source lang-js"><code>const userCollection = firestorm_instance.collection(&quot;users&quot;);
 // Error: Automatic key generation is disabled
 await userCollection.add({ name: &quot;John Doe&quot;, age: 30 });
 </code></pre>
@@ -601,16 +569,16 @@ userCollection.set(123, { name: &quot;John Doe&quot;, age: 30 })
 </code></pre>
 <h2>Combining collections</h2>
 <p>Using add methods in the constructor, you can link multiple collections together.</p>
-<pre class="prettyprint source lang-js"><code>const orders = firestorm.collection(&quot;orders&quot;);
+<pre class="prettyprint source lang-js"><code>const orders = firestorm_instance.collection(&quot;orders&quot;);
 
 // using the example of a customer having orders
-const customers = firestorm.collection(&quot;customers&quot;, (el) => {
+const customers = firestorm_instance.collection(&quot;customers&quot;, (el, collection) => {
     el.getOrders = () => orders.search([
         {
             field: &quot;customer&quot;,
             criteria: &quot;==&quot;,
             // assuming the customers field in the orders collection is a user ID
-            value: el[firestorm.ID_FIELD]
+            value: el[collection.ID_FIELD]
         }
     ])
     return el;
@@ -638,6 +606,21 @@ await johnDoe.getOrders();
 }
 </code></pre>
 <p>The requested PHP file then grabs the <code>JSONDatabase</code> instance created in <code>config.php</code> using the <code>collection</code> key in the request as the <code>$database_list</code> key name. From there, the <code>token</code> is used to validate the request if needed and the <code>command</code> is found and executed.</p>
+<h2>Compatibility</h2>
+<p>Firestorm comes with a few utility methods to ensure the server and client versions are compatible. These are the <code>clientVersion</code> and <code>serverVersion</code> getters, and the <code>isCompatibleAddress()</code> function. Since <code>serverVersion</code> needs to make a request, it returns a <code>Promise&lt;string&gt;</code> despite looking like a field.</p>
+<pre class="prettyprint source lang-js"><code>const firestorm = require(&quot;firestorm-db&quot;);
+const firestorm_instance = firestorm.create({ address: &quot;https://example.com/firestorm&quot; });
+
+// returns the npm version of the client code
+firestorm_instance.clientVersion;
+
+// returns the server-side version string
+await firestorm_instance.serverVersion;
+
+// returns true if these values match and false if they don't
+await firestorm_instance.isCompatibleAddress();
+</code></pre>
+<p>Whenever updating Firestorm on your server, be sure to update the <code>version.ini</code> file.</p>
 <h2>Memory management</h2>
 <p>Handling very large collections can cause memory allocation issues:</p>
 <pre class="prettyprint source"><code>Fatal error:
@@ -652,35 +635,30 @@ memory_limit = 256M
 <p>Firestorm ships with TypeScript support out of the box.</p>
 <h2>Collection types</h2>
 <p>Collections in TypeScript take a generic parameter <code>T</code>, which is the type of each element in the collection. If you aren't using a relational collection, this can simply be set to <code>any</code>.</p>
-<p>The generic parameter must contain a string field named <code>ID_FIELD</code> imported from Firestorm (unless you're using a non-relational collection).</p>
-<pre class="prettyprint source lang-ts"><code>import firestorm from &quot;firestorm-db&quot;;
-firestorm.address(&quot;ADDRESS_VALUE&quot;);
+<pre class="prettyprint source lang-ts"><code>const firestorm = require(&quot;firestorm-db&quot;);
+const firestorm_instance = firestorm.create({ address, token });
 
 interface User {
-    // An ID field is required by a generic constraint
-    // (unless the collection is non-relational)
-    [firestorm.ID_FIELD]: string;
     name: string;
     password: string;
     pets: string[];
 }
 
-const userCollection = firestorm.collection&lt;User>(&quot;users&quot;);
+const userCollection = firestorm_instance.collection&lt;User>(&quot;users&quot;);
 
 const johnDoe = await userCollection.get(123456789);
-// type: { [ID_FIELD]: string, name: string, password: string, pets: string[] }
+// type: { [userCollection.ID_FIELD]: string, name: string, password: string, pets: string[] }
 </code></pre>
 <p>Injected methods should also be stored in this interface. They'll be filtered out from write operations correctly, so don't worry about potential typing inaccuracies:</p>
-<pre class="prettyprint source lang-ts"><code>import firestorm from &quot;firestorm-db&quot;;
-firestorm.address(&quot;ADDRESS_VALUE&quot;);
+<pre class="prettyprint source lang-ts"><code>const firestorm = require(&quot;firestorm-db&quot;);
+const firestorm_instance = firestorm.create({ address, token });
 
 interface User {
-    [firestorm.ID_FIELD]: string;
     name: string;
     hello(): string;
 }
 
-const userCollection = firestorm.collection(&quot;users&quot;, (el) => {
+const userCollection = firestorm_instance.collection(&quot;users&quot;, (el) => {
     // interface types should agree with injected methods
     el.hello = () => `${el.name} says hello!`;
     return el;
@@ -692,16 +670,22 @@ const hello = johnDoe.hello(); // type: string
 await userCollection.add({
     name: &quot;Mary Doe&quot;,
     // Error: 'hello' does not exist in type 'Addable&lt;User>'.
-    hello() {
-        return &quot;Mary Doe says hello!&quot;
-    }
-})
+    hello: () => &quot;Mary Doe says hello!&quot;,
+});
 </code></pre>
 <h2>Additional types</h2>
 <p>Additional types exist for search criteria options, write method return types, configuration methods, the file handler, etc.</p>
-<pre class="prettyprint source lang-ts"><code>import firestorm from &quot;firestorm-db&quot;;
-const address = firestorm.address(&quot;ADDRESS_VALUE&quot;);
-// type: string
+<pre class="prettyprint source lang-ts"><code>const searchOptions: SearchOption&lt;User>[] = [
+    {
+        field: &quot;name&quot;,
+        criteria: &quot;==&quot;,
+        value: &quot;John Doe&quot;,
+    },
+];
+// type: SearchOption&lt;User>[]
+
+userCollection.search(searchOptions, { limit: 300 });
+// type: User[]
 
 const deleteConfirmation = await firestorm.files.delete(&quot;/quote.txt&quot;);
 // type: firestorm.WriteConfirmation
@@ -720,7 +704,7 @@ const deleteConfirmation = await firestorm.files.delete(&quot;/quote.txt&quot;);
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.6.7</a> on Mon Apr 06 2026 11:41:03 GMT+0000 (Coordinated Universal Time) using the <a href="https://github.com/clenemt/docdash">docdash</a> theme.
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.6.7</a> on Sun Jul 19 2026 09:42:32 GMT+0000 (Coordinated Universal Time) using the <a href="https://github.com/clenemt/docdash">docdash</a> theme.
 </footer>
 
 <script>prettyPrint();</script>
