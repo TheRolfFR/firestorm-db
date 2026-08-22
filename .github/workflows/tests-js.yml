@@ -39,11 +39,3 @@ jobs:
 
       - name: Test da code
         run: pnpm php:tests
-
-      - name: Comment coverage code to PR
-        if: matrix.php == "8.2" && matrix.node == "26"
-        uses: zgosalvez/github-actions-report-lcov@7.2.0
-        with:
-          coverage-files: coverage/lcov.*.info
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          update-comment: true

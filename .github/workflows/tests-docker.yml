@@ -32,3 +32,10 @@ jobs:
         run: |
           pnpm run docker:build
           pnpm run docker:tests
+
+      - name: Comment coverage code to PR
+        uses: zgosalvez/github-actions-report-lcov@v7.2.0
+        with:
+          coverage-files: coverage/lcov.*.info
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          update-comment: true
