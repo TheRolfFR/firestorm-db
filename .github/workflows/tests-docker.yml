@@ -31,7 +31,7 @@ jobs:
       - name: Build and run tests in Docker
         run: |
           pnpm run docker:build
-          pnpm run docker:tests*
+          pnpm run docker:tests
 
       - name: Setup LCOV
         uses: hrishikesh-kadam/setup-lcov@v1
