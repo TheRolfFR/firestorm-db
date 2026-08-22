@@ -8,7 +8,7 @@
     "php:start": "node tests/php_setup.mjs",
     "php:stop": "sh tests/php_server_kill.sh",
     "php:tests": "pnpm php:stop ; pnpm php:start && pnpm js:tests ; e=$? ; pnpm php:stop ; exit $e",
-    "js:tests": "mocha tests/**/tests-setup.spec.mjs tests/**/*.spec.mjs",
+    "js:tests": "nyc --reporter=lcov mocha tests/**/tests-setup.spec.mjs tests/**/*.spec.mjs",
     "docker:build": "bash docker/docker_image_build.bash",
     "docker:alive": "bash docker/docker_image_alive.bash",
     "docker:tests": "bash docker/docker_image_tests.bash",
@@ -17,8 +17,7 @@
     "doc:watch": "nodemon -x pnpm doc:gen --watch src/index.js --watch jsdoc.json --watch README.md",
     "types:gen": "npx tsc",
     "lint:write": "prettier \"{,!(node_modules)/**/}*.{cjs,mjs,js,ts}\" --config .prettierrc --write",
-    "lint:check": "prettier \"{,!(node_modules)/**/}*.{cjs,mjs,js,ts}\" --config .prettierrc --check",
-    "coverage": "pnpm php:stop ; pnpm php:start && nyc --reporter=text mocha tests/**/*.spec.js; pnpm php:stop"
+    "lint:check": "prettier \"{,!(node_modules)/**/}*.{cjs,mjs,js,ts}\" --config .prettierrc --check"
   },
   "repository": {
     "type": "git",
