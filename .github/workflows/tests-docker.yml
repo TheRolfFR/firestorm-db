@@ -39,6 +39,9 @@ jobs:
       - name: Comment coverage code to PR
         uses: zgosalvez/github-actions-report-lcov@v7.2.0
         with:
-          coverage-files: coverage/lcov.*.info
+          coverage-files: coverage/lcov.info
           github-token: ${{ secrets.GITHUB_TOKEN }}
+          minimum-coverage: 0
+          working-directory: .
+          thresholds: 100,70
           update-comment: true
