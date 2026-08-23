@@ -11,14 +11,16 @@ import firestorm from "../src/index.js";
 import { ADDRESS } from "./tests.env.mjs";
 
 describe("File upload, download and delete", () => {
-
 	it("cannot start request without address", () => {
 		// @ts-ignore
 		firestorm.__default_instance.address = undefined;
 
-		expect(() => firestorm.files.get("/path/to/file.txt")).to.throw(Error, `Address for Firestorm instance "${firestorm.__default_instance.name}" was not configured`);
+		expect(() => firestorm.files.get("/path/to/file.txt")).to.throw(
+			Error,
+			`Address for Firestorm instance "${firestorm.__default_instance.name}" was not configured`,
+		);
 		firestorm.address(ADDRESS);
-	})
+	});
 
 	it("cannot find an unknown file", (done) => {
 		firestorm.files

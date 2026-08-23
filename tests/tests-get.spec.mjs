@@ -142,11 +142,12 @@ describe("GET operations", () => {
 	describe("search(searchOptions)", () => {
 		it("accepts only arrays as parameter", (done) => {
 			// @ts-ignore
-			base.search("hello")
-				.then(res => {
+			base
+				.search("hello")
+				.then((res) => {
 					done(`got ${JSON.stringify(res)} value`);
 				})
-				.catch(err => {
+				.catch((err) => {
 					expect(err).to.be.an.instanceOf(TypeError);
 					expect(err.message).to.equal("searchOptions shall be an array");
 					done();
@@ -155,27 +156,48 @@ describe("GET operations", () => {
 
 		/**
 		 * @typedef {import("../src/collection.js").SearchOption} SearchOption
-	     * @type {Readonly<[string, SearchOption, string]>[]}
+		 * @type {Readonly<[string, SearchOption, string]>[]}
 		 */
 		const filterTypeArray = [
 			// @ts-ignore
-			["no field", { field: undefined, criteria: "==", value: 16 }, "Missing fields in filter array"],
+			[
+				"no field",
+				{ field: undefined, criteria: "==", value: 16 },
+				"Missing fields in filter array",
+			],
 			// @ts-ignore
-			["no criteria", { field: "age", criteria: undefined, value: 16 }, "Missing fields in filter array"],
+			[
+				"no criteria",
+				{ field: "age", criteria: undefined, value: 16 },
+				"Missing fields in filter array",
+			],
 			// @ts-ignore
-			["no value", { field: "age", criteria: "==", value: undefined }, "Missing fields in filter array"],
+			[
+				"no value",
+				{ field: "age", criteria: "==", value: undefined },
+				"Missing fields in filter array",
+			],
 			// @ts-ignore
-			["field not string", { field: 5, criteria: "==", value: 16 }, "\"5\" filter field is not a string"],
+			[
+				"field not string",
+				{ field: 5, criteria: "==", value: 16 },
+				'"5" filter field is not a string',
+			],
 			// @ts-ignore
-			["in need array", { field: "age", criteria: "in", value: "5"}, "in takes an array of values"],
-		]
+			[
+				"in need array",
+				{ field: "age", criteria: "in", value: "5" },
+				"in takes an array of values",
+			],
+		];
 		for (let [id, search_option, expected_error] of filterTypeArray) {
 			it("must have correct field types [" + id + "]", async () => {
-				return base.search([search_option])
-					.then(res => {
+				return base
+					.search([search_option])
+					.then((res) => {
 						expect(false).to.equal(res);
 					})
-					.catch(err => {
+					.catch((err) => {
 						expect(err).to.be.an.instanceOf(TypeError);
 						expect(err.message).to.equal(expected_error);
 					});
@@ -338,22 +360,25 @@ describe("GET operations", () => {
 		});
 
 		it("throws with random float parameter", (done) => {
-			base.search(
-				[
-					{
-						criteria: "includes",
-						field: "name",
-						value: "",
-					},
-				],
-				{ random: 2.5 }
-			).then(res => {
-				done(`got ${JSON.stringify(res)} value`);
-			}).catch(err => {
-				expect(err).to.be.an.instanceof(TypeError);
-				expect(err.message).to.equal("2.5 search option random must be a boolean or an integer");
-				done();
-			});
+			base
+				.search(
+					[
+						{
+							criteria: "includes",
+							field: "name",
+							value: "",
+						},
+					],
+					{ random: 2.5 },
+				)
+				.then((res) => {
+					done(`got ${JSON.stringify(res)} value`);
+				})
+				.catch((err) => {
+					expect(err).to.be.an.instanceof(TypeError);
+					expect(err.message).to.equal("2.5 search option random must be a boolean or an integer");
+					done();
+				});
 		});
 
 		[true, { random: true }].forEach((trueval) => {
@@ -378,28 +403,32 @@ describe("GET operations", () => {
 
 		it("Gives the same result for the same seed", (done) => {
 			const seed = Date.now();
-			const intents = new Array(20).fill(base.search(
-				[
+			const intents = new Array(20).fill(
+				base.search(
+					[
+						{
+							criteria: "includes",
+							field: "name",
+							value: "",
+						},
+					],
+					seed,
+				),
+			);
+			intents.push(
+				base.search(
+					[
+						{
+							criteria: "includes",
+							field: "name",
+							value: "",
+						},
+					],
 					{
-						criteria: "includes",
-						field: "name",
-						value: "",
+						random: seed,
 					},
-				],
-				seed,
-			));
-			intents.push(base.search(
-				[
-					{
-						criteria: "includes",
-						field: "name",
-						value: "",
-					},
-				],
-				{
-					random: seed,
-				},
-			))
+				),
+			);
 			Promise.all(intents)
 				.then((results) => {
 					for (let i = 1; i < results.length; ++i) {

@@ -148,8 +148,11 @@ describe("Basic instance operations", () => {
 
 	it("can't create a collection without function metohds", () => {
 		// @ts-ignore
-		expect(() => firestorm.collection("cars", "not a function")).to.throw(TypeError, "Collection add methods must be a function");
-	})
+		expect(() => firestorm.collection("cars", "not a function")).to.throw(
+			TypeError,
+			"Collection add methods must be a function",
+		);
+	});
 
 	after(() => {
 		firestorm.address(ADDRESS);

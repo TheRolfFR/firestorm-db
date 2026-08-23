@@ -162,14 +162,15 @@ class Collection {
 	 * @returns {Promise<T[]>} The found elements
 	 */
 	async search(filter, resultOptions = undefined) {
-		if (!Array.isArray(filter)) return Promise.reject(new TypeError("searchOptions shall be an array"));
+		if (!Array.isArray(filter))
+			return Promise.reject(new TypeError("searchOptions shall be an array"));
 		if (
 			resultOptions !== undefined &&
 			typeof resultOptions !== "number" &&
 			typeof resultOptions !== "boolean" &&
 			typeof resultOptions !== "object"
 		)
-			return Promise.reject(new TypeError("Incorrect search result options") );
+			return Promise.reject(new TypeError("Incorrect search result options"));
 
 		const { random = false, limit = undefined } = resultOptions || {};
 
@@ -177,9 +178,9 @@ class Collection {
 			limit !== undefined &&
 			(typeof limit !== "number" || limit <= 0 || !Number.isInteger(limit))
 		)
-			return Promise.reject(new TypeError(
-				`${JSON.stringify(limit)} search option limit must be a positive integer`,
-			));
+			return Promise.reject(
+				new TypeError(`${JSON.stringify(limit)} search option limit must be a positive integer`),
+			);
 
 		if (
 			random !== undefined &&
@@ -187,22 +188,26 @@ class Collection {
 			random !== true &&
 			(typeof random !== "number" || !Number.isInteger(random))
 		)
-			return Promise.reject(new TypeError(
-				`${JSON.stringify(random)} search option random must be a boolean or an integer`,
-			));
+			return Promise.reject(
+				new TypeError(
+					`${JSON.stringify(random)} search option random must be a boolean or an integer`,
+				),
+			);
 
-		for(let option of filter) {
+		for (let option of filter) {
 			if (option.field === undefined || option.criteria === undefined || option.value === undefined)
 				return Promise.reject(new TypeError("Missing fields in filter array"));
 
 			if (typeof option.field !== "string")
-				return Promise.reject(new TypeError(`"${JSON.stringify(option.field)}" filter field is not a string`));
+				return Promise.reject(
+					new TypeError(`"${JSON.stringify(option.field)}" filter field is not a string`),
+				);
 
 			if (option.criteria == "in" && !Array.isArray(option.value))
 				return Promise.reject(new TypeError("in takes an array of values"));
 
 			// TODO: add more strict value field warnings in JS and PHP
-		};
+		}
 
 		const params = {
 			search: filter,
