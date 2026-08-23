@@ -21,8 +21,8 @@ export const HOUSE_DATABASE_FILE = path.join(
 );
 
 export let firestorm_instance = firestorm.create({
-    token: TOKEN,
-    address: ADDRESS
+	token: TOKEN,
+	address: ADDRESS,
 });
 firestorm.address(ADDRESS);
 firestorm.token(TOKEN);

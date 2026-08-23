@@ -36,7 +36,7 @@ class Firestorm {
 	 * - All parameters are optional and can be edited using the name, address, and token fields
 	 * @param {FirestormCreationOption} [params] - Firestorm instance name, server address, and write token
 	 */
-    constructor({ name, address, token }) {
+	constructor({ name, address, token }) {
 		this._name = name;
 		if (address && !address.endsWith("/")) address += "/";
 		this._address = address;
@@ -87,7 +87,7 @@ class Firestorm {
 	set address(newValue) {
 		if (newValue && !newValue.endsWith("/")) newValue += "/";
 		this._address = newValue;
-    }
+	}
 
 	/**
 	 * Get the current version of Firestorm
@@ -103,7 +103,9 @@ class Firestorm {
 	 */
 	get serverVersion() {
 		if (!this.address)
-			return Promise.reject(Error(`Address for Firestorm instance "${this.name}" was not configured`));
+			return Promise.reject(
+				Error(`Address for Firestorm instance "${this.name}" was not configured`),
+			);
 
 		return extractRequest(
 			axios.get(`${this.address}version.php`, {
