@@ -4,11 +4,11 @@ import crypto from "crypto";
 import { expect } from "chai";
 
 import firestorm from "../src/index.js";
-import { base, content, resetDatabaseContent, ADDRESS, TOKEN } from "./tests.env.mjs";
+import { base, content, resetDefaultInstance, ADDRESS, TOKEN } from "./tests.env.mjs";
 import { request } from "http";
 
 describe("GET operations", () => {
-	before(async () => await resetDatabaseContent());
+	before(async () => await resetDefaultInstance());
 
 	describe("readRaw()", () => {
 		it("fails if table not found", (done) => {

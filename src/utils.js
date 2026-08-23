@@ -9,8 +9,6 @@ const axios = require("axios").default;
  * @returns {any} Mapped value
  */
 function applyAddMethods(collection, el, nested = true) {
-	// can't map falsy values
-	if (!el) return el;
 	if (Array.isArray(el)) return el.map((el) => collection.addMethods(el, collection));
 	// nested objects
 	if (nested && typeof el === "object") {
@@ -33,8 +31,7 @@ function applyAddMethods(collection, el, nested = true) {
 async function extractRequest(request) {
 	// does nothing if request is synchronous
 	const res = await request;
-	if ("data" in res) return res.data;
-	return res;
+	return res?.data;
 }
 
 /**
@@ -54,8 +51,7 @@ async function getData(collection, command, data = {}, objectLike = true) {
 	};
 	const request = axios.get(collection.__read_address, { data: obj });
 	const res = await extractRequest(request);
-	// reject php error strings if enforcing return type
-	if (objectLike && typeof res !== "object") throw res;
+
 	return res;
 }
 

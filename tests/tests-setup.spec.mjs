@@ -6,6 +6,7 @@ import firestorm from "../src/index.js";
 import { firestorm_instance, ADDRESS, TOKEN } from "./tests.env.mjs";
 import Collection from "../src/collection.js";
 import FirestormFiles from "../src/files.js";
+import { after } from "mocha";
 
 describe("Legacy with default instance", () => {
 	it("throws if no address yet", () => {
@@ -139,5 +140,10 @@ describe("Basic instance operations", () => {
 	it("can retrieve files for default instance", () => {
 		let files = firestorm.files;
 		expect(files).to.be.an.instanceof(FirestormFiles);
+	});
+
+	after(() => {
+		firestorm.address(ADDRESS);
+		firestorm.token(TOKEN);
 	});
 });
