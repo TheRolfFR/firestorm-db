@@ -142,6 +142,15 @@ describe("Basic instance operations", () => {
 		expect(files).to.be.an.instanceof(FirestormFiles);
 	});
 
+	it("can't create a collection without a name", () => {
+		expect(() => firestorm.collection("")).to.throw(SyntaxError, "Collection must have a name");
+	});
+
+	it("can't create a collection without function metohds", () => {
+		// @ts-ignore
+		expect(() => firestorm.collection("cars", "not a function")).to.throw(TypeError, "Collection add methods must be a function");
+	})
+
 	after(() => {
 		firestorm.address(ADDRESS);
 		firestorm.token(TOKEN);

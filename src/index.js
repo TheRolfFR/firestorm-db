@@ -191,7 +191,7 @@ const firestorm = {
 	 * @param {FirestormCreationOption} [params] - Firestorm instance name, server address, and write token
 	 * @returns {Firestorm} New Firestorm instance
 	 */
-	create: function (params = {}) {
+	create: function (params) {
 		return new Firestorm(params);
 	},
 

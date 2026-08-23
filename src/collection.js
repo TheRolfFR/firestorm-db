@@ -1,3 +1,5 @@
+// @ts-check
+
 const axios = require("axios").default;
 const { applyAddMethods, extractRequest, getData, createPostData } = require("./utils.js");
 
@@ -84,6 +86,7 @@ class Collection {
 	 * @param {string} name - Name of the collection
 	 * @param {AddMethods} [addMethods] - Additional methods and data to add to the objects
 	 */
+	/* istanbul ignore next */ // can't test el
 	constructor(instance, name, addMethods = (el) => el) {
 		this.instance = instance;
 		if (!name) throw new SyntaxError("Collection must have a name");
@@ -150,6 +153,8 @@ class Collection {
 		return applyAddMethods(this, arr);
 	}
 
+	/** @typedef {import('typings/collection.d.ts').SearchResultOptions} SearchResultOptions */
+
 	/**
 	 * Search through the collection
 	 * @param {SearchOption[]} filter - Array of search options
@@ -157,14 +162,14 @@ class Collection {
 	 * @returns {Promise<T[]>} The found elements
 	 */
 	async search(filter, resultOptions = undefined) {
-		if (!Array.isArray(filter)) throw new TypeError("searchOptions shall be an array");
+		if (!Array.isArray(filter)) return Promise.reject(new TypeError("searchOptions shall be an array"));
 		if (
 			resultOptions !== undefined &&
 			typeof resultOptions !== "number" &&
 			typeof resultOptions !== "boolean" &&
 			typeof resultOptions !== "object"
 		)
-			throw new TypeError("Incorrect search result options");
+			return Promise.reject(new TypeError("Incorrect search result options") );
 
 		const { random = false, limit = undefined } = resultOptions || {};
 
@@ -172,9 +177,9 @@ class Collection {
 			limit !== undefined &&
 			(typeof limit !== "number" || limit <= 0 || !Number.isInteger(limit))
 		)
-			throw new TypeError(
+			return Promise.reject(new TypeError(
 				`${JSON.stringify(limit)} search option limit must be a positive integer`,
-			);
+			));
 
 		if (
 			random !== undefined &&
@@ -182,22 +187,22 @@ class Collection {
 			random !== true &&
 			(typeof random !== "number" || !Number.isInteger(random))
 		)
-			throw new TypeError(
+			return Promise.reject(new TypeError(
 				`${JSON.stringify(random)} search option random must be a boolean or an integer`,
-			);
+			));
 
-		filter.forEach((option) => {
+		for(let option of filter) {
 			if (option.field === undefined || option.criteria === undefined || option.value === undefined)
-				throw new TypeError("Missing fields in filter array");
+				return Promise.reject(new TypeError("Missing fields in filter array"));
 
 			if (typeof option.field !== "string")
-				throw new TypeError(`${JSON.stringify(option)} filter field is not a string`);
+				return Promise.reject(new TypeError(`"${JSON.stringify(option.field)}" filter field is not a string`));
 
 			if (option.criteria == "in" && !Array.isArray(option.value))
-				throw new TypeError("in takes an array of values");
+				return Promise.reject(new TypeError("in takes an array of values"));
 
 			// TODO: add more strict value field warnings in JS and PHP
-		});
+		};
 
 		const params = {
 			search: filter,
@@ -209,9 +214,6 @@ class Collection {
 			params.random = parseInt(random);
 			if (random === true) {
 				params.random = {};
-			} else {
-				const seed = parseInt(random);
-				params.random = { seed };
 			}
 		}
 
