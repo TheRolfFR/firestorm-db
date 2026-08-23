@@ -8,7 +8,10 @@ import Collection from "../src/collection.js";
 import FirestormFiles from "../src/files.js";
 
 describe("Legacy with default instance", () => {
-	it("throws if no address yet", () => {
+    it("throws if no address yet", () => {
+        // @ts-ignore
+        firestorm.__default_instance.address = undefined;
+
 		expect(firestorm.address).to.throw(Error, "Firestorm address was not configured");
 	});
 
@@ -19,13 +22,11 @@ describe("Legacy with default instance", () => {
 		expect(actual).to.equal(ADDRESS, "Incorrect address bind");
 	});
 
-	it("throws if no token yet", (done) => {
-		try {
-			let res = firestorm.token();
-			done("token get operation should fail, got " + res);
-		} catch (e) {
-			done();
-		}
+    it("throws if no token yet", () => {
+        // @ts-ignore
+        firestorm.__default_instance.token = undefined;
+
+        expect(firestorm.token).to.throw(Error, "Firestorm token was not configured");
 	});
 
 	it("binds usable token", () => {

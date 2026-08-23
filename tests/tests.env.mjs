@@ -20,7 +20,12 @@ export const HOUSE_DATABASE_FILE = path.join(
 	`${HOUSE_DATABASE_NAME}.json`,
 );
 
-export let firestorm_instance = firestorm.create();
+export let firestorm_instance = firestorm.create({
+    token: TOKEN,
+    address: ADDRESS
+});
+firestorm.address(ADDRESS);
+firestorm.token(TOKEN);
 export let base = firestorm.collection(DATABASE_NAME);
 export let houseCollection = firestorm.collection(HOUSE_DATABASE_NAME);
 

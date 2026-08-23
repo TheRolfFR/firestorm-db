@@ -234,7 +234,6 @@ describe("POST operations", () => {
 						done();
 					})
 					.catch((err) => {
-						console.error(err);
 						done(err);
 					});
 			});
@@ -412,7 +411,6 @@ describe("POST operations", () => {
 						.set(value, tmp)
 						.then(() => done())
 						.catch((err) => {
-							if ("response" in err) console.error(err.response.data);
 							done(new Error(err));
 						});
 				});
