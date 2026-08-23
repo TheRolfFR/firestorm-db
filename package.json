@@ -17,7 +17,9 @@
     "doc:watch": "nodemon -x pnpm doc:gen --watch src/index.js --watch jsdoc.json --watch README.md",
     "types:gen": "npx tsc",
     "lint:write": "prettier \"{,!(node_modules)/**/}*.{cjs,mjs,js,ts}\" --config .prettierrc --write",
-    "lint:check": "prettier \"{,!(node_modules)/**/}*.{cjs,mjs,js,ts}\" --config .prettierrc --check"
+    "lint:check": "prettier \"{,!(node_modules)/**/}*.{cjs,mjs,js,ts}\" --config .prettierrc --check",
+    "nyc": "nyc",
+    "mocha": "mocha"
   },
   "repository": {
     "type": "git",

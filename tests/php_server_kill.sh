@@ -2,6 +2,6 @@
 if ! command -v killall > /dev/null 2>&1
 then
     echo "killall not found, server kill skipped"
-    exit
+    exit 0
 fi
-killall php > /dev/null 2>&1
+killall php > /dev/null 2>&1 ; exit 0
