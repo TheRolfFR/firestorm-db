@@ -342,7 +342,6 @@ class Collection {
 		const res = await extractRequest(
 			axios.post(this.__write_address, createPostData(this, "add", value)),
 		);
-		if (typeof res !== "object" || !("id" in res) || typeof res.id !== "string") throw res;
 		return res.id;
 	}
 
@@ -409,7 +408,7 @@ class Collection {
 	 * @returns {Promise<WriteConfirmation>} Edit confirmation
 	 */
 	editField(option) {
-		const data = createPostData(this, "editField", option, null);
+		const data = createPostData(this, "editField", option, undefined);
 		return extractRequest(axios.post(this.__write_address, data));
 	}
 
