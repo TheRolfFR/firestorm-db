@@ -2,7 +2,7 @@
 
 class HTTPException extends Exception {
     // custom message
-    public function __construct($message, $code = 400, Throwable $previous = null) {
+    public function __construct($message, $code = 400, ?Throwable $previous = null) {
         $type_message = gettype($message);
 
         if ($type_message != 'string')
