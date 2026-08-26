@@ -4,13 +4,13 @@
 class FileObject {
     /** File path */
     public string $filepath;
-    /** 
+    /**
      * File content as string or JSON
      * @var string|array $content
      */
     public $content = ''; // @phpstan-ignore missingType.iterableValue
-    /** 
-     * OS file descriptor (resource) has no hint possible 
+    /**
+     * OS file descriptor (resource) has no hint possible
      * @var resource $fd
      * */
     public $fd;

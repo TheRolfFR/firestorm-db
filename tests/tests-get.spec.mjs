@@ -4,11 +4,11 @@ import crypto from "crypto";
 import { expect } from "chai";
 
 import firestorm from "../src/index.js";
-import { base, content, resetDatabaseContent, ADDRESS, TOKEN } from "./tests.env.mjs";
+import { base, content, resetDefaultInstance, ADDRESS, TOKEN } from "./tests.env.mjs";
 import { request } from "http";
 
 describe("GET operations", () => {
-	before(async () => await resetDatabaseContent());
+	before(async () => await resetDefaultInstance());
 
 	describe("readRaw()", () => {
 		it("fails if table not found", (done) => {
@@ -140,6 +140,70 @@ describe("GET operations", () => {
 	});
 
 	describe("search(searchOptions)", () => {
+		it("accepts only arrays as parameter", (done) => {
+			// @ts-ignore
+			base
+				.search("hello")
+				.then((res) => {
+					done(`got ${JSON.stringify(res)} value`);
+				})
+				.catch((err) => {
+					expect(err).to.be.an.instanceOf(TypeError);
+					expect(err.message).to.equal("searchOptions shall be an array");
+					done();
+				});
+		});
+
+		/**
+		 * @typedef {import("../src/collection.js").SearchOption} SearchOption
+		 * @type {Readonly<[string, SearchOption, string]>[]}
+		 */
+		const filterTypeArray = [
+			// @ts-ignore
+			[
+				"no field",
+				{ field: undefined, criteria: "==", value: 16 },
+				"Missing fields in filter array",
+			],
+			// @ts-ignore
+			[
+				"no criteria",
+				{ field: "age", criteria: undefined, value: 16 },
+				"Missing fields in filter array",
+			],
+			// @ts-ignore
+			[
+				"no value",
+				{ field: "age", criteria: "==", value: undefined },
+				"Missing fields in filter array",
+			],
+			// @ts-ignore
+			[
+				"field not string",
+				{ field: 5, criteria: "==", value: 16 },
+				'"5" filter field is not a string',
+			],
+			// @ts-ignore
+			[
+				"in need array",
+				{ field: "age", criteria: "in", value: "5" },
+				"in takes an array of values",
+			],
+		];
+		for (let [id, search_option, expected_error] of filterTypeArray) {
+			it("must have correct field types [" + id + "]", async () => {
+				return base
+					.search([search_option])
+					.then((res) => {
+						expect(false).to.equal(res);
+					})
+					.catch((err) => {
+						expect(err).to.be.an.instanceOf(TypeError);
+						expect(err.message).to.equal(expected_error);
+					});
+			});
+		}
+
 		/**
 		 * @typedef {import("../src/collection.js").SearchOption["criteria"]} Criteria
 		 * @type {Readonly<[Criteria, string, any, string[], boolean?]>[]}
@@ -295,6 +359,28 @@ describe("GET operations", () => {
 			});
 		});
 
+		it("throws with random float parameter", (done) => {
+			base
+				.search(
+					[
+						{
+							criteria: "includes",
+							field: "name",
+							value: "",
+						},
+					],
+					{ random: 2.5 },
+				)
+				.then((res) => {
+					done(`got ${JSON.stringify(res)} value`);
+				})
+				.catch((err) => {
+					expect(err).to.be.an.instanceof(TypeError);
+					expect(err.message).to.equal("2.5 search option random must be a boolean or an integer");
+					done();
+				});
+		});
+
 		[true, { random: true }].forEach((trueval) => {
 			it(`${JSON.stringify(trueval)} seed succeeds`, (done) => {
 				base
@@ -317,21 +403,33 @@ describe("GET operations", () => {
 
 		it("Gives the same result for the same seed", (done) => {
 			const seed = Date.now();
-			const intents = new Array(20);
-			Promise.all(
-				intents.map((e) => {
-					return base.search(
-						[
-							{
-								criteria: "includes",
-								field: "name",
-								value: "",
-							},
-						],
-						seed,
-					);
-				}),
-			)
+			const intents = new Array(20).fill(
+				base.search(
+					[
+						{
+							criteria: "includes",
+							field: "name",
+							value: "",
+						},
+					],
+					seed,
+				),
+			);
+			intents.push(
+				base.search(
+					[
+						{
+							criteria: "includes",
+							field: "name",
+							value: "",
+						},
+					],
+					{
+						random: seed,
+					},
+				),
+			);
+			Promise.all(intents)
 				.then((results) => {
 					for (let i = 1; i < results.length; ++i) {
 						expect(results[0]).to.be.deep.equal(results[i], "Same seed gave different results");
@@ -339,6 +437,7 @@ describe("GET operations", () => {
 					done();
 				})
 				.catch((err) => {
+					console.error(err);
 					done("Should not reject with error " + JSON.stringify(err));
 				});
 		});

@@ -36,10 +36,11 @@ class Firestorm {
 	 * - All parameters are optional and can be edited using the name, address, and token fields
 	 * @param {FirestormCreationOption} [params] - Firestorm instance name, server address, and write token
 	 */
-	constructor({ name, address, token } = {}) {
-		this.name = name;
-		this.address = address;
-		this.token = token;
+	constructor({ name, address, token }) {
+		this._name = name;
+		if (address && !address.endsWith("/")) address += "/";
+		this._address = address;
+		this._token = token;
 		this.files = new FirestormFiles(this);
 	}
 
@@ -50,6 +51,7 @@ class Firestorm {
 	 * @param {Function} [addMethods] - Additional methods and data to add to the objects
 	 * @returns {Collection<T>} The collection instance
 	 */
+	/* istanbul ignore next */ // can't test el
 	collection(name, addMethods = (el) => el) {
 		return new Collection(this, name, addMethods);
 	}
@@ -66,11 +68,6 @@ class Firestorm {
 		this._name = String(newValue);
 	}
 
-	name(newValue) {
-		this.name = newValue;
-		return this.name;
-	}
-
 	/** @type {string} */
 	get token() {
 		return this._token;
@@ -79,11 +76,6 @@ class Firestorm {
 	/** @ignore */
 	set token(newValue) {
 		this._token = newValue;
-	}
-
-	token(newValue) {
-		this.token = newValue;
-		return this.token;
 	}
 
 	/** @type {string} */
@@ -95,11 +87,6 @@ class Firestorm {
 	set address(newValue) {
 		if (newValue && !newValue.endsWith("/")) newValue += "/";
 		this._address = newValue;
-	}
-
-	address(newValue) {
-		this.address = newValue;
-		return this.address;
 	}
 
 	/**
@@ -116,7 +103,9 @@ class Firestorm {
 	 */
 	get serverVersion() {
 		if (!this.address)
-			throw new Error(`Address for Firestorm instance "${this.instance.name}" was not configured`);
+			return Promise.reject(
+				Error(`Address for Firestorm instance "${this.name}" was not configured`),
+			);
 
 		return extractRequest(
 			axios.get(`${this.address}version.php`, {
@@ -155,10 +144,9 @@ const firestorm = {
 		if (newValue === undefined && current_address === undefined)
 			throw new Error("Firestorm address was not configured");
 
-		if (newValue !== undefined && !newValue.endsWith("/")) newValue += "/";
 		if (newValue !== undefined) firestorm.__default_instance.address = newValue;
 
-		return firestorm.__default_instance.collection("_").__read_address;
+		return firestorm.__default_instance.address;
 	},
 
 	/**
@@ -181,6 +169,7 @@ const firestorm = {
 	 * @param {Function} [addMethods] - Additional methods and data to add to the objects
 	 * @returns {Collection<T>} The collection instance
 	 */
+	/* istanbul ignore next */ // can't test el
 	collection(name, addMethods = (el) => el) {
 		return firestorm.__default_instance.collection(name, addMethods);
 	},
@@ -202,7 +191,7 @@ const firestorm = {
 	 * @param {FirestormCreationOption} [params] - Firestorm instance name, server address, and write token
 	 * @returns {Firestorm} New Firestorm instance
 	 */
-	create: function (params = {}) {
+	create: function (params) {
 		return new Firestorm(params);
 	},
 

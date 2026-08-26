@@ -3,7 +3,7 @@
 import { expect } from "chai";
 
 import firestorm from "../src/index.js";
-import { base, content, houseCollection, resetDatabaseContent, TOKEN } from "./tests.env.mjs";
+import { base, content, houseCollection, resetDefaultInstance, TOKEN } from "./tests.env.mjs";
 
 /** @type any */
 let tmp;
@@ -234,7 +234,6 @@ describe("POST operations", () => {
 						done();
 					})
 					.catch((err) => {
-						console.error(err);
 						done(err);
 					});
 			});
@@ -412,7 +411,6 @@ describe("POST operations", () => {
 						.set(value, tmp)
 						.then(() => done())
 						.catch((err) => {
-							if ("response" in err) console.error(err.response.data);
 							done(new Error(err));
 						});
 				});
@@ -573,7 +571,7 @@ describe("POST operations", () => {
 
 	describe("editField operations", () => {
 		before(async () => {
-			await resetDatabaseContent();
+			await resetDefaultInstance();
 		});
 
 		it("Rejects with unknown operation", (done) => {
@@ -703,4 +701,140 @@ describe("POST operations", () => {
 			});
 		});
 	});
+
+	describe("editFIeldBulk operations", () => {
+		before(async () => {
+			await resetDefaultInstance();
+		});
+
+		it("Rejects with unknown operation", (done) => {
+			base
+				.editFieldBulk([{
+					id: "2",
+					// @ts-expect-error: we're testing incorrect values
+					operation: "smile",
+					field: "name",
+				}])
+				.then((res) => done(new Error("Should not fulfill with " + JSON.stringify(res))))
+				.catch((err) => {
+					if ("response" in err && err.response.status == 400) return done();
+					done(new Error(`Should return 400 not ${JSON.stringify(err)}`));
+				});
+		});
+
+		describe("Edits the correct values", () => {
+			// field, operation, value, expected
+			/**
+			 * @typedef {import("../typings/index.js").EditFieldOption<any>["operation"]} operation
+			 * @type {ReadonlyArray<[string, operation, any, any]>}
+			 */
+			const testArray = [
+				["name", "set", "new name", "new name"],
+				["name", "append", " yes", "new name yes"],
+				["name", "remove", undefined, undefined],
+				["amazing", "invert", undefined, false],
+				["age", "increment", undefined, 46],
+				["age", "increment", 3, 49],
+				["age", "decrement", undefined, 48],
+				["age", "decrement", 3, 45],
+				["friends", "array-push", "Bob", ["Dwight", "Bob"]],
+				["qualities", "array-delete", 2, ["pretty", "wild"]],
+			];
+			const testOperations = testArray.map(([field, operation, value, _]) => ({
+				id: 2,
+				field,
+				operation,
+				value: value
+			}));
+			const expectedResult = {
+				amazing: false,
+				age: 45,
+				fiends: ["Dwight", "Bob"],
+				qualities: ["pretty", "wild"],
+			};
+
+			it(`Basic field operations shall succeed`, (done) => {
+				base
+					.editFieldBulk(testOperations)
+					.then((res) => {
+						expect(res).to.deep.equal(
+							{ message: "Successful editField command" },
+							"Should not fail",
+						);
+						return base.get(2);
+					})
+					.then((res) => {
+						expect(res).to.deep.equal(expectedResult, "Should be the new set values");
+						done();
+					})
+					.catch(done);
+			});
+		});
+
+		describe("Reject with incorrect values", () => {
+			const incorrectValues = [undefined, null, false, 16, 0.5, "", "gg", [], {}];
+
+			incorrectValues.forEach((incor) => {
+				it(`'${JSON.stringify(incor)}' value rejects`, (done) => {
+					base
+						// @ts-expect-error: we're testing incorrect values
+						.editFieldBulk(incor)
+						.then((res) => done(new Error("Should not fulfill with " + JSON.stringify(res))))
+						.catch((err) => {
+							if ("response" in err && err.response.status == 400) return done();
+							done(new Error(`Should return 400 not ${JSON.stringify(err)}`));
+						});
+				});
+			});
+		});
+
+		describe("Rejects with missing arguments", () => {
+			const args = [
+				["id", "2"],
+				["field", "name"],
+				["operation", "set"],
+			];
+
+			for (let i = 0; i < args.length; ++i) {
+				const obj = {};
+				args.slice(0, i + 1).forEach((el) => {
+					obj[el[0]] = el[1];
+				});
+
+				it(`${i + 1} args is not enough`, (done) => {
+					base
+						// @ts-expect-error: we're testing incorrect values
+						.editFieldBulk([obj])
+						.then((res) => done(new Error("Should not fulfill with " + JSON.stringify(res))))
+						.catch((err) => {
+							if ("response" in err && err.response.status == 400) return done();
+							done(new Error(`Should return 400 not ${JSON.stringify(err)}`));
+						});
+				});
+			}
+		});
+
+		describe("Rejects operations with value required", () => {
+			/**
+			 * @type {ReadonlyArray<import("../typings/index.js").EditFieldOption<any>["operation"]>}
+			 */
+			const arr = ["set", "append", "array-push", "array-delete", "array-splice"];
+
+			arr.forEach((op) => {
+				it(`${op} operation needs a value`, (done) => {
+					base
+						.editFieldBulk([{
+							id: "2",
+							operation: op,
+							field: "name",
+						}])
+						.then((res) => done(new Error("Should not fulfill with " + JSON.stringify(res))))
+						.catch((err) => {
+							if ("response" in err && err.response.status == 400) return done();
+							done(new Error(`Should return 400 not ${JSON.stringify(err)}`));
+						});
+				});
+			});
+		});
+	})
 });

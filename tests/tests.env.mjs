@@ -20,14 +20,23 @@ export const HOUSE_DATABASE_FILE = path.join(
 	`${HOUSE_DATABASE_NAME}.json`,
 );
 
-export let firestorm_instance = firestorm.create();
+export let firestorm_instance = firestorm.create({
+	token: TOKEN,
+	address: ADDRESS,
+});
+firestorm.address(ADDRESS);
+firestorm.token(TOKEN);
 export let base = firestorm.collection(DATABASE_NAME);
 export let houseCollection = firestorm.collection(HOUSE_DATABASE_NAME);
 
 export const rawContent = fs.readFileSync(DATABASE_FILE).toString();
 export const content = JSON.parse(rawContent);
 
-export const resetDatabaseContent = async () => {
+export const resetDefaultInstance = async () => {
+	// reset address and token
+	firestorm.address(ADDRESS);
+	firestorm.token(TOKEN);
+
 	// reset the content of the database
 	await base.writeRaw(content).catch((err) => console.error(err));
 
