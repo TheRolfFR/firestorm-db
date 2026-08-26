@@ -1,5 +1,3 @@
-// @ts-check
-
 const axios = require("axios").default;
 const { applyAddMethods, extractRequest, getData, createPostData } = require("./utils.js");
 
