@@ -1,31 +1,31 @@
-name: Documentation
+name: Documentation Publish
 
 on:
   push:
-    branches: [ main ]
+    branches: [main]
+
+permissions:
+  contents: write
 
 jobs:
+  build:
+    name: Build Documentation
+    uses: ./.github/workflows/docs-build.yml
+
   deploy:
     name: Publish on GitHub Pages
+    needs: build
     runs-on: ubuntu-latest
+
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Build
-        uses: andstor/jsdoc-action@v1
+      - name: Download documentation
+        uses: actions/download-artifact@v8
         with:
-          source_dir: ./src/index.js
-          output_dir: ./out
-          config_file: ./jsdoc.json
-          template: docdash
-          front_page: README.md
-
-      - name: Copy images
-        run: cp -r ./img ./out/img/
+          name: documentation
+          path: ./docs
 
       - name: Deploy
         uses: peaceiris/actions-gh-pages@v4
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./out
+          publish_dir: ./docs

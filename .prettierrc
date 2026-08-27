@@ -6,5 +6,5 @@
     "useTabs": true,
     "bracketSpacing": true,
     "arrowParens": "always",
-    "parser": "typescript"
+    "endOfLine": "lf"
 }
