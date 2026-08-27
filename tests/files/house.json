@@ -1,17 +1,17 @@
 {
-  "living_room": {
-    "name": "Living Room",
-    "outdoor": false,
-    "furniture": ["table", "chairs", "sofa", "vase", "curtains"]
-  },
-  "kitchen": {
-    "name": "Kitchen",
-    "outdoor": false,
-    "furniture": ["table", "chairs", "fridge", "oven", "freezer", "microwaves", "dishwasher"]
-  },
-  "bedroom": {
-    "name": "Bedroom",
-    "outdoor": false,
-    "furniture": ["bed", "desk", "chair", "wardrobe"]
-  }
+	"living_room": {
+		"name": "Living Room",
+		"outdoor": false,
+		"furniture": ["table", "chairs", "sofa", "vase", "curtains"]
+	},
+	"kitchen": {
+		"name": "Kitchen",
+		"outdoor": false,
+		"furniture": ["table", "chairs", "fridge", "oven", "freezer", "microwaves", "dishwasher"]
+	},
+	"bedroom": {
+		"name": "Bedroom",
+		"outdoor": false,
+		"furniture": ["bed", "desk", "chair", "wardrobe"]
+	}
 }

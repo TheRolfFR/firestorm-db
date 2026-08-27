@@ -1,0 +1,6 @@
+{
+	"theme": "dark",
+	"version": 1,
+	"active": true,
+	"features": ["a", "b"]
+}

@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Firestorm Browser In-Browser Test Suite</title>
+	<style>
+		body {
+			font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+			margin: 2rem;
+			background: #f7f9fa;
+			color: #333;
+		}
+		.container {
+			max-width: 800px;
+			margin: 0 auto;
+			background: #fff;
+			padding: 2rem;
+			border-radius: 8px;
+			box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+		}
+		h1 {
+			margin-top: 0;
+			color: #e65100;
+		}
+		.config {
+			display: grid;
+			grid-template-columns: 1fr 1fr;
+			gap: 1rem;
+			margin-bottom: 1.5rem;
+		}
+		label {
+			font-weight: bold;
+			display: block;
+			margin-bottom: 0.25rem;
+		}
+		input {
+			width: 100%;
+			padding: 0.5rem;
+			box-sizing: border-box;
+			border: 1px solid #ccc;
+			border-radius: 4px;
+		}
+		button {
+			background: #e65100;
+			color: #fff;
+			border: none;
+			padding: 0.75rem 1.5rem;
+			font-size: 1rem;
+			border-radius: 4px;
+			cursor: pointer;
+		}
+		button:hover {
+			background: #f57c00;
+		}
+		#results {
+			margin-top: 1.5rem;
+			border-top: 1px solid #eee;
+			padding-top: 1rem;
+		}
+		.test-item {
+			padding: 0.5rem;
+			margin-bottom: 0.5rem;
+			border-radius: 4px;
+			display: flex;
+			justify-content: space-between;
+		}
+		.pass {
+			background: #e8f5e9;
+			color: #2e7d32;
+		}
+		.fail {
+			background: #ffebee;
+			color: #c62828;
+		}
+	</style>
+</head>
+<body>
+	<div class="container">
+		<h1>Firestorm In-Browser Test Suite</h1>
+		<p>Runs client test suite directly in real browser runtime.</p>
+		<div class="config">
+			<div>
+				<label for="address">Server Address:</label>
+				<input id="address" type="text" value="http://127.0.0.1:8000/">
+			</div>
+			<div>
+				<label for="token">Write Token:</label>
+				<input id="token" type="text" value="NeverGonnaGiveYouUp">
+			</div>
+		</div>
+		<button id="run-btn">Run In-Browser Tests</button>
+		<div id="results"></div>
+	</div>
+
+	<script type="module">
+		import { createFirestorm, Firestorm } from "../../dist/esm/index.js";
+
+		const resultsEl = document.getElementById("results");
+		const runBtn = document.getElementById("run-btn");
+
+		function logResult(name, passed, message = "") {
+			const div = document.createElement("div");
+			div.className = `test-item ${passed ? "pass" : "fail"}`;
+			div.innerHTML = `<span>${passed ? "✔" : "✖"} ${name}</span><span>${message}</span>`;
+			resultsEl.appendChild(div);
+		}
+
+		async function runTests() {
+			resultsEl.innerHTML = "<h3>Running tests...</h3>";
+			const address = document.getElementById("address").value;
+			const token = document.getElementById("token").value;
+
+			const instance = createFirestorm({ address, token });
+
+			try {
+				const isCompatible = await instance.isCompatibleAddress();
+				logResult("Server compatibility check", isCompatible, `Compatible: ${isCompatible}`);
+			} catch (err) {
+				logResult("Server compatibility check", false, err.message);
+			}
+
+			try {
+				const col = instance.collection({ name: "browser_test_col" });
+				const key = await col.add({ title: "In-Browser Test", timestamp: Date.now() });
+				const item = await col.get(key);
+				const matched = item.title === "In-Browser Test";
+				await col.remove(key);
+				logResult("Collection CRUD in Browser", matched, `Added & Retrieved key: ${key}`);
+			} catch (err) {
+				logResult("Collection CRUD in Browser", false, err.message);
+			}
+
+			try {
+				const doc = instance.document({ name: "browser_test_doc" });
+				await doc.set("browserStatus", "active");
+				const status = await doc.get("browserStatus");
+				logResult("Document CRUD in Browser", status === "active", `Status: ${status}`);
+			} catch (err) {
+				logResult("Document CRUD in Browser", false, err.message);
+			}
+
+			try {
+				const blob = new Blob(["Browser File Content"], { type: "text/plain" });
+				const form = new FormData();
+				form.append("path", "browser_ui_test.txt");
+				form.append("file", blob, "browser_ui_test.txt");
+				await instance.files.upload(form);
+				const content = await instance.files.get("browser_ui_test.txt");
+				await instance.files.delete("browser_ui_test.txt");
+				logResult("Files Manager via Blob/FormData", content === "Browser File Content", "Upload/Get/Delete success");
+			} catch (err) {
+				logResult("Files Manager via Blob/FormData", false, err.message);
+			}
+		}
+
+		runBtn.addEventListener("click", runTests);
+	</script>
+</body>
+</html>
