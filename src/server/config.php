@@ -23,17 +23,27 @@ $db->autoKey = true;
 // - Ignored if autoKey is false
 // - Default: true
 $db->autoIncrement = true;
+// Whether to use cryptographically secure random keys instead of timestamp-based uniqid
+// - Ignored if autoIncrement is true or autoKey is false
+// - Default: false
+$db->secureKeys = false;
 // The database_list key is what the collection will be called in JavaScript
 $database_list['my_collection_name'] = $db;
 
-// This can be simplified into the following constructor:
+// This can be simplified using constructor arguments or PHP 8 named arguments:
 // - Note: all of these arguments are optional and will fall back to their defaults if not provided
-// - Order: (fileName, autoKey, autoIncrement)
-$database_list['my_collection_name'] = new JSONDatabase('my_json_name', true, true);
+// - Order: (fileName, autoKey, autoIncrement, secureKeys, folderPath, fileExt)
+$database_list['my_collection_name'] = new JSONDatabase('my_json_name', true, true, false);
+// Example with named arguments:
+// $database_list['secure_collection'] = new JSONDatabase(
+//     fileName: 'secure_data',
+//     autoIncrement: false,
+//     secureKeys: true
+// );
 
 /**
  * File handling:
- * If you don't need this functionality, delete this section and files.php.
+ * If you don't need this functionality, delete this section, files.php and files_api/*.php files.
  */
 
 // Extension whitelist

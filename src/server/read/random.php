@@ -1,11 +1,19 @@
 <?php
 
-function make_seed() {
+/** Generates a time-derived seed for callers that need a non-repeatable selection order. */
+function make_seed(): int {
     [$usec, $sec] = explode(' ', microtime());
-    return intval($sec . str_repeat($usec,1000000));
+    return (int) ($sec . substr((string) intval((float) $usec * 1000000), 0, 6));
 }
 
-function choose_random($json, $seed = false, $max = -1, $offset = 0) {
+/**
+ * Selects distinct entries by key, with optional deterministic ordering, limit, and skipped selections.
+ *
+ * @param array<mixed> $json
+ * @return array<mixed>
+ * @param int|false $seed
+ */
+function choose_random(array $json, $seed = false, int $max = -1, int $offset = 0): array {
     $keys = array_keys($json);
     $keys_selected = [];
     $keys_length = count($keys);

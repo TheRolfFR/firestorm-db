@@ -3,15 +3,15 @@ require_once './utils.php';
 
 cors();
 
-// display all errors
-ini_set('display_errors', '1');
-ini_set('display_startup_errors', '1');
+// hide error display from client responses
+ini_set('display_errors', '0');
+ini_set('display_startup_errors', '0');
 error_reporting(E_ALL);
 
 // import useful functions
 require_once './log.php';
 
-$method = sec($_SERVER['REQUEST_METHOD']);
+$method = $_SERVER['REQUEST_METHOD'] ?? '';
 if ($method !== 'GET' && $method !== 'POST') {
     http_error(400, "Incorrect request type, expected GET or POST, not $method");
 }
@@ -34,6 +34,8 @@ require_once './config.php';
 // HTTPExceptions get properly handled in the catch
 try {
 
+    /** @var array<string, JSONDatabase> $database_list */
+
     // checking good collection
     if (!array_key_exists($collection, $database_list))
         http_error(404, "Collection not found: $collection");
@@ -48,7 +50,6 @@ try {
         http_error(400, 'No command provided');
 
     $available_commands = [
-        'read_raw',
         'readRaw',
         'get',
         'search',
@@ -68,73 +69,73 @@ try {
             http_response($res);
             break;
         case 'readRaw':
-        case 'read_raw':
             $res = $db->readRaw();
-            $res = $res->content;
-            http_response($res);
+            http_response($res->content);
             break;
         case 'get':
-            $id = check_key_json('id', $inputJSON);
-
-            // strict compare to include 0 or "0" ids
-            if ($id === false)
+            if (!array_key_exists('id', $inputJSON))
                 http_error(400, 'No id provided');
 
+            $id = $inputJSON['id'];
+
             $result = $db->get($id);
-            if (!$result)
+            if ($result === null)
                 http_error(404, "get failed on collection $collection with key $id");
 
-            http_response(stringifier($result));
+            http_response_stringified($result);
             break;
         case 'search':
-            $search = check_key_json('search', $inputJSON, false);
-            $random = check_key_json('random', $inputJSON, false);
-            $limit = check_key_json('limit', $inputJSON, false);
+            $search = check_key_json('search', $inputJSON);
+            $random = check_key_json('random', $inputJSON);
+            $limit = check_key_json('limit', $inputJSON);
 
             if (!$search)
                 http_error(400, 'No search provided');
 
             $result = $db->search($search, $random, $limit);
 
-            http_response(stringifier($result));
+            http_response_stringified($result);
             break;
         case 'searchKeys':
-            $search = check_key_json('search', $inputJSON, false);
+            $search = check_key_json('search', $inputJSON);
 
             if (!$search)
                 http_error(400, 'No search provided');
 
             $result = $db->searchKeys($search);
 
-            http_response(stringifier($result));
+            http_response_stringified($result);
             break;
         case 'select':
-            $select = check_key_json('select', $inputJSON, false);
+            $select = check_key_json('select', $inputJSON);
 
             if ($select === false)
-                http_error('400', 'No select provided');
+                http_error(400, 'No select provided');
 
             $result = $db->select($select);
-            http_response(stringifier($result));
+            http_response_stringified($result);
+            break;
         case 'values':
-            $values = check_key_json('values', $inputJSON, false);
+            $values = check_key_json('values', $inputJSON);
 
             if ($values === false)
-                http_error('400', 'No key provided');
+                http_error(400, 'No key provided');
 
             $result = $db->values($values);
-            http_response(stringifier($result));
+            http_response_stringified($result);
+            break;
         case 'random':
-            $params = check_key_json('random', $inputJSON, false);
+            $params = check_key_json('random', $inputJSON);
             if ($params === false)
-                http_error('400', 'No random object provided');
+                http_error(400, 'No random object provided');
 
-            http_response(stringifier($db->random($params)));
+            http_response_stringified($db->random($params));
+            break;
         default:
             break;
     }
 
-    http_message(400, 'Bad request');
+    http_error(400, 'Bad request');
 
 } catch (HTTPException $e) {
     http_error($e->getCode(), $e->getMessage());

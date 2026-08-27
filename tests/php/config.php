@@ -11,7 +11,9 @@ $STORAGE_LOCATION = dirname($_SERVER['SCRIPT_FILENAME']) . '/uploads/';
 
 $database_list = [
 	// test with constructor/optional args
-	"house" => new JSONDatabase('house', false)
+	"house" => new JSONDatabase('house', false),
+	"random_keys" => new JSONDatabase('random_keys', true, false, false),
+	"secure_keys" => new JSONDatabase('secure_keys', true, false, true),
 ];
 
 // test without constructor
@@ -21,5 +23,8 @@ $tmp->autoKey = true;
 $tmp->autoIncrement = true;
 
 $database_list[$tmp->fileName] = $tmp;
+
+$settingsDoc = new JSONDatabase('settings', false);
+$database_list['settings'] = $settingsDoc;
 
 $log_path = 'firestorm.log';

@@ -6,7 +6,7 @@ require_once './utils.php';
 
 cors();
 
-$method = sec($_SERVER['REQUEST_METHOD']);
+$method = $_SERVER['REQUEST_METHOD'] ?? '';
 if ($method === 'GET') {
     http_error(400, "Incorrect request type, expected POST, not $method");
 }
@@ -26,11 +26,12 @@ if (file_exists('./tokens.php') == false)
 // add tokens
 require_once './tokens.php';
 
+/** @var array<string>|null $db_tokens */
 if (!$db_tokens)
     http_error(400, 'Developer is dumb and forgot to create tokens');
 
 // verifying token
-if (!in_array($token, $db_tokens))
+if (!verify_token($token, $db_tokens))
     http_error(403, 'Invalid token');
 
 $collection = check_key_json('collection', $inputJSON);
@@ -42,6 +43,8 @@ if (file_exists('./config.php') == false)
 
 // import db config
 require_once './config.php';
+
+/** @var array<string, JSONDatabase> $database_list */
 
 // HTTPExceptions get properly handled in the catch
 try {
@@ -57,7 +60,6 @@ try {
         http_error(400, 'No command provided');
 
     $available_commands = [
-        'write_raw',
         'writeRaw',
         'add',
         'addBulk',
@@ -72,14 +74,14 @@ try {
     if (!in_array($command, $available_commands))
         http_error(404, "Command not found: $command. Available commands: " . join(', ', $available_commands));
 
-    $valueKeyName = ($command != 'setBulk' && $command != 'addBulk') ? 'value' : 'values';
-    $value = check_key_json($valueKeyName, $inputJSON, false);
-
-    if ($value === false)
+    $isBulk = in_array($command, ['setBulk', 'addBulk', 'removeBulk', 'editFieldBulk']);
+    $valueKeyName = $isBulk ? 'values' : 'value';
+    if (!array_key_exists($valueKeyName, $inputJSON))
         http_error(400, "No $valueKeyName provided");
 
+    $value = $inputJSON[$valueKeyName];
+
     switch ($command) {
-        case 'write_raw':
         case 'writeRaw':
             $db->writeRaw($value);
             http_success("Successful $command command");
@@ -101,26 +103,23 @@ try {
             http_success("Successful $command command");
             break;
         case 'set':
-            $dbKey = check_key_json('key', $inputJSON);
-            if ($dbKey === false)
+            if (!array_key_exists('key', $inputJSON))
                 http_error(400, 'No key provided');
 
+            $dbKey = $inputJSON['key'];
             $db->set($dbKey, $value);
             http_success("Successful $command command");
             break;
         case 'setBulk':
-            $dbKey = check_key_json('keys', $inputJSON, false);
-            if ($dbKey === false)
+            if (!array_key_exists('keys', $inputJSON))
                 http_error(400, 'No keys provided');
 
+            $dbKey = $inputJSON['keys'];
             $db->setBulk($dbKey, $value);
             http_success("Successful $command command");
             break;
         case 'editField':
-            $res = $db->editField($value);
-            if ($res === false)
-                http_error(400, 'Incorrect data provided');
-
+            $db->editField($value);
             http_success("Successful $command command");
             break;
         case 'editFieldBulk':

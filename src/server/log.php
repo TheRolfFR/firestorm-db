@@ -5,8 +5,10 @@ require_once './config.php';
 const LOG_PATH_ENV = "FIRESTORM_LOG_PATH";
 const LOG_PATH_DEFAULT = "out.log";
 
+/** Appends timestamped operational messages to the configured log destination. */
 class Log {
-    public static function addLog($message) {
+    /** Resolves the log path from the environment or config and appends one complete timestamped record. */
+    public static function addLog(string $message): void {
         global $log_path;
 
         $path = LOG_PATH_DEFAULT;

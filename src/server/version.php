@@ -5,11 +5,16 @@ require_once './utils.php';
 
 cors();
 
+/**
+ * Reads the deployed version marker so authenticated clients can compare their protocol version.
+ *
+ * @return string|false
+ */
 function load_version() {
     return file_get_contents("./version.ini");
 }
 
-$method = sec($_SERVER['REQUEST_METHOD']);
+$method = $_SERVER['REQUEST_METHOD'] ?? '';
 if ($method !== 'GET' && $method !== 'POST') {
 	http_error(400, "Incorrect request type, expected GET or POST, not $method");
 }
@@ -34,12 +39,12 @@ if (!isset($db_tokens))
 	http_error(500, 'Developer is dumb and forgot to create tokens');
 
 // verifying token
-if (!in_array($token, $db_tokens))
+if (!verify_token($token, $db_tokens))
 	http_error(403, 'Invalid token');
 
 $version_found = load_version();
 
 if($version_found === false)
-    http_response(500, 'Firestorm version not found');
+    http_error(500, 'Firestorm version not found');
 
 http_response($version_found);
