@@ -15,482 +15,521 @@
 </a>
 </div>
 
-*Self hosted Firestore-like database with API endpoints based on micro bulk operations.*
+_Self-hosted Firestore-like database written purely in TypeScript/JavaScript and PHP with API endpoints based on micro bulk operations._
 
-# JavaScript Client
+---
 
-The JavaScript client is a fairly simple wrapper around the backend PHP endpoints, using [Axios](https://www.npmjs.com/package/axios) to handle requests. Any server errors will hence be returned to the client as Axios error objects.
+# Client
 
-## JavaScript setup
+The Firestorm client connects to your backend PHP endpoints using the native `fetch` API. Any server errors are wrapped in informative `FirestormError` objects containing status codes and response details.
 
-Every Firestorm database starts by creating a new server instance with the `firestorm.create()` function. This takes an object of optional configuration options as an argument, which can then be retrieved or set using the corresponding fields.
+## Setup & Initialization
 
-```js
-const firestorm = require("firestorm-db");
+Create a Firestorm instance using the `createFirestorm()` factory:
 
-// All of these arguments are optional and can be specified by directly setting the fields if needed.
-const firestorm_instance = firestorm.create({
-    /** The name of the instance internally, useful for reflection and error messages */
-    name: "production",
-    /** The base address of your Firestorm setup, with a slash at the end. */
-    address: "https://example.com/path/to/firestorm/root/",
-    /** Your write token, if it exists. It must exactly match a value from your tokens.php file. */
-    token: "my_secret_token_probably_from_an_env_file",
+```ts
+// ESM / TypeScript
+import { createFirestorm } from "firestorm-db";
+
+// CommonJS
+// const { createFirestorm } = require("firestorm-db");
+
+const instance = createFirestorm({
+	/** Optional internal name for debugging / reflection */
+	name: "production",
+	/** The base URL of your Firestorm server root (trailing slash optional) */
+	address: "https://example.com/path/to/firestorm/root/",
+	/** Your write token (must match a token in your server's tokens.php) */
+	token: "my_secret_token_probably_from_an_env_file",
 });
 
-firestorm_instance.address // returns "https://example.com/path/to/firestorm/root"
-firestorm_instance.name = "dev"; // sets the debugging name to dev
+instance.address; // "https://example.com/path/to/firestorm/root"
+instance.name = "dev"; // updates the debug name
 ```
 
-After setting your server address and token fields, you can begin using Firestorm to its full potential.
+---
 
-## Create your first collection
+## Collections API
 
-Firestorm is based around the concept of a `Collection`, which is akin to an SQL table or Firestore document. The Firestorm collection constructor takes one required argument and one optional argument:
+Collections represent database tables/collections (similar to Firestore collections or SQL tables).
 
-- The name of the collection as a `string`.
-- A method adder, which lets you inject methods to query results. It's implemented similarly to [`Array.prototype.map`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/map), taking a queried element as an argument, modifying the element with methods and data inside a callback, and returning the modified element at the end.
+### Defining a Collection
 
-```js
-const firestorm = require("firestorm-db");
-const firestorm_instance = firestorm.create({ address, token });
+Collections use a `Raw` $\rightarrow$ `Transformed` pipeline:
+`Collection<Raw, Transformed = CollectionItem<Raw>>`
 
-const userCollection = firestorm_instance.collection("users", (el) => {
-    // assumes you have a 'users' table with a printable field called 'name'
-    el.hello = () => `${el.name} says hello!`;
-    // return the modified element back with the injected method
-    return el;
+- **`Raw`**: Schema of items written to disk/server (write type).
+- **`Transformed`**: Type returned by read queries (read type). Defaults to `CollectionItem<Raw>` with injected `[ID_FIELD]`.
+- **`ID_FIELD`**: Global `unique symbol` representing the document key/ID. Because `ID_FIELD` is a symbol, it **never collides** with user database properties (even if your documents already have an `id` field) and is automatically ignored during JSON serialization on writes.
+
+```ts
+import { createFirestorm, ID_FIELD, type CollectionItem } from "firestorm-db";
+const instance = createFirestorm({ address, token });
+
+interface User {
+	id?: number; // Even if your database document has an 'id' field, no collision!
+	name: string;
+	password: string;
+	pets: string[];
+}
+
+// 1. Standard Collection (injected ID_FIELD symbol)
+const userCollection = instance.collection<User>({ name: "users" });
+
+// Write operations accept Raw (User):
+const newId = await userCollection.add({
+	name: "John Doe",
+	password: "secret_password",
+	pets: ["dog"],
 });
 
-// all methods return promises
-const johnDoe = await userCollection.get(123456789);
-// returns { name: "John Doe", hello: Function }
-
-johnDoe.hello(); // "John Doe says hello!"
+// Read operations return CollectionItem<User>:
+const user = await userCollection.get(newId);
+console.log(user[ID_FIELD]); // "123456789"
+console.log(user.name); // "John Doe"
 ```
 
-## Read operations
+### OOP Models & Sensitive Field Sanitization
 
-| Name                          | Parameters                                                                                | Description                                                                                            |
-| ----------------------------- | ----------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------ |
-| sha1()                        | none                                                                                      | Get the SHA-1 hash of the file. Can be used to compare file content without downloading the JSON.      |
-| readRaw(original)             | original?: `boolean`                                                                      | Read the entire collection. `original` disables ID field injection, for non-relational collections.    |
-| get(key)                      | key: `string \| number`                                                                   | Get an element from the collection by its key.                                                         |
-| searchKeys(keys)              | keys: `(string \| number)[]`                                                              | Get multiple elements from the collection by their keys.                                               |
-| search(filter, resultOptions) | filter: `SearchOption[]` resultOptions?: boolean\|number\|SearchResultOptions             | Search through the collection. You can randomize the output order with random as true or a given seed. |
-| select(option)                | option: `SelectOption`                                                                    | Get only selected fields from the collection. Essentially an upgraded version of readRaw.              |
-| values(option)                | option: `ValueOption`                                                                     | Get all distinct non-null values for a given key across a collection.                                  |
-| random(max, seed, offset)     | max?: `number >= -1` seed?: `number` offset?: `number >= 0`                               | Read random collection elements.                                                                       |
+You can use the `transform` callback to instantiate OOP class models or strip sensitive fields (like passwords) before data is returned to your application:
 
-## Write operations
+```ts
+// 1. Domain class models (OOP)
+class UserModel {
+	constructor(
+		public readonly id: string,
+		public readonly name: string,
+		public readonly pets: string[],
+	) {}
 
-| Name                   | Parameters                                       | Description                                                                               |
-| ---------------------- | ------------------------------------------------ | ----------------------------------------------------------------------------------------- |
-| writeRaw(value)        | value: `Object`                                  | Set the entire content of the collection. **⚠️ Very dangerous! ⚠️**                         |
-| add(value)             | value: `Object`                                  | Append a value to the collection. Only works if `autoKey` is enabled server-side.         |
-| addBulk(values)        | values: `Object[]`                               | Append multiple values to the collection. Only works if `autoKey` is enabled server-side. |
-| remove(key)            | key: `string \| number`                          | Remove an element from the collection by its key.                                         |
-| removeBulk(keys)       | keys: `(string \| number)[]`                     | Remove multiple elements from the collection by their keys.                               |
-| set(key, value)        | key: `string \| number`, value: `Object`         | Set a value in the collection by its key.                                                 |
-| setBulk(keys, values)  | keys: `(string \| number)[]`, values: `Object[]` | Set multiple values in the collection by their keys.                                      |
-| editField(option)      | option: `EditFieldOption`                        | Edit an element's field in the collection.                                                |
-| editFieldBulk(options) | options: `EditFieldOption[]`                     | Edit multiple elements' fields in the collection.                                         |
+	static from(el: CollectionItem<User>): UserModel {
+		return new UserModel(el[ID_FIELD], el.name, el.pets);
+	}
 
-## Search options
+	get hasPets(): boolean {
+		return this.pets.length > 0;
+	}
 
-There are more options available than the Firestore `where` command, allowing you to get better search results more quickly.
+	greet(): string {
+		return `Hello, I'm ${this.name}!`;
+	}
+}
 
-The search method can take one or more options to filter entries in a collection. A search option takes a `field` with a `criteria` and compares it to a `value`. You can also use the boolean `ignoreCase` option for string values and the `limit` option to restrict the number of results returned. Available criteria depends on the field type.
+const userModelCollection = instance.collection<User, UserModel>({
+	name: "users",
+	transform: (el) => UserModel.from(el),
+});
 
-| Criteria                | Types allowed                 | Description                                                     |
-| ----------------------- | ----------------------------- | --------------------------------------------------------------- |
-| `'!='`                  | `boolean \| number \| string` | Entry field's value is different from yours                     |
-| `'=='`                  | `boolean \| number \| string` | Entry field's value is equal to yours                           |
-| `'>='`                  | `number \| string`            | Entry field's value is greater or equal than yours              |
-| `'<='`                  | `number \| string`            | Entry field's value is equal to than yours                      |
-| `'>'`                   | `number \| string`            | Entry field's value is greater than yours                       |
-| `'<'`                   | `number \| string`            | Entry field's value is lower than yours                         |
-| `'in'`                  | `number \| string`            | Entry field's value is in the array of values you gave          |
-| `'includes'`            | `string`                      | Entry field's value includes your substring                     |
-| `'startsWith'`          | `string`                      | Entry field's value starts with your substring                  |
-| `'endsWith'`            | `string`                      | Entry field's value ends with your substring                    |
-| `'array-contains'`      | `Array`                       | Entry field's array contains your value                         |
-| `'array-contains-none'` | `Array`                       | Entry field's array contains no values from your array          |
-| `'array-contains-any'`  | `Array`                       | Entry field's array contains at least one value from your array |
-| `'array-contains-all'`  | `Array`                       | Entry field's array contains every value from your array        |
-| `'array-length-eq'`     | `number`                      | Entry field's array size is equal to your value                 |
-| `'array-length-df'`     | `number`                      | Entry field's array size is different from your value           |
-| `'array-length-lt'`     | `number`                      | Entry field's array size is lower than your value               |
-| `'array-length-gt'`     | `number`                      | Entry field's array size is greater than your value             |
-| `'array-length-le'`     | `number`                      | Entry field's array size is lower or equal to your value        |
-| `'array-length-ge'`     | `number`                      | Entry field's array size is greater or equal to your value      |
+const userModel = await userModelCollection.get(newId);
+console.log(userModel.id); // "123456789"
+console.log(userModel.greet()); // "Hello, I'm John Doe!"
+console.log(userModel.hasPets); // true
 
+// 2. Sensitive Field Stripping (e.g. omitting passwords)
+type SafeUser = Omit<CollectionItem<User>, "password">;
 
-The second argument of the `search` method takes an object of modifiers to the result. You can use the `limit` option to cap the searched results to a provided maximum for computationally expensive searches, or use the `random` option to read random results. This argument is optional.
+const safeUserCollection = instance.collection<User, SafeUser>({
+	name: "users",
+	transform: ({ password, ...safeUser }) => safeUser,
+});
 
-## Edit field options
+const safeUser = await safeUserCollection.get(newId);
+// Returns: { [ID_FIELD]: "123456789", name: "John Doe", pets: ["dog"] }
+// "password" is completely removed before query results reach application code!
+```
 
-Edit objects have an element `id`, a `field` to edit, an `operation` specifying what to do to this field, and optionally a `value`.
+### Chaining Transformations (`.transform()`)
 
-| Operation      | Needs value | Allowed value types      | Description                                                                                                                            |
-| -------------- | ----------- | ------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------|
-| `set`          | Yes         | `any`                    | Sets a value to a given field.                                                                                                         |
-| `remove`       | No          | *N/A*                    | Removes a field from the element.                                                                                                      |
-| `append`       | Yes         | `string`                 | Appends a string to the end of a string field.                                                                                         |
-| `invert`       | No          | *N/A*                    | Inverts the state of a boolean field.                                                                                                  |
-| `increment`    | No          | `number`                 | Adds a number to the field (default: 1).                                                                                               |
-| `decrement`    | No          | `number`                 | Removes a number from the field (default: 1).                                                                                          |
-| `array-push `  | Yes         | `any`                    | Pushes an element to the end of an array field.                                                                                        |
-| `array-delete` | Yes         | `number`                 | Removes an array element by index.                                                                                                     |
-| `array-splice` | Yes         | `[number, number, any?]` | Last argument is optional. Check the PHP [array_splice](https://www.php.net/manual/function.array-splice) documentation for more info. |
+You can chain additional transformations via `.transform()`:
 
-# PHP Backend
+```ts
+const userWithBye = userModelCollection.transform((user) => ({
+	user,
+	bye: () => `Bye ${user.name}!`,
+}));
 
-Firestorm's PHP files handle files, read, and writes, through `GET` and `POST` requests sent by the JavaScript client. All JavaScript methods correspond to an equivalent Axios request to the relevant PHP file.
+const item = await userWithBye.get(newId);
+console.log(item.bye()); // "Bye John Doe!"
+```
 
-## PHP setup
+---
 
-The server-side files to handle requests can be found and copied to your hosting platform [here](./php/), which are compatible with both PHP 7 and 8. Two files will need editing: `tokens.php` and `config.php`.
+## Collection Operations
 
-- `tokens.php` contains writing tokens declared in a `$db_tokens` array. These correspond to the tokens used with `firestorm.token()` in the JavaScript client.
-- `config.php` stores all of your collections. This file needs to declare a `$database_list` associative array of `JSONDatabase` instances.
+### Read Operations
+
+| Method                         | Parameters                                                                     | Description                                                                                                                              |
+| ------------------------------ | ------------------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------- |
+| `sha1()`                       | _none_                                                                         | Get the [SHA-1](https://www.php.net/manual/en/function.sha1.php) hash of the collection file to verify content without downloading JSON. |
+| `readRaw(original?)`           | `original?: boolean`                                                           | Read the entire collection. Set `original: true` to disable ID injection (useful for non-relational collections).                        |
+| `get(key)`                     | `key: string \| number`                                                        | Get an element by its ID/key.                                                                                                            |
+| `searchKeys(keys)`             | `keys: (string \| number)[]`                                                   | Get multiple elements by their keys.                                                                                                     |
+| `search(filter, options?)`     | `filter: SearchOption[]`, `options?: boolean \| number \| SearchResultOptions` | Search through the collection with filtering criteria, limit, and optional randomization (`random: true \| seed`).                       |
+| `select(option)`               | `option: SelectOption`                                                         | Retrieve only selected fields from the collection, with optional `search` filters.                                                       |
+| `values(option)`               | `option: ValueOption`                                                          | Get all distinct non-null values for a given field across the collection, with optional `flatten`.                                       |
+| `random(max?, seed?, offset?)` | `max?: number`, `seed?: number`, `offset?: number`                             | Retrieve random collection elements.                                                                                                     |
+
+### Write Operations
+
+| Method                   | Parameters                                    | Description                                                                                    |
+| ------------------------ | --------------------------------------------- | ---------------------------------------------------------------------------------------------- |
+| `writeRaw(value)`        | `value: Object`                               | Overwrite the entire collection JSON content. **⚠️ Very dangerous! ⚠️**                        |
+| `add(value)`             | `value: Raw`                                  | Append a value to the collection. Returns generated ID (requires `autoKey: true` server-side). |
+| `addBulk(values)`        | `values: Raw[]`                               | Append multiple values to the collection. Returns array of generated IDs.                      |
+| `set(key, value)`        | `key: string \| number`, `value: Raw`         | Set a value in the collection by its key.                                                      |
+| `setBulk(keys, values)`  | `keys: (string \| number)[]`, `values: Raw[]` | Set multiple values in the collection by their keys.                                           |
+| `remove(key)`            | `key: string \| number`                       | Remove an element by its key.                                                                  |
+| `removeBulk(keys)`       | `keys: (string \| number)[]`                  | Remove multiple elements by their keys.                                                        |
+| `editField(option)`      | `option: EditFieldOption`                     | Apply atomic operations on a specific field of an element.                                     |
+| `editFieldBulk(options)` | `options: EditFieldOption[]`                  | Apply atomic operations on multiple element fields.                                            |
+
+### Search Criteria & Options
+
+```ts
+const results = await userCollection.search(
+	[
+		{ field: "pets", criteria: "array-contains", value: "dog" },
+		{ field: "name", criteria: "startsWith", value: "John", ignoreCase: true },
+	],
+	{ limit: 50, random: true },
+);
+```
+
+| Criteria                | Types Allowed                 | Description                                                 |
+| ----------------------- | ----------------------------- | ----------------------------------------------------------- |
+| `'!='`                  | `boolean \| number \| string` | Field value is not equal to query value                     |
+| `'=='`                  | `boolean \| number \| string` | Field value equals query value                              |
+| `'>='`                  | `number \| string`            | Field value is greater than or equal to query value         |
+| `'<='`                  | `number \| string`            | Field value is less than or equal to query value            |
+| `'>'`                   | `number \| string`            | Field value is strictly greater than query value            |
+| `'<'`                   | `number \| string`            | Field value is strictly less than query value               |
+| `'in'`                  | `number \| string`            | Field value matches any item in the query array             |
+| `'includes'`            | `string`                      | Field string includes substring                             |
+| `'startsWith'`          | `string`                      | Field string starts with substring                          |
+| `'endsWith'`            | `string`                      | Field string ends with substring                            |
+| `'array-contains'`      | `Array`                       | Field array contains the query value                        |
+| `'array-contains-none'` | `Array`                       | Field array contains none of the query array values         |
+| `'array-contains-any'`  | `Array`                       | Field array contains at least one query array value         |
+| `'array-contains-all'`  | `Array`                       | Field array contains every query array value                |
+| `'array-length-eq'`     | `number`                      | Field array length equals query number                      |
+| `'array-length-df'`     | `number`                      | Field array length is different from query number           |
+| `'array-length-lt'`     | `number`                      | Field array length is strictly less than query number       |
+| `'array-length-gt'`     | `number`                      | Field array length is strictly greater than query number    |
+| `'array-length-le'`     | `number`                      | Field array length is less than or equal to query number    |
+| `'array-length-ge'`     | `number`                      | Field array length is greater than or equal to query number |
+
+### Edit Field Operations
+
+Edit operations modify fields atomically without rewriting entire documents:
+
+```ts
+await userCollection.editField({
+	id: "123456789",
+	field: "loginCount",
+	operation: "increment",
+	value: 1,
+});
+```
+
+| Operation      | Requires Value | Allowed Value Types      | Description                                                                                    |
+| -------------- | -------------- | ------------------------ | ---------------------------------------------------------------------------------------------- |
+| `set`          | Yes            | `any`                    | Set a new value for the field.                                                                 |
+| `remove`       | No             | _N/A_                    | Delete the field from the element.                                                             |
+| `append`       | Yes            | `string`                 | Append text to a string field.                                                                 |
+| `invert`       | No             | _N/A_                    | Invert boolean state (`true` $\leftrightarrow$ `false`).                                       |
+| `increment`    | No             | `number` (default: 1)    | Increment numerical field.                                                                     |
+| `decrement`    | No             | `number` (default: 1)    | Decrement numerical field.                                                                     |
+| `array-push`   | Yes            | `any`                    | Push an element to an array field.                                                             |
+| `array-delete` | Yes            | `number`                 | Remove array element at specified index.                                                       |
+| `array-splice` | Yes            | `[number, number, any?]` | Splice array field (see PHP [array_splice](https://www.php.net/manual/function.array-splice)). |
+
+---
+
+## Documents API
+
+For singleton JSON files (such as application configuration or server settings), use `instance.document()`:
+
+```ts
+interface AppSettings {
+	theme: "light" | "dark";
+	maxUploadSize: number;
+	nested: {
+		maintenance: boolean;
+	};
+}
+
+const settingsDoc = instance.document<AppSettings>({ name: "settings" });
+
+// 1. Read entire document
+const fullSettings = await settingsDoc.readRaw();
+
+// 2. Get specific field
+const theme = await settingsDoc.get("theme"); // "light"
+
+// 3. Get multiple fields
+const [themeVal, sizeVal] = await settingsDoc.getKeys(["theme", "maxUploadSize"]);
+
+// 4. Update top-level or deep nested field (dot notation)
+await settingsDoc.set("nested.maintenance", true);
+
+// 5. Atomic field edit
+await settingsDoc.editField({
+	field: "maxUploadSize",
+	operation: "increment",
+	value: 1024,
+});
+```
+
+---
+
+## Files API
+
+Firestorm includes a file management API under `instance.files`:
+
+| Method                               | Parameters                                              | Description                               | Returns                      |
+| ------------------------------------ | ------------------------------------------------------- | ----------------------------------------- | ---------------------------- |
+| `get<T>(path)`                       | `path: string`                                          | Retrieve file content by path             | `Promise<T>`                 |
+| `upload(form)`                       | `form: FormData`                                        | Upload a file (with optional overwrite)   | `Promise<WriteConfirmation>` |
+| `delete(path)`                       | `path: string`                                          | Delete a file from the server             | `Promise<WriteConfirmation>` |
+| `copy(oldPath, newPath, overwrite?)` | `oldPath: string, newPath: string, overwrite?: boolean` | Copy a file directly on the server        | `Promise<WriteConfirmation>` |
+| `move(oldPath, newPath, overwrite?)` | `oldPath: string, newPath: string, overwrite?: boolean` | Move/rename a file directly on the server | `Promise<WriteConfirmation>` |
+| `exists(path)`                       | `path: string`                                          | Check if a file exists on the server      | `Promise<boolean>`           |
+| `append(path, content, create?)`     | `path: string, content: string, create?: boolean`       | Append text to a file on the server       | `Promise<WriteConfirmation>` |
+
+### File Examples
+
+```ts
+import FormData from "form-data"; // in Node.js (or browser native FormData)
+
+// Upload
+const form = new FormData();
+form.append("path", "/quote.txt");
+form.append("file", "Great Scott!", "quote.txt");
+form.append("overwrite", "true");
+await instance.files.upload(form);
+
+// Get content
+const text = await instance.files.get<string>("/quote.txt");
+console.log(text); // "Great Scott!"
+
+// Append text
+await instance.files.append("/quote.txt", "\n- Doc Brown");
+
+// Copy & Move
+await instance.files.copy("/quote.txt", "/quote_backup.txt", true);
+await instance.files.move("/quote_backup.txt", "/quote_archive.txt", true);
+
+// Check existence & Delete
+const exists = await instance.files.exists("/quote_archive.txt"); // true
+await instance.files.delete("/quote_archive.txt");
+```
+
+---
+
+## Advanced Client Features
+
+### Collision-Free Document IDs with `ID_FIELD`
+
+Firestorm uses a global unique symbol `ID_FIELD` for document keys. This guarantees that:
+
+1. Firestorm's document ID never conflicts with existing fields in your database document (e.g. `{ id: 101, title: "Phone" }`).
+2. Write operations (`add`, `set`, `writeRaw`) and `JSON.stringify` automatically ignore `ID_FIELD`, keeping stored payloads clean.
+3. Complex generic types are avoided—`Collection<Raw, Transformed>` only requires the data types you actually care about.
+
+```ts
+import { createFirestorm, ID_FIELD, type CollectionItem } from "firestorm-db";
+
+interface Product {
+	id: number; // Stored numeric product SKU
+	title: string;
+	price: number;
+}
+
+const productCollection = instance.collection<Product>({
+	name: "products",
+});
+
+const item = await productCollection.get("doc_101");
+console.log(item.id); // 101 (your stored numeric ID)
+console.log(item[ID_FIELD]); // "doc_101" (Firestorm's document key)
+```
+
+### Combining Collections via `transform`
+
+You can link related collections together using `transform`:
+
+```ts
+const orders = instance.collection({ name: "orders" });
+
+const customers = instance.collection({
+	name: "customers",
+	transform: (el) => ({
+		...el,
+		getOrders: () =>
+			orders.search([
+				{
+					field: "customerId",
+					criteria: "==",
+					value: el[ID_FIELD],
+				},
+			]),
+	}),
+});
+
+const customer = await customers.get(123);
+const customerOrders = await customer.getOrders();
+```
+
+### Compatibility & Versioning
+
+```ts
+// NPM package client version
+instance.clientVersion;
+
+// Server version string from version.ini
+await instance.serverVersion;
+
+// Check if client and server versions match
+const isCompatible = await instance.isCompatibleAddress();
+```
+
+---
+
+## Exported TypeScript Types
+
+The package exports all types and interfaces for full type-safety:
+
+```ts
+import type {
+	// Resources & Instances
+	Firestorm,
+	Collection,
+	Document,
+	FileManager,
+	ResourceManager,
+	FirestormCreationOption,
+	CollectionOptions,
+	DocumentOptions,
+
+	// Query & Options
+	SearchOption,
+	SearchResultOptions,
+	SelectOption,
+	ValueOption,
+	ValueReturnType,
+	EditFieldOption,
+	DocumentEditFieldOption,
+
+	// Criteria Unions
+	ComparisonCriteria,
+	BooleanCriteria,
+	NumberCriteria,
+	StringCriteria,
+	ArrayCriteria,
+
+	// Common Utilities
+	CollectionItem,
+	IdEncoding,
+	WriteConfirmation,
+	ResponseDetails,
+	FirestormError,
+} from "firestorm-db";
+```
+
+---
+
+# Server
+
+Firestorm's backend consists of lightweight PHP endpoints compatible with **PHP 8.2+**.
+
+## Server Setup
+
+Deploy the server files from [`src/server/`](./src/server/) to your PHP hosting directory.
+
+The two files to configure are:
+
+### 1. `tokens.php`
+
+Declare authorized write tokens in the `$db_tokens` array:
+
+```php
+<?php
+// tokens.php
+$db_tokens = [
+    'my_secret_token_probably_from_an_env_file',
+    'another_authorized_token',
+];
+```
+
+### 2. `config.php`
+
+Configure collections and files settings in `$database_list`:
 
 ```php
 <?php
 // config.php
-require_once './classes/JSONDatabase.php';
-
-$database_list = [];
-
-// without constructor
-$tmp = new JSONDatabase;
-$tmp->folderPath = './files/';
-$tmp->fileName = 'orders';
-$tmp->autoKey = true;
-$tmp->autoIncrement = false;
-
-$database_list[$tmp->fileName] = $tmp;
-
-// with constructor ($fileName, $autoKey = true, $autoIncrement = true)
-$tmp = new JSONDatabase('users', false);
-$tmp->folderPath = './files/';
-
-$database_list[$tmp->fileName] = $tmp;
-```
-
-- The database will be stored in `<folderPath>/<fileName>.json` (default folder: `./files/`).
-- `autoKey` controls whether to automatically generate the key name or to have explicit key names (default: `true`).
-- `autoIncrement` controls whether to simply start generating key names from zero or to use a [random ID](https://www.php.net/manual/en/function.uniqid.php) each time (default: `true`).
-- The key in the `$database_list` array is what the collection should be referred to in the JavaScript collection constructor. This can be different from the JSON filename if needed.
-
-If you're working with multiple collections, it can be easier to initialize them all in the array constructor directly:
-
-```php
-// config.php
-<?php
 require_once './classes/JSONDatabase.php';
 
 $database_list = [
-    'orders' => new JSONDatabase('orders', true),
-    'users' => new JSONDatabase('users', false),
+    // Standard auto-incrementing collection
+    'orders' => new JSONDatabase('orders', autoKey: true, autoIncrement: true),
+
+    // Timestamp-based uniqid keys (default when autoIncrement is false)
+    'users' => new JSONDatabase('users', autoKey: true, autoIncrement: false),
+
+    // Cryptographically secure random keys (32-character hex)
+    'secure_vault' => new JSONDatabase(
+        fileName: 'secure_data',
+        autoIncrement: false,
+        secureKeys: true
+    ),
+
+    // Explicit manual IDs only
+    'settings' => new JSONDatabase('settings', autoKey: false),
 ];
-```
 
-## Permissions
-
-The PHP scripts used to write and read files need permissions to edit the JSON files. You can give Firestorm rights to a folder with the following command:
-
-```sh
-sudo chown -R www-data "/path/to/firestorm/root/"
-```
-
-# Firestorm Files
-
-Firestorm's file APIs are implemented in `files.php`. If you don't need file-related features, then simply delete this file.
-
-To work with files server-side, you need to add two new configuration variables in `config.php`:
-
-```php
-// Extension whitelist
-$authorized_file_extension = ['.txt', '.png', '.jpg', '.jpeg'];
-
-// Root directory for where files should be uploaded
-// ($_SERVER['SCRIPT_FILENAME']) is a shortcut to the root Firestorm directory.
+// Optional Files Storage configuration
+$authorized_file_extension = ['.txt', '.png', '.jpg', '.jpeg', '.pdf'];
 $STORAGE_LOCATION = dirname($_SERVER['SCRIPT_FILENAME']) . '/uploads/';
 ```
 
-From there, you can use the functions in `firestorm.files` (detailed below) from the JavaScript client.
+### `JSONDatabase` Options
 
-## Upload a file
+- **`folderPath`**: Storage folder for JSON files (default: `./files/`).
+- **`fileName`**: Name of the JSON file on disk (without `.json`).
+- **`autoKey`**: Enable automatic ID generation on `add()` (default: `true`).
+- **`autoIncrement`**: Use incremental numerical keys (`0, 1, 2...`) vs random string keys (default: `true`).
+- **`secureKeys`**: Use cryptographically secure keys (`bin2hex(random_bytes(16))`) instead of `uniqid` when `autoIncrement` is `false` (default: `false`).
 
-`firestorm.files.upload` uses a `FormData` object to represent an uploaded file. This class is generated from forms and is [native in modern browsers](https://developer.mozilla.org/en-US/docs/Web/API/FormData/FormData), and with Node.js can be installed with the [form-data](https://www.npmjs.com/package/form-data) package.
+---
 
-The uploaded file content can be a [String](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String), a [Blob](https://developer.mozilla.org/en-US/docs/Web/API/Blob), a [Buffer](https://nodejs.org/api/buffer.html), or an [ArrayBuffer](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/ArrayBuffer).
+## File Permissions
 
-There is additionally an overwrite option in order to avoid mistakes.
+Ensure the web server has write permissions to your storage and data directories:
 
-```js
-const FormData = require("form-data");
-const firestorm = require("firestorm-db");
-const firestorm_instance = firestorm.create({ address, token });
-
-const form = new FormData();
-form.append("path", "/quote.txt");
-// make sure to set a temporary file name
-form.append("file", "but your kids are gonna love it.", "quote.txt");
-// override is false by default; don't append it if you don't need to
-form.append("overwrite", "true");
-
-const uploadPromise = firestorm_instance.files.upload(form);
-
-uploadPromise
-    .then(() => console.log("Upload successful"))
-    .catch((err) => console.error(err));
+```sh
+sudo chown -R www-data "/path/to/firestorm/root/files"
+sudo chown -R www-data "/path/to/firestorm/root/uploads"
 ```
 
-## Get a file
+---
 
-`Firestorm.files.get` takes a file's direct URL location or its content as its parameter. If your upload folder is accessible from a server URL, you can directly use its address to retrieve the file without this method.
+## Memory Management
 
-```js
-const firestorm = require("firestorm-db");
-
-// no write token is required to use this method
-const firestorm_instance = firestorm.create({ address });
-
-const getPromise = firestorm_instance.files.get("/quote.txt");
-
-getPromise
-    .then((fileContent) => console.log(fileContent)) // but your kids are gonna love it.
-    .catch((err) => console.error(err));
-```
-
-## Delete a file
-
-`Firestorm.files.delete` has the same interface as `Firestorm.files.get`, but as the name suggests, it deletes the file.
-
-```js
-const firestorm = require("firestorm-db");
-const firestorm_instance = firestorm.create({ address, token });
-
-const deletePromise = firestorm_instance.files.delete("/quote.txt");
-
-deletePromise
-    .then(() => console.log("File successfully deleted"))
-    .catch((err) => console.error(err));
-```
-
-# Advanced Features
-
-## `ID_FIELD` and its meaning
-
-There's a constant field in all Firestorm collections called `ID_FIELD`, which is a JavaScript-side property added afterwards to each query element.
-
-Its value will always be the key of the element its in, which allows you to use `Object.values` on results without worrying about losing the elements' key names. Additionally, it can be used in the method adder in the constructor, and is convenient for collections where the key name is significant. By default, it's set to the literal `"id"`, but can be changed by setting the value on the collection instance if the key name is already used elsewhere in your database schema (Note: changing the value of ID_FIELD is not recommended due to the lack of typing support).
-
-```js
-const userCollection = firestorm_instance.collection("users", (el, collection) => {
-    el.basicInfo = () => `${el.name} (${el[collection.ID_FIELD]})`;
-    return el;
-});
-
-const returnedID = await userCollection.add({ name: "Bob", age: 30 });
-const returnedUser = await userCollection.get(returnedID);
-
-console.log(returnedID === returnedUser[userCollection.ID_FIELD]); // true
-
-returnedUser.basicInfo(); // Bob (123456789)
-```
-
-As it's entirely a JavaScript construct, `ID_FIELD` values will actually never be in the server-side collection JSONs.
-
-## Add and set operations
-
-You may have noticed two different methods that seem to do the same thing: `add` and `set` (and their corresponding bulk variants). The key difference is that `add` automatically generates a key for the given value, and hence can only be used on collections where `autoKey` is enabled, but `set` can be used on any collection type. `autoIncrement` doesn't affect this behavior.
-
-For instance, the following PHP configuration will disable add operations:
-
-```php
-$database_list['users'] = new JSONDatabase('users', false);
-```
-
-```js
-const userCollection = firestorm_instance.collection("users");
-// Error: Automatic key generation is disabled
-await userCollection.add({ name: "John Doe", age: 30 });
-```
-
-Add operations return the generated ID of the added element, since it isn't known at add time, but set operations simply return a confirmation. If you want to get an element after it's been set, use the ID passed into the method.
-
-```js
-// Works, ID is returned
-userCollection.add({ name: "John Doe", age: 30 })
-    .then((id) => userCollection.get(id));
-
-// Works, using already-known ID to retrieve results
-userCollection.set(123, { name: "John Doe", age: 30 })
-    .then(() => userCollection.get(123));
-
-// Fails, confirmation is returned rather than ID
-userCollection.set(123, { name: "John Doe", age: 30 })
-    .then((conf) => userCollection.get(conf));
-```
-
-## Combining collections
-
-Using add methods in the constructor, you can link multiple collections together.
-
-```js
-const orders = firestorm_instance.collection("orders");
-
-// using the example of a customer having orders
-const customers = firestorm_instance.collection("customers", (el, collection) => {
-    el.getOrders = () => orders.search([
-        {
-            field: "customer",
-            criteria: "==",
-            // assuming the customers field in the orders collection is a user ID
-            value: el[collection.ID_FIELD]
-        }
-    ])
-    return el;
-})
-
-const johnDoe = await customers.get(123456789);
-
-// returns orders where the customer field is John Doe's ID
-await johnDoe.getOrders();
-```
-
-This functionality is particularly useful for complex data hierarchies with foreign keys spanning multiple collections, and is the main reason why add methods exist in the first place. It can also be used to split deeply nested data structures to increase server-side performance by only loading relevant data.
-
-## Manually sending data
-
-Each operation type requests a different file. In the JavaScript client, the corresponding file gets appended onto your base Firestorm address.
-
-- Read requests are `GET` requests sent to `<your_address_here>/get.php`.
-- Write requests are `POST` requests sent to `<your_address_here>/post.php` with JSON data.
-- File requests are `POST` requests sent to `<your_address_here>/files.php` with form data.
-
-The first keys in a Firestorm request will always be the same regardless of its type, and further keys will depend on the specific method:
-
-```json
-{
-    "collection": "<collectionName>",
-    "token": "<writeTokenIfNecessary>",
-    "command": "<methodName>",
-    ...
-}
-```
-
-The requested PHP file then grabs the `JSONDatabase` instance created in `config.php` using the `collection` key in the request as the `$database_list` key name. From there, the `token` is used to validate the request if needed and the `command` is found and executed.
-
-## Compatibility
-
-Firestorm comes with a few utility methods to ensure the server and client versions are compatible. These are the `clientVersion` and `serverVersion` getters, and the `isCompatibleAddress()` function. Since `serverVersion` needs to make a request, it returns a `Promise<string>` despite looking like a field.
-
-```js
-const firestorm = require("firestorm-db");
-const firestorm_instance = firestorm.create({ address: "https://example.com/firestorm" });
-
-// returns the npm version of the client code
-firestorm_instance.clientVersion;
-
-// returns the server-side version string
-await firestorm_instance.serverVersion;
-
-// returns true if these values match and false if they don't
-await firestorm_instance.isCompatibleAddress();
-```
-
-Whenever updating Firestorm on your server, be sure to update the `version.ini` file.
-
-## Memory management
-
-Handling very large collections can cause memory allocation issues:
-
-```
-Fatal error:
-Allowed memory size of 134217728 bytes exhausted (tried to allocate 32360168 bytes)
-```
-
-If you encounter a memory allocation issue, simply change the memory limit in `/etc/php/<php_version_here>/apache2/php.ini` to be bigger:
+For large collections, allocate sufficient memory in `/etc/php/8.x/apache2/php.ini` or `.user.ini`:
 
 ```ini
-; Default is 128M
 memory_limit = 256M
 ```
 
-If this doesn't help, considering splitting your collection into multiple smaller collections and linking them together with methods.
+---
 
-# TypeScript Support
+## Request Routing & Architecture
 
-Firestorm ships with TypeScript support out of the box.
+The client communicates with the server via three specialized entrypoints:
 
-## Collection types
+- **Read operations** $\rightarrow$ `GET /get.php`
+- **Write operations** $\rightarrow$ `POST /post.php` (JSON payload)
+- **File operations** $\rightarrow$ `POST /files.php` (multipart form data)
 
-Collections in TypeScript take a generic parameter `T`, which is the type of each element in the collection. If you aren't using a relational collection, this can simply be set to `any`.
-
-```ts
-const firestorm = require("firestorm-db");
-const firestorm_instance = firestorm.create({ address, token });
-
-interface User {
-    name: string;
-    password: string;
-    pets: string[];
-}
-
-const userCollection = firestorm_instance.collection<User>("users");
-
-const johnDoe = await userCollection.get(123456789);
-// type: { [userCollection.ID_FIELD]: string, name: string, password: string, pets: string[] }
-```
-
-Injected methods should also be stored in this interface. They'll be filtered out from write operations correctly, so don't worry about potential typing inaccuracies:
-
-```ts
-const firestorm = require("firestorm-db");
-const firestorm_instance = firestorm.create({ address, token });
-
-interface User {
-    name: string;
-    hello(): string;
-}
-
-const userCollection = firestorm_instance.collection("users", (el) => {
-    // interface types should agree with injected methods
-    el.hello = () => `${el.name} says hello!`;
-    return el;
-});
-
-const johnDoe = await userCollection.get(123456789);
-const hello = johnDoe.hello(); // type: string
-
-await userCollection.add({
-    name: "Mary Doe",
-    // Error: 'hello' does not exist in type 'Addable<User>'.
-    hello: () => "Mary Doe says hello!",
-});
-```
-
-## Additional types
-
-Additional types exist for search criteria options, write method return types, configuration methods, the file handler, etc.
-
-```ts
-const searchOptions: SearchOption<User>[] = [
-    {
-        field: "name",
-        criteria: "==",
-        value: "John Doe",
-    },
-];
-// type: SearchOption<User>[]
-
-userCollection.search(searchOptions, { limit: 300 });
-// type: User[]
-
-const deleteConfirmation = await firestorm.files.delete("/quote.txt");
-// type: firestorm.WriteConfirmation
-```
+If you do not use file management features, you can safely remove `files.php` and the `files_api/` directory.

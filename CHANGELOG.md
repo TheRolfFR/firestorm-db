@@ -5,6 +5,36 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.0.0] - 2026-08-27
+
+### Added
+
+- **Collision-Free `ID_FIELD` Unique Symbol**: Transitioned `ID_FIELD` from a `"id"` string constant to a global `unique symbol` (`Symbol.for("firestorm.id")`). Document keys attached by Firestorm are indexed via `item[ID_FIELD]`, guaranteeing zero collisions with document schema fields (even if documents have their own `id` property) and native exclusion from `JSON.stringify` during writes.
+- **Native TypeScript Rewrite**: Complete client library ported to TypeScript with ESM modules, generated type definitions (`dist/`), and comprehensive type tests.
+- **Raw $\rightarrow$ Transformed Pipeline Architecture**: Transitioned `Collection` (`Collection<Raw, Transformed>`) and `Document` (`Document<Raw, Transformed>`) to a pre-transform (`Raw`) and post-transform (`Transformed`) generic architecture. Write methods accept `Raw` types while read methods return `Transformed` types, enabling OOP class instantiation, field stripping/sanitization, and fluent chaining via `.transform()`.
+- **Document Resource**: Dedicated `Document` class (`instance.document(...)`) for managing standalone key-value or configuration documents with deep dot-path mutation support.
+- **Request Encapsulation**: `ResourceManager` component encapsulating HTTP communication (`getRequest`, `postRequest`), endpoint resolution, token management, and payload serialization.
+- **Extended File Operations**: Added `instance.files.copy()`, `instance.files.move()`, `instance.files.exists()`, and `instance.files.append()` methods.
+- **Cryptographically Secure Keys**: Added `$secureKeys` configuration to `JSONDatabase` for generating cryptographically secure random unique IDs.
+- **Structured Error Handling**: Added `FirestormError` class carrying complete `ResponseDetails` (HTTP status code, headers, and parsed payload) with automatic wrapping of HTML/string server errors.
+- **Refined Search & Filter Criteria**: Dedicated `ComparisonCriteria`, `BooleanCriteria`, `NumberCriteria`, `StringCriteria`, and `ArrayCriteria` types.
+
+### Changed
+
+- Simplified `Collection<Raw, Transformed>` and `CollectionOptions<Raw, Transformed>` by eliminating the 3rd generic `ItemIdField` and the `idField` configuration option.
+- Migrated server requirements to PHP 8.2+ with strict typing and support for named constructor arguments in `JSONDatabase`.
+- Refactored `FileAccess` file locking to provide descriptive error context including file paths on lock or descriptor failure.
+- Streamlined `createFirestorm()` factory export and removed global state and global methods.
+- Decoupled `Collection` and `Document` from server endpoint URLs by delegating all operations to `ResourceManager`.
+- Replaced manual extension loops across backend file endpoints with centralized `check_file_extension()` validator.
+- Made `Collection` and `Document` constructors as well as `instance.collection()` and `instance.document()` object-only, requiring a configuration object (`{ name: string, ... }`) rather than positional string/callback arguments.
+
+### Removed
+
+- Removed `ItemIdField` generic parameter and `idField` option from collections in favor of the collision-free `ID_FIELD` unique symbol.
+- Removed legacy global state and `firestorm.table()` alias in favor of `instance.collection()`.
+- Removed legacy `addMethods` positional callback in favor of the unified `Raw -> Transformed` architecture with `.transform()`.
+
 ## [1.15.0] - 2026-07-19
 
 ### Added
