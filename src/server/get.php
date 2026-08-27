@@ -1,5 +1,7 @@
 <?php
-require_once './utils.php';
+
+require_once __DIR__ . '/utils.php';
+require_once __DIR__ . '/enums/ApiCommand.php';
 
 cors();
 
@@ -9,23 +11,28 @@ ini_set('display_startup_errors', '0');
 error_reporting(E_ALL);
 
 // import useful functions
-require_once './log.php';
+require_once __DIR__ . '/log.php';
 
 $method = $_SERVER['REQUEST_METHOD'] ?? '';
 if ($method !== 'GET' && $method !== 'POST') {
     http_error(400, "Incorrect request type, expected GET or POST, not $method");
 }
 
-$inputJSON = json_decode(file_get_contents('php://input') ?: "", true);
+$rawInput = file_get_contents('php://input') ?: "";
+if ($rawInput === '' || !json_validate($rawInput)) {
+    http_error(400, 'No JSON body provided');
+}
 
-if (!$inputJSON)
+$inputJSON = json_decode($rawInput, true);
+
+if (!is_array($inputJSON))
     http_error(400, 'No JSON body provided');
 
 $collection = check_key_json('collection', $inputJSON);
-if (!$collection)
+if (!$collection || !is_string($collection))
     http_error(400, 'No collection provided');
 
-if (file_exists('./config.php') == false)
+if (!file_exists('./config.php'))
     http_error(501, 'Developer didn\'t implement a config.php file');
 
 // import db config
@@ -41,38 +48,28 @@ try {
         http_error(404, "Collection not found: $collection");
 
     /**
-     * @var JSONDatabase
+     * @var JSONDatabase $db
      */
     $db = $database_list[$collection];
 
-    $command = check_key_json('command', $inputJSON);
-    if (!$command)
+    $commandStr = check_key_json('command', $inputJSON);
+    if (!$commandStr || !is_string($commandStr))
         http_error(400, 'No command provided');
 
-    $available_commands = [
-        'readRaw',
-        'get',
-        'search',
-        'searchKeys',
-        'select',
-        'random',
-        'sha1',
-        'values'
-    ];
-
-    if (!in_array($command, $available_commands))
-        http_error(404, "Command not found: $command. Available commands: " . join(', ', $available_commands));
+    $command = ReadCommand::tryFrom($commandStr);
+    if ($command === null) {
+        $available_commands = array_map(fn(ReadCommand $c) => $c->value, ReadCommand::cases());
+        http_error(404, "Command not found: $commandStr. Available commands: " . implode(', ', $available_commands));
+    }
 
     switch ($command) {
-        case 'sha1':
+        case ReadCommand::Sha1:
             $res = $db->sha1();
             http_response($res);
-            break;
-        case 'readRaw':
+        case ReadCommand::ReadRaw:
             $res = $db->readRaw();
             http_response($res->content);
-            break;
-        case 'get':
+        case ReadCommand::Get:
             if (!array_key_exists('id', $inputJSON))
                 http_error(400, 'No id provided');
 
@@ -83,20 +80,18 @@ try {
                 http_error(404, "get failed on collection $collection with key $id");
 
             http_response_stringified($result);
-            break;
-        case 'search':
+        case ReadCommand::Search:
             $search = check_key_json('search', $inputJSON);
             $random = check_key_json('random', $inputJSON);
             $limit = check_key_json('limit', $inputJSON);
 
-            if (!$search)
+            if (!is_array($search))
                 http_error(400, 'No search provided');
 
             $result = $db->search($search, $random, $limit);
 
             http_response_stringified($result);
-            break;
-        case 'searchKeys':
+        case ReadCommand::SearchKeys:
             $search = check_key_json('search', $inputJSON);
 
             if (!$search)
@@ -105,37 +100,29 @@ try {
             $result = $db->searchKeys($search);
 
             http_response_stringified($result);
-            break;
-        case 'select':
+        case ReadCommand::Select:
             $select = check_key_json('select', $inputJSON);
 
-            if ($select === false)
+            if ($select === false || !is_array($select))
                 http_error(400, 'No select provided');
 
             $result = $db->select($select);
             http_response_stringified($result);
-            break;
-        case 'values':
+        case ReadCommand::Values:
             $values = check_key_json('values', $inputJSON);
 
-            if ($values === false)
+            if ($values === false || !is_array($values))
                 http_error(400, 'No key provided');
 
             $result = $db->values($values);
             http_response_stringified($result);
-            break;
-        case 'random':
+        case ReadCommand::Random:
             $params = check_key_json('random', $inputJSON);
-            if ($params === false)
+            if ($params === false || !is_array($params))
                 http_error(400, 'No random object provided');
 
             http_response_stringified($db->random($params));
-            break;
-        default:
-            break;
     }
-
-    http_error(400, 'Bad request');
 
 } catch (HTTPException $e) {
     http_error($e->getCode(), $e->getMessage());

@@ -9,7 +9,7 @@
  * @param mixed $token Authentication token.
  * @return string Confirmation message on success.
  */
-function copy_file($oldPath, $newPath, $overwrite, $token): string {
+function copy_file(mixed $oldPath, mixed $newPath, mixed $overwrite, mixed $token): string {
     /** @var string|null $STORAGE_LOCATION */
     global $STORAGE_LOCATION;
 
@@ -29,15 +29,15 @@ function copy_file($oldPath, $newPath, $overwrite, $token): string {
         http_error(501, 'Developer is dumb and forgot to create $authorized_file_extension');
 
     // verifying token
-    if ($token === false || $token === null || !is_string($token) || $token === '')
+    if (!is_string($token) || $token === '')
         http_error(400, 'No token provided');
     if (!verify_token($token, $db_tokens))
         http_error(403, 'Invalid token');
 
-    if ($oldPath === false || $oldPath === null || !is_string($oldPath) || trim($oldPath) === '')
+    if (!is_string($oldPath) || mb_trim($oldPath) === '')
         http_error(400, 'No oldPath provided');
 
-    if ($newPath === false || $newPath === null || !is_string($newPath) || trim($newPath) === '')
+    if (!is_string($newPath) || mb_trim($newPath) === '')
         http_error(400, 'No newPath provided');
 
     $relativeOld = remove_dots($oldPath);

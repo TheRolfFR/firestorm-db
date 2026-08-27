@@ -17,6 +17,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Extended File Operations**: Added `instance.files.copy()`, `instance.files.move()`, `instance.files.exists()`, and `instance.files.append()` methods.
 - **Cryptographically Secure Keys**: Added `$secureKeys` configuration to `JSONDatabase` for generating cryptographically secure random unique IDs.
 - **Structured Error Handling**: Added `FirestormError` class carrying complete `ResponseDetails` (HTTP status code, headers, and parsed payload) with automatic wrapping of HTML/string server errors.
+- **PHP 8.5 Modernization & Backport Polyfills**: Fully modernized server codebase to PHP 8.5 standards with a dedicated backward-compatibility polyfill layer (`src/server/polyfills/polyfills.php` and root `composer.json` supporting `symfony/polyfill-php83`, `symfony/polyfill-php84`, and `symfony/polyfill-php85`). Introduces backed Enums (`SearchCriteria`, `EditOperation`, `ReadCommand`, `WriteCommand`), Constructor Property Promotion, `readonly` properties, `#[\Override]`, First-Class Callables (`$fn(...)`), strict `match` expressions, modern `\Random\Randomizer` engines, and high-performance native `array_is_list()`, `array_any()`, `array_all()`, and `json_validate()`.
 - **Refined Search & Filter Criteria**: Dedicated `ComparisonCriteria`, `BooleanCriteria`, `NumberCriteria`, `StringCriteria`, and `ArrayCriteria` types.
 
 ### Changed

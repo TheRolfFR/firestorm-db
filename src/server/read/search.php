@@ -1,6 +1,8 @@
 <?php
 
 require_once __DIR__ . '/../classes/HTTPException.php';
+require_once __DIR__ . '/../enums/SearchCriteria.php';
+require_once __DIR__ . '/../polyfills/polyfills.php';
 
 /**
  * Evaluates one supported comparison against a stored field while applying case rules where relevant.
@@ -11,106 +13,58 @@ require_once __DIR__ . '/../classes/HTTPException.php';
  * @param bool $ignoreCase Whether string comparisons should be case-insensitive.
  * @return bool True if the field satisfies the search criteria, false otherwise.
  */
-function search($field, string $criteria, $value, bool $ignoreCase): bool {
+function search(mixed $field, string $criteria, mixed $value, bool $ignoreCase): bool {
     $fieldType = gettype($field);
-    switch ($fieldType) {
-        case 'boolean':
-            switch ($criteria) {
-                case '!=':
-                    return $field != $value;
-                case '==':
-                    return $field == $value;
-                default:
-                    return false;
-            }
-        case 'integer':
-        case 'double':
-            switch ($criteria) {
-                case '!=':
-                    return $field != $value;
-                case '==':
-                    return $field == $value;
-                case '>=':
-                    return $field >= $value;
-                case '<=':
-                    return $field <= $value;
-                case '<':
-                    return $field < $value;
-                case '>':
-                    return $field > $value;
-                case 'in':
-                    return is_array($value) && in_array($field, $value);
-                default:
-                    return false;
-            }
-        case 'string':
-            // saves a lot of duplicate ternaries, no idea why php needs these to be strings
-            $cmpFunc = $ignoreCase ? 'strcasecmp' : 'strcmp';
-            $posFunc = $ignoreCase ? 'stripos' : 'strpos';
-            switch ($criteria) {
-                case '!=':
-                    return $cmpFunc($field, $value) != 0;
-                case '==':
-                    return $cmpFunc($field, $value) == 0;
-                case '>=':
-                    return $cmpFunc($field, $value) >= 0;
-                case '<=':
-                    return $cmpFunc($field, $value) <= 0;
-                case '<':
-                    return $cmpFunc($field, $value) < 0;
-                case '>':
-                    return $cmpFunc($field, $value) > 0;
-                case 'includes':
-                case 'contains':
-                    return $value != '' ? ($posFunc($field, $value) !== false) : true;
-                case 'startsWith':
-                    return $value != '' ? ($posFunc($field, $value) === 0) : true;
-                case 'endsWith':
-                    $end = substr($field, -strlen($value));
-                    return $value != '' ? ($cmpFunc($end, $value) === 0) : true;
-                case 'in':
-                    $found = false;
-                    foreach ($value as $val) {
-                        $found = $cmpFunc($field, $val) == 0;
-                        if ($found)
-                            break;
-                    }
-                    return $found;
-                default:
-                    return false;
-            }
-        case 'array':
-            switch ($criteria) {
-                case 'array-contains':
-                    return array_contains($field, $value, $ignoreCase);
-                case 'array-contains-none':
-                    return !array_contains_any($field, $value, $ignoreCase);
-                case 'array-contains-any':
-                    return array_contains_any($field, $value, $ignoreCase);
-                case 'array-contains-all':
-                    return array_contains_all($field, $value, $ignoreCase);
-                case 'array-length':
-                case 'array-length-eq':
-                    return count($field) == $value;
-                case 'array-length-df':
-                    return count($field) != $value;
-                case 'array-length-gt':
-                    return count($field) > $value;
-                case 'array-length-lt':
-                    return count($field) < $value;
-                case 'array-length-ge':
-                    return count($field) >= $value;
-                case 'array-length-le':
-                    return count($field) <= $value;
-                default:
-                    return false;
-            }
-        default:
-            break;
-    }
 
-    // unknown type
-    return false;
+    return match ($fieldType) {
+        'boolean' => match ($criteria) {
+            '!=' => $field != $value,
+            '==' => $field == $value,
+            default => false,
+        },
+        'integer', 'double' => match ($criteria) {
+            '!=' => $field != $value,
+            '==' => $field == $value,
+            '>=' => $field >= $value,
+            '<=' => $field <= $value,
+            '<' => $field < $value,
+            '>' => $field > $value,
+            'in' => is_array($value) && in_array($field, $value, true),
+            default => false,
+        },
+        'string' => (function() use ($field, $criteria, $value, $ignoreCase): bool {
+            $cmpFunc = $ignoreCase ? strcasecmp(...) : strcmp(...);
+            $posFunc = $ignoreCase ? stripos(...) : strpos(...);
+
+            return match ($criteria) {
+                '!=' => $cmpFunc($field, $value) !== 0,
+                '==' => $cmpFunc($field, $value) === 0,
+                '>=' => $cmpFunc($field, $value) >= 0,
+                '<=' => $cmpFunc($field, $value) <= 0,
+                '<' => $cmpFunc($field, $value) < 0,
+                '>' => $cmpFunc($field, $value) > 0,
+                'includes', 'contains' => $value !== '' ? ($posFunc($field, $value) !== false) : true,
+                'startsWith' => $value !== '' ? ($posFunc($field, $value) === 0) : true,
+                'endsWith' => $value !== '' ? ($cmpFunc(substr($field, -strlen($value)), $value) === 0) : true,
+                'in' => is_array($value) && array_any($value, fn($val) => $cmpFunc($field, $val) === 0),
+                default => false,
+            };
+        })(),
+        'array' => match ($criteria) {
+            'array-contains' => array_contains($field, $value, $ignoreCase),
+            'array-contains-none' => !array_contains_any($field, $value, $ignoreCase),
+            'array-contains-any' => array_contains_any($field, $value, $ignoreCase),
+            'array-contains-all' => array_contains_all($field, $value, $ignoreCase),
+            'array-length', 'array-length-eq' => count($field) == $value,
+            'array-length-df' => count($field) != $value,
+            'array-length-gt' => count($field) > $value,
+            'array-length-lt' => count($field) < $value,
+            'array-length-ge' => count($field) >= $value,
+            'array-length-le' => count($field) <= $value,
+            default => false,
+        },
+        default => false,
+    };
 }
 
 /**
@@ -118,16 +72,15 @@ function search($field, string $criteria, $value, bool $ignoreCase): bool {
  *
  * @param array<mixed> $array
  * @param mixed $value
+ * @param bool $ignoreCase
+ * @return bool
  */
-function array_contains(array $array, $value, bool $ignoreCase = false): bool {
-    for ($tmp_i = 0; $tmp_i < count($array); ++$tmp_i) {
-        $contains = $ignoreCase
-            ? strcasecmp($array[$tmp_i], $value) === 0
-            : $array[$tmp_i] == $value;
-        if ($contains)
-            return true;
-    }
-    return false;
+function array_contains(array $array, mixed $value, bool $ignoreCase = false): bool {
+    return array_any($array, function($item) use ($value, $ignoreCase) {
+        return $ignoreCase
+            ? (is_string($item) && is_string($value) ? strcasecmp($item, $value) === 0 : $item == $value)
+            : $item == $value;
+    });
 }
 
 /**
@@ -135,21 +88,15 @@ function array_contains(array $array, $value, bool $ignoreCase = false): bool {
  *
  * @param array<mixed> $concernedField
  * @param mixed $value
+ * @param bool $ignoreCase
+ * @return bool
+ * @throws HTTPException
  */
-function array_contains_any(array $concernedField, $value, bool $ignoreCase = false): bool {
-    if (gettype($value) !== 'array')
+function array_contains_any(array $concernedField, mixed $value, bool $ignoreCase = false): bool {
+    if (!is_array($value))
         throw new HTTPException("Comparison array is not an array");
 
-    for ($val_i = 0; $val_i < count($value); ++$val_i) {
-        for ($cf_i = 0; $cf_i < count($concernedField); ++$cf_i) {
-            $contains = $ignoreCase
-                ? strcasecmp($concernedField[$cf_i], $value[$val_i]) === 0
-                : $concernedField[$cf_i] == $value[$val_i];
-            if ($contains)
-                return true;
-        }
-    }
-    return false;
+    return array_any($value, fn($val) => array_contains($concernedField, $val, $ignoreCase));
 }
 
 /**
@@ -157,17 +104,15 @@ function array_contains_any(array $concernedField, $value, bool $ignoreCase = fa
  *
  * @param array<mixed> $concernedField
  * @param mixed $value
+ * @param bool $ignoreCase
+ * @return bool
+ * @throws HTTPException
  */
-function array_contains_all(array $concernedField, $value, bool $ignoreCase = false): bool {
-    if (gettype($value) !== 'array')
+function array_contains_all(array $concernedField, mixed $value, bool $ignoreCase = false): bool {
+    if (!is_array($value))
         throw new HTTPException("Comparison array is not an array");
 
-    $diff = $ignoreCase
-        ? array_udiff($value, $concernedField, 'strcasecmp')
-        : array_diff($value, $concernedField);
-
-    // if there's no array diff one must be a superset of the other
-    return count($diff) === 0;
+    return array_all($value, fn($val) => array_contains($concernedField, $val, $ignoreCase));
 }
 
 /**
@@ -175,16 +120,17 @@ function array_contains_all(array $concernedField, $value, bool $ignoreCase = fa
  *
  * @param mixed $el
  * @param array<int, array{field: string, criteria: mixed, value: mixed, ignoreCase?: bool}> $conditions
+ * @return bool
  */
-function matches_search_conditions($el, array $conditions): bool {
+function matches_search_conditions(mixed $el, array $conditions): bool {
     $el_root = $el;
 
     foreach ($conditions as $condition) {
         $field = $condition['field'];
         $field_path = explode('.', $field);
 
-        for ($field_ind = 0; $el != NULL && $field_ind + 1 < count($field_path); ++$field_ind) {
-            if (!array_key_exists($field_path[$field_ind], $el))
+        for ($field_ind = 0; $el !== null && $field_ind + 1 < count($field_path); ++$field_ind) {
+            if (!is_array($el) || !array_key_exists($field_path[$field_ind], $el))
                 return false;
 
             $el = $el[$field_path[$field_ind]];
@@ -192,7 +138,8 @@ function matches_search_conditions($el, array $conditions): bool {
         }
 
         if (
-            $el == NULL ||
+            $el === null ||
+            !is_array($el) ||
             !array_key_exists($field, $el) ||
             !array_key_exists('criteria', $condition) ||
             !array_key_exists('value', $condition)
@@ -200,10 +147,10 @@ function matches_search_conditions($el, array $conditions): bool {
             return false;
         }
 
-        $ignoreCase = array_key_exists('ignoreCase', $condition) && !!$condition['ignoreCase'];
+        $ignoreCase = !empty($condition['ignoreCase']);
         if (!search(
             $el[$field],
-            $condition['criteria'],
+            (string) $condition['criteria'],
             $condition['value'],
             $ignoreCase
         )) {
@@ -226,17 +173,16 @@ function matches_search_conditions($el, array $conditions): bool {
  * @param mixed $random
  * @return array<int|string, mixed>
  */
-function filter_search_conditions(array $content, array $conditions, bool $has_limit = false, $limit = false, $random = false): array {
+function filter_search_conditions(array $content, array $conditions, bool $has_limit = false, int|false $limit = false, mixed $random = false): array {
     $res = [];
     foreach ($content as $key => $el) {
         if (matches_search_conditions($el, $conditions)) {
             $res[$key] = $el;
 
             // only stop early if results will not be ordered randomly
-            if ($has_limit && $random === false && count($res) >= $limit)
+            if ($has_limit && $random === false && $limit !== false && count($res) >= $limit)
                 break;
         }
     }
     return $res;
 }
-

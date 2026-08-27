@@ -1,11 +1,13 @@
 <?php
 
+require_once __DIR__ . '/polyfills/polyfills.php';
+
 /**
  * Applies the application's “provided” rule, treating null, empty strings, zero-like values, and empty arrays as absent.
  *
  * @param mixed $var
  */
-function check($var): bool {
+function check(mixed $var): bool {
     return isset($var) && !empty($var);
 }
 
@@ -14,9 +16,9 @@ function check($var): bool {
  *
  * @param string $body
  * @param int $code
- * @return void
+ * @return never
  */
-function http_response($body, $code = 200) {
+function http_response(string $body, int $code = 200): never {
     header('Content-Type: application/json');
     http_response_code($code);
     echo $body;
@@ -29,9 +31,9 @@ function http_response($body, $code = 200) {
  *
  * @param mixed $json
  * @param int $code
- * @return void
+ * @return never
  */
-function http_json_response($json, $code = 200) {
+function http_json_response(mixed $json, int $code = 200): never {
     $encoded = json_encode($json);
     http_response($encoded === false ? '{"error":"JSON encoding failed"}' : $encoded, $code);
 }
@@ -42,9 +44,9 @@ function http_json_response($json, $code = 200) {
  * @param string|array<mixed> $message
  * @param string $key
  * @param int $code
- * @return void
+ * @return never
  */
-function http_message($message, $key = 'message', $code = 200) {
+function http_message(string|array $message, string $key = 'message', int $code = 200): never {
     $arr = [$key => $message];
     http_json_response($arr, $code);
 }
@@ -56,9 +58,8 @@ function http_message($message, $key = 'message', $code = 200) {
  * @param string $message
  * @return never
  */
-function http_error($code, $message) {
+function http_error(int $code, string $message): never {
     http_message($message, 'error', $code);
-    exit(); // Explicitly call exit() to satisfy PHPStan that http_error returns never
 }
 
 /**
@@ -66,13 +67,12 @@ function http_error($code, $message) {
  *
  * @param mixed $value
  */
-function is_primitive($value): bool {
-    $value_type = gettype($value);
-    return $value_type == 'NULL' ||
-        $value_type == 'boolean' ||
-        $value_type == 'integer' ||
-        $value_type == 'double' ||
-        $value_type == 'string';
+function is_primitive(mixed $value): bool {
+    return $value === null ||
+        is_bool($value) ||
+        is_int($value) ||
+        is_float($value) ||
+        is_string($value);
 }
 
 /**
@@ -80,9 +80,8 @@ function is_primitive($value): bool {
  *
  * @param mixed $value
  */
-function is_number_like($value): bool {
-    $value_type = gettype($value);
-    return in_array($value_type, ['integer', 'double']);
+function is_number_like(mixed $value): bool {
+    return is_int($value) || is_float($value);
 }
 
 /**
@@ -90,16 +89,17 @@ function is_number_like($value): bool {
  *
  * @param mixed $value
  */
-function is_keyable($value): bool {
-    return in_array(gettype($value), ['integer', 'string']);
+function is_keyable(mixed $value): bool {
+    return is_int($value) || is_string($value);
 }
 
 /**
  * Sends the standard success envelope while allowing string messages or structured result data.
  *
  * @param string|array<mixed> $message
+ * @return never
  */
-function http_success($message): void {
+function http_success(string|array $message): never {
     http_message($message, 'message', 200);
 }
 
@@ -110,7 +110,7 @@ function http_success($message): void {
  * @param array<mixed> $arr
  * @return mixed
  */
-function check_key_json($key, array $arr) {
+function check_key_json(int|string $key, array $arr): mixed {
     if (array_key_exists($key, $arr))
         return $arr[$key];
     return false;
@@ -121,10 +121,8 @@ function check_key_json($key, array $arr) {
  *
  * @param mixed $arr
  */
-function array_assoc($arr): bool {
-    if ($arr === [] || !is_array($arr))
-        return false;
-    return array_keys($arr) !== range(0, count($arr) - 1);
+function array_assoc(mixed $arr): bool {
+    return is_array($arr) && !array_is_list($arr);
 }
 
 /**
@@ -132,8 +130,8 @@ function array_assoc($arr): bool {
  *
  * @param mixed $arr
  */
-function array_sequential($arr): bool {
-    return !array_assoc($arr);
+function array_sequential(mixed $arr): bool {
+    return is_array($arr) && array_is_list($arr);
 }
 
 /**
@@ -148,21 +146,16 @@ function array_sequential($arr): bool {
  * @param int $depth Nesting depth where associative array keys should be formatted as JSON objects.
  * @return string|false JSON-encoded string representation, or false on error.
  */
-function stringifier($obj, int $depth = 1) {
-    if ($depth == 0 || !is_array($obj) || !array_assoc($obj))
+function stringifier(mixed $obj, int $depth = 1): string|false {
+    if ($depth === 0 || !is_array($obj) || !array_assoc($obj))
         return json_encode($obj);
-
-    $res = "{";
 
     $formed = [];
     foreach (array_keys($obj) as $key) {
-        array_push($formed, '"' . strval($key) . '":' . stringifier($obj[$key], $depth - 1));
+        $formed[] = '"' . strval($key) . '":' . stringifier($obj[$key], $depth - 1);
     }
-    $res .= implode(",", $formed);
 
-    $res .= "}";
-
-    return $res;
+    return '{' . implode(',', $formed) . '}';
 }
 
 /** Configures cross-origin headers and completes browser preflight requests before endpoint routing begins. */
@@ -175,13 +168,13 @@ function cors(): void {
     }
 
     // Access-Control headers are received during OPTIONS requests
-    if ($_SERVER['REQUEST_METHOD'] == 'OPTIONS') {
+    if (($_SERVER['REQUEST_METHOD'] ?? '') === 'OPTIONS') {
 
         if (isset($_SERVER['HTTP_ACCESS_CONTROL_REQUEST_METHOD']))
             header("Access-Control-Allow-Methods: GET, POST, PATCH, DELETE, OPTIONS");
 
         if (isset($_SERVER['HTTP_ACCESS_CONTROL_REQUEST_HEADERS']))
-            header("Access-Control-Allow-Headers:        {$_SERVER['HTTP_ACCESS_CONTROL_REQUEST_HEADERS']}");
+            header("Access-Control-Allow-Headers: {$_SERVER['HTTP_ACCESS_CONTROL_REQUEST_HEADERS']}");
 
         exit(0);
     }
@@ -189,17 +182,17 @@ function cors(): void {
 
 /** Normalizes dot segments without resolving symlinks, allowing endpoints to enforce their configured storage root. */
 function remove_dots(string $path): string {
-    $root = ($path[0] === '/') ? '/' : '';
+    $root = ($path !== '' && $path[0] === '/') ? '/' : '';
 
     $segments = explode('/', trim($path, '/'));
     $ret = [];
     foreach ($segments as $segment) {
-        if ($segment == '.' || strlen($segment) === 0)
+        if ($segment === '.' || strlen($segment) === 0)
             continue;
-        if ($segment == '..')
+        if ($segment === '..')
             array_pop($ret);
         else
-            array_push($ret, $segment);
+            $ret[] = $segment;
     }
     return $root . implode('/', $ret);
 }
@@ -211,11 +204,11 @@ function remove_dots(string $path): string {
  * @param string $path Requested file path
  * @return string|false Safe absolute path, or false if not authorized
  */
-function resolve_safe_path(string $basePath, string $path) {
+function resolve_safe_path(string $basePath, string $path): string|false {
     $normalizedBase = rtrim(remove_dots($basePath), '/') . '/';
     $absolutePath = remove_dots($normalizedBase . $path);
 
-    if (strpos($absolutePath . '/', $normalizedBase) !== 0 && $absolutePath !== rtrim($normalizedBase, '/')) {
+    if (!str_starts_with($absolutePath . '/', $normalizedBase) && $absolutePath !== rtrim($normalizedBase, '/')) {
         return false;
     }
 
@@ -229,7 +222,7 @@ function resolve_safe_path(string $basePath, string $path) {
  * @param array<string>|null $validTokens List of valid tokens.
  * @return bool True if the token matches an authorized token in constant time.
  */
-function verify_token($token, ?array $validTokens): bool {
+function verify_token(mixed $token, ?array $validTokens): bool {
     if (!is_string($token) || $token === '' || empty($validTokens)) {
         return false;
     }
@@ -243,7 +236,6 @@ function verify_token($token, ?array $validTokens): bool {
     return false;
 }
 
-
 /**
  * Read a value from the POST payload and return it as a string.
  *
@@ -252,11 +244,11 @@ function verify_token($token, ?array $validTokens): bool {
  * @param string $var POST key to read
  * @return string|false Sanitized value, or false when unavailable
  */
-function p($var) {
+function p(string $var): string|false {
     try {
         // Access can emit notices for missing indexes depending on runtime settings.
         if (!isset($_POST[$var]) || !check($_POST[$var])) return false;
-    } catch (Throwable $th) {
+    } catch (Throwable) {
         return false;
     }
 
@@ -271,11 +263,11 @@ function p($var) {
  * @param string $var Query parameter key to read
  * @return string|false Sanitized value, or false when unavailable
  */
-function g($var) {
+function g(string $var): string|false {
     try {
         // Access can emit notices for missing indexes depending on runtime settings.
         if (!isset($_GET[$var]) || !check($_GET[$var])) return false;
-    } catch (Throwable $th) {
+    } catch (Throwable) {
         return false;
     }
 
@@ -309,9 +301,9 @@ function check_file_extension(string $path, array $authorized_extensions): void 
  * Serializes successful read results and turns JSON encoding failures into a consistent server error response.
  *
  * @param mixed $data Data to serialize and send.
- * @return void
+ * @return never
  */
-function http_response_stringified($data) {
+function http_response_stringified(mixed $data): never {
     if (is_array($data) && array_assoc($data)) {
         $stringified = stringifier($data);
     } else {

@@ -1,5 +1,8 @@
 <?php
 
+use Random\Randomizer;
+use Random\Engine\Secure;
+
 require_once __DIR__ . '/../utils.php';
 require_once __DIR__ . '/FileAccess.php';
 require_once __DIR__ . '/HTTPException.php';
@@ -10,20 +13,6 @@ require_once __DIR__ . '/../read/random.php';
 
 /** Manages locked, JSON-backed collection operations. */
 class JSONDatabase {
-    /** Directory where the collection file is stored. */
-    public string $folderPath = './files/';
-    /** Collection file name without extension. */
-    public string $fileName = 'db';
-    /** Extension for the collection file. */
-    public string $fileExt = '.json';
-
-    /** Whether automatic key generation is enabled for add operations. */
-    public bool $autoKey = true;
-    /** Whether auto-generated keys should increment numerically or use unique IDs. */
-    public bool $autoIncrement = true;
-    /** Whether to use cryptographically secure random keys instead of timestamp-based unique IDs when autoIncrement is false. */
-    public bool $secureKeys = false;
-
     /**
      * Creates a new JSONDatabase instance.
      *
@@ -35,21 +24,13 @@ class JSONDatabase {
      * @param string $fileExt File extension for the database file.
      */
     public function __construct(
-        string $fileName = 'db',
-        bool $autoKey = true,
-        bool $autoIncrement = true,
-        bool $secureKeys = false,
-        string $folderPath = './files/',
-        string $fileExt = '.json'
-    ) {
-        // if no/some args provided they just fall back to their defaults
-        $this->fileName = $fileName;
-        $this->autoKey = $autoKey;
-        $this->autoIncrement = $autoIncrement;
-        $this->secureKeys = $secureKeys;
-        $this->folderPath = $folderPath;
-        $this->fileExt = $fileExt;
-    }
+        public string $fileName = 'db',
+        public bool $autoKey = true,
+        public bool $autoIncrement = true,
+        public bool $secureKeys = false,
+        public string $folderPath = './files/',
+        public string $fileExt = '.json'
+    ) {}
 
     /**
      * Gets the full file path for the collection JSON file.
@@ -67,27 +48,30 @@ class JSONDatabase {
      * @return int|false Number of bytes written, or false on failure.
      * @throws HTTPException If content or an item inside is a primitive value.
      */
-    public function writeRaw($content) {
+    public function writeRaw(mixed $content): int|false {
         $content_type = gettype($content);
         $incorrect_types = ['integer', 'double', 'string', 'boolean'];
 
         // content must not be primitive
-        if (in_array($content_type, $incorrect_types)) {
+        if (in_array($content_type, $incorrect_types, true)) {
             throw new HTTPException("writeRaw value cannot be a $content_type", 400);
         }
 
         // value must not be a sequential array with values inside [1, 2, 3]
         // we accept sequential arrays but with objects not primitives
-        if (is_array($content) and !array_assoc($content)) {
+        if (is_array($content) && !array_assoc($content)) {
             foreach ($content as $item) {
                 $item_type = gettype($item);
-                if (in_array($item_type, $incorrect_types)) {
+                if (in_array($item_type, $incorrect_types, true)) {
                     throw new HTTPException("writeRaw item cannot be a $item_type", 400);
                 }
             }
         }
 
         $content = stringifier($content);
+        if ($content === false) {
+            throw new HTTPException('Failed to encode database content', 500);
+        }
 
         // fix empty raw content because php parses {} as array(0)
         if ($content === '[]')
@@ -156,7 +140,7 @@ class JSONDatabase {
      * @param string|int $key Key of the element to retrieve.
      * @return mixed The stored element, or null if not found.
      */
-    public function get($key) {
+    public function get(string|int $key): mixed {
         $obj = $this->read();
         if (
             !array_key_exists(strval($key), $obj->json)
@@ -168,14 +152,14 @@ class JSONDatabase {
     /**
      * Sets or overwrites an element in the collection by key.
      *
-     * @param string|int $key Key for the element.
+     * @param mixed $key Key for the element.
      * @param mixed $value Element object to store.
      * @return int Number of bytes written.
      * @throws HTTPException On invalid key or value type.
      */
-    public function set($key, $value): int {
+    public function set(mixed $key, mixed $value): int {
         // "===" fixes the empty array "==" comparison
-        if ($key === null or $value === null) {
+        if ($key === null || $value === null) {
             throw new HTTPException('Key or value is null', 400);
         }
 
@@ -187,12 +171,12 @@ class JSONDatabase {
         if ($encoded_value === false)
             throw new HTTPException('Failed to encode value', 400);
 
-        $key = strval($key);
+        $strKey = strval($key);
 
         // set it at the corresponding value
         $obj = $this->read(true);
 
-        $obj->json[$key] = json_decode($encoded_value, true);
+        $obj->json[$strKey] = json_decode($encoded_value, true);
         return $this->write($obj);
     }
 
@@ -203,10 +187,9 @@ class JSONDatabase {
      * @param mixed $values Array of corresponding values.
      * @throws HTTPException On invalid inputs or mismatched array sizes.
      */
-    public function setBulk($keys, $values): void {
+    public function setBulk(mixed $keys, mixed $values): void {
         // we verify that our keys are in an array
-        $key_var_type = gettype($keys);
-        if ($key_var_type != 'array')
+        if (!is_array($keys))
             throw new HTTPException('Incorrect keys type');
 
         $encoded_values = json_encode($values);
@@ -217,8 +200,7 @@ class JSONDatabase {
         if ($encoded_keys === false)
             throw new HTTPException('Failed to encode keys', 400);
 
-
-        // else set it at the corresponding value
+        // set it at the corresponding value
         $obj = $this->read(true);
 
         // decode and add all values
@@ -259,7 +241,11 @@ class JSONDatabase {
      * @return string Candidate key string.
      */
     private function newKey(): string {
-        return $this->secureKeys ? bin2hex(random_bytes(16)) : uniqid();
+        if ($this->secureKeys) {
+            $randomizer = new Randomizer(new Secure());
+            return bin2hex($randomizer->getBytes(16));
+        }
+        return uniqid();
     }
 
     /**
@@ -270,9 +256,10 @@ class JSONDatabase {
      */
     private function newLastKey(array $arr): string {
         if ($this->autoIncrement) {
-            $int_keys = array_filter(array_keys($arr), 'is_int');
+            $int_keys = array_filter(array_keys($arr), is_int(...));
             sort($int_keys);
-            $last_key = count($int_keys) > 0 ? $int_keys[count($int_keys) - 1] + 1 : 0;
+            $last_val = array_last($int_keys);
+            $last_key = $last_val !== null ? $last_val + 1 : 0;
         } else {
             do {
                 $last_key = $this->newKey();
@@ -289,16 +276,16 @@ class JSONDatabase {
      * @return string The generated key.
      * @throws HTTPException If autoKey is disabled or value is invalid.
      */
-    public function add($value): string {
-        if ($this->autoKey == false)
+    public function add(mixed $value): string {
+        if (!$this->autoKey)
             throw new HTTPException('Automatic key generation is disabled');
 
         // restricts types to objects only
         $value_type = gettype($value);
-        if (is_primitive($value) or (is_array($value) and count($value) and !array_assoc($value)))
+        if (is_primitive($value) || (is_array($value) && count($value) > 0 && !array_assoc($value)))
             throw new HTTPException("add value must be an object, not a $value_type", 400);
 
-        // else set it at the corresponding value
+        // set it at the corresponding value
         $obj = $this->read(true);
 
         $id = $this->newLastKey($obj->json);
@@ -316,23 +303,25 @@ class JSONDatabase {
      * @return array<int, string> Array of generated keys in insertion order.
      * @throws HTTPException If autoKey is disabled or values are invalid.
      */
-    public function addBulk($values): array {
+    public function addBulk(mixed $values): array {
         if (!$this->autoKey)
             throw new HTTPException('Automatic key generation is disabled');
 
-        if ($values !== [] and $values == NULL)
+        if ($values !== [] && $values === null)
             throw new HTTPException('null-like value not accepted', 400);
 
+        if (!is_array($values))
+            throw new HTTPException("value must be an array not a " . gettype($values), 400);
+
         // restricts types to non base variables
-        $value_type = gettype($values);
-        if (is_primitive($values) or (is_array($values) and count($values) and array_assoc($values)))
-            throw new HTTPException("value must be an array not a $value_type", 400);
+        if (count($values) > 0 && array_assoc($values))
+            throw new HTTPException("value must be an array not an object", 400);
 
         // so here we have a sequential array type
         // now the values inside this array must not be base values
         foreach ($values as $value) {
             $value_type = gettype($value);
-            if (is_primitive($value) or (array_sequential($value) and count($value)))
+            if (is_primitive($value) || (array_sequential($value) && count($value) > 0))
                 throw new HTTPException("array value must be an object not a $value_type", 400);
         }
 
@@ -340,18 +329,16 @@ class JSONDatabase {
         if (array_assoc($values))
             throw new HTTPException('Wanted sequential array');
 
-        // else set it at the corresponding value
+        // set it at the corresponding value
         $obj = $this->read(true);
 
-        // decode and add all values
-        $values_decoded = $values;
         $id_array = [];
-        foreach ($values_decoded as $value_decoded) {
+        foreach ($values as $value_decoded) {
             $id = $this->newLastKey($obj->json);
 
             $obj->json[$id] = $value_decoded;
 
-            array_push($id_array, $id);
+            $id_array[] = $id;
         }
 
         $this->write($obj);
@@ -365,7 +352,7 @@ class JSONDatabase {
      * @param string|int $key Key of the element to remove.
      * @throws HTTPException On invalid key type.
      */
-    public function remove($key): void {
+    public function remove(string|int $key): void {
         $key_var_type = gettype($key);
         if (!is_keyable($key))
             throw new HTTPException("Incorrect key type, got $key_var_type, expected string or integer", 400);
@@ -381,11 +368,11 @@ class JSONDatabase {
      * @param mixed $keys Array of string|int keys to remove.
      * @throws HTTPException On invalid keys array format.
      */
-    public function removeBulk($keys): void {
-        if ($keys !== [] and $keys == NULL)
+    public function removeBulk(mixed $keys): void {
+        if ($keys !== [] && $keys === null)
             throw new HTTPException('null-like keys not accepted', 400);
 
-        if (gettype($keys) !== 'array' or array_assoc($keys))
+        if (!is_array($keys) || array_assoc($keys))
             throw new HTTPException('keys must be an array', 400);
 
         for ($i = 0; $i < count($keys); $i++) {
@@ -409,14 +396,14 @@ class JSONDatabase {
      * Searches elements matching specified field conditions.
      *
      * @param array<int, array{field: string, criteria: mixed, value: mixed, ignoreCase?: bool}> $conditions Array of search conditions.
-     * @param bool|array{seed?: int} $random Optional random selection settings or boolean.
-     * @param bool|int $limit Maximum number of results to return.
+     * @param mixed $random Optional random selection settings or boolean.
+     * @param mixed $limit Maximum number of results to return.
      * @return array<int|string, mixed> Matching elements.
      * @throws HTTPException On invalid limit or random seed option.
      */
-    public function search(array $conditions, $random = false, $limit = false): array {
+    public function search(array $conditions, mixed $random = false, mixed $limit = false): array {
         $has_limit = false;
-        if (gettype($limit) === 'integer' && $limit > 0)
+        if (is_int($limit) && $limit > 0)
             $has_limit = true;
         else if ($limit !== false)
             throw new HTTPException('search option limit must be a positive integer');
@@ -433,7 +420,7 @@ class JSONDatabase {
                 $seed = intval($rawSeed);
             }
             // apply limit during random selection to avoid unnecessary processing
-            $res = choose_random($res, $seed, $has_limit ? $limit : -1);
+            $res = choose_random($res, $seed, $has_limit ? (int) $limit : -1);
         }
 
         return $res;
@@ -445,11 +432,11 @@ class JSONDatabase {
      * @param mixed $searchedKeys Array of string|int keys to look up.
      * @return array<int|string, mixed> Map of found keys and their corresponding elements.
      */
-    public function searchKeys($searchedKeys): array {
+    public function searchKeys(mixed $searchedKeys): array {
         $obj = $this->read();
 
         $res = [];
-        if (gettype($searchedKeys) != 'array')
+        if (!is_array($searchedKeys))
             return $res;
 
         foreach ($searchedKeys as $key) {
@@ -469,7 +456,7 @@ class JSONDatabase {
      * @param mixed $editObj Edit specification object.
      * @throws HTTPException If edit specification is invalid.
      */
-    public function editField($editObj): void {
+    public function editField(mixed $editObj): void {
         $fileObj = $this->read(true);
         edit_field($fileObj->json, $editObj);
         $this->write($fileObj);
@@ -482,9 +469,9 @@ class JSONDatabase {
      * @return bool|void Returns false if input is an associative array, void on success.
      * @throws HTTPException If edit specification is invalid.
      */
-    public function editFieldBulk($objArray) {
+    public function editFieldBulk(mixed $objArray) {
         // need sequential array
-        if (array_assoc($objArray))
+        if (!is_array($objArray) || array_assoc($objArray))
             return false;
 
         $fileObj = $this->read(true);
@@ -498,7 +485,7 @@ class JSONDatabase {
     /**
      * Projects specific fields from collection elements, with optional search filtering.
      *
-     * @param array{fields: array<int, string>, search?: array<int, array{field: string, criteria: mixed, value: mixed, ignoreCase?: bool}>} $selectObj Selection options including field names and optional search conditions.
+     * @param array<mixed> $selectObj Selection options including field names and optional search conditions.
      * @return array<int|string, array<string, mixed>> Projected element data.
      * @throws HTTPException On invalid selection options.
      */
@@ -506,13 +493,13 @@ class JSONDatabase {
         if (!array_key_exists('fields', $selectObj))
             throw new HTTPException('Missing required fields field');
 
-        if (!(gettype($selectObj['fields']) === 'array') || !(array_sequential($selectObj['fields'])))
+        if (!is_array($selectObj['fields']) || !array_sequential($selectObj['fields']))
             throw new HTTPException('Incorrect fields type, expected an array');
 
         // all field arguments should be strings
         $fields = $selectObj['fields'];
         foreach ($fields as $field) {
-            if (gettype($field) !== 'string')
+            if (!is_string($field))
                 throw new HTTPException('fields field incorrect, expected a string array');
         }
 
@@ -532,7 +519,7 @@ class JSONDatabase {
         foreach ($content as $key => $value) {
             $result[$key] = [];
             foreach ($fields as $field) {
-                if (array_key_exists($field, $value))
+                if (is_array($value) && array_key_exists($field, $value))
                     $result[$key][$field] = $value[$field];
             }
         }
@@ -543,7 +530,7 @@ class JSONDatabase {
     /**
      * Collects unique values for a given field across all elements in the collection.
      *
-     * @param array{field: string, flatten?: bool} $valueObj Options containing target field name and optional flatten flag.
+     * @param array<mixed> $valueObj Options containing target field name and optional flatten flag.
      * @return array<int, mixed> Unique values list.
      * @throws HTTPException On invalid value options.
      */
@@ -554,12 +541,11 @@ class JSONDatabase {
         if (!is_string($valueObj['field']))
             throw new HTTPException('Incorrect field type, expected a string');
 
+        $flatten = false;
         if (array_key_exists('flatten', $valueObj)) {
             if (!is_bool($valueObj['flatten']))
                 throw new HTTPException('Incorrect flatten type, expected a boolean');
             $flatten = $valueObj['flatten'];
-        } else {
-            $flatten = false;
         }
 
         $field = $valueObj['field'];
@@ -568,23 +554,25 @@ class JSONDatabase {
 
         $result = [];
         foreach ($obj->json as $value) {
+            if (!is_array($value))
+                continue;
+
             // get correct field and skip existing primitive values (faster)
-            if (!array_key_exists($field, $value) || in_array($value, $result))
+            if (!array_key_exists($field, $value) || in_array($value[$field], $result, true))
                 continue;
 
             // flatten array results if array field
             if ($flatten === true && is_array($value[$field]))
                 $result = array_merge($result, $value[$field]);
             else
-                array_push($result, $value[$field]);
+                $result[] = $value[$field];
         }
 
         // remove complex duplicates
-        $result = array_intersect_key($result, array_unique(array_map('serialize', $result)));
+        $result = array_intersect_key($result, array_unique(array_map(serialize(...), $result)));
 
-        return $result;
+        return array_values($result);
     }
-
 
     /**
      * Selects random elements from the collection with optional seed and offset paging.
@@ -596,7 +584,7 @@ class JSONDatabase {
     public function random(array $params): array {
         $hasMax = array_key_exists('max', $params);
         $max = $hasMax ? $params['max'] : -1;
-        if ($hasMax && (gettype($max) !== 'integer' || $max < -1))
+        if ($hasMax && (!is_int($max) || $max < -1))
             throw new HTTPException('Expected integer >= -1 for the max');
 
         $hasSeed = array_key_exists('seed', $params);
@@ -608,12 +596,12 @@ class JSONDatabase {
 
         // offset validation
         $offset = $hasOffset ? $params['offset'] : 0;
-        if ($hasOffset && (gettype($offset) !== 'integer' || $offset < 0))
+        if ($hasOffset && (!is_int($offset) || $offset < 0))
             throw new HTTPException('Expected integer >= 0 for the offset');
 
         // seed validation
         $seed = $hasSeed ? $params['seed'] : false;
-        if ($hasSeed && gettype($seed) !== 'integer')
+        if ($hasSeed && !is_int($seed))
             throw new HTTPException('Expected integer for the seed');
 
         $obj = $this->read();

@@ -1,5 +1,8 @@
 <?php
 
+use Random\Randomizer;
+use Random\Engine\Mt19937;
+
 /** Generates a time-derived seed for callers that need a non-repeatable selection order. */
 function make_seed(): int {
     [$usec, $sec] = explode(' ', microtime());
@@ -10,43 +13,34 @@ function make_seed(): int {
  * Selects distinct entries by key, with optional deterministic ordering, limit, and skipped selections.
  *
  * @param array<mixed> $json
- * @return array<mixed>
  * @param int|false $seed
+ * @param int $max
+ * @param int $offset
+ * @return array<mixed>
  */
-function choose_random(array $json, $seed = false, int $max = -1, int $offset = 0): array {
+function choose_random(array $json, int|false $seed = false, int $max = -1, int $offset = 0): array {
     $keys = array_keys($json);
-    $keys_selected = [];
     $keys_length = count($keys);
 
     // return an empty array, can't get more elements
     if ($offset >= $keys_length) return [];
 
-    if ($max == -1 || $max > $keys_length) $max = $keys_length;
+    if ($max === -1 || $max > $keys_length) $max = $keys_length;
 
-    // set random seed just before starting picking
-    if ($seed !== false) mt_srand($seed);
+    $randomizer = $seed !== false ? new Randomizer(new Mt19937($seed)) : new Randomizer();
 
-    // the thing is that I need to splice keys from before the offset
+    // splice keys before the offset
     for ($i = 0; $i < $offset; ++$i) {
-        $index = mt_rand(0, $keys_length - 1);
+        $index = $randomizer->getInt(0, count($keys) - 1);
         array_splice($keys, $index, 1);
-
-        // update keys length
-        $keys_length = count($keys);
     }
 
-    // then while I can get new entries
-    // -> I still have keys
-    // -> I am not at maximum
-    for ($i = 0; $keys_length > 0 && $i < $max; ++$i) {
-        // get an index
-        $index = mt_rand(0, $keys_length - 1);
-
-        // move element to keys selected
-        $keys_selected = array_merge($keys_selected, array_splice($keys, $index, 1));
-
-        // recompute keys left
-        $keys_length = count($keys);
+    // pick up to $max keys
+    $keys_selected = [];
+    for ($i = 0; count($keys) > 0 && $i < $max; ++$i) {
+        $index = $randomizer->getInt(0, count($keys) - 1);
+        $spliced = array_splice($keys, $index, 1);
+        $keys_selected[] = $spliced[0];
     }
 
     // get objects from keys selected

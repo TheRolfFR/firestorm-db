@@ -7,7 +7,7 @@
  * @param mixed $token
  * @return void
  */
-function delete_file($path, $token): void {
+function delete_file(mixed $path, mixed $token): void {
     /** @var string|null $STORAGE_LOCATION */
     global $STORAGE_LOCATION;
 
@@ -27,15 +27,15 @@ function delete_file($path, $token): void {
         http_error(501, 'Developer is dumb and forgot to create $authorized_file_extension');
 
     // verifying token
-    if ($token === false || !is_string($token) || $token === '')
+    if (!is_string($token) || $token === '')
         http_error(400, 'No token provided');
     if (!verify_token($token, $db_tokens))
         http_error(403, 'Invalid token');
 
-    if ($path === false || !is_string($path) || trim($path) === '')
+    if (!is_string($path) || mb_trim($path) === '')
         http_error(400, 'No path provided');
 
-    $path = trim($path);
+    $path = mb_trim($path);
 
     // check path lower than me
     $absolutePath = resolve_safe_path($STORAGE_LOCATION, $path);

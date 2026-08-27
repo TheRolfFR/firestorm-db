@@ -440,11 +440,11 @@ import type {
 
 # Server
 
-Firestorm's backend consists of lightweight PHP endpoints compatible with **PHP 8.2+**.
+Firestorm's backend consists of lightweight PHP endpoints optimized for **PHP 8.5** with built-in backward-compatibility polyfills supporting **PHP 8.2+**.
 
 ## Server Setup
 
-Deploy the server files from [`src/server/`](./src/server/) to your PHP hosting directory.
+Deploy the server files from [`src/server/`](./src/server/) to your PHP hosting directory. The server includes zero-dependency polyfills (`src/server/polyfills/`) for standard library functions introduced in PHP 8.3–8.5 (`json_validate`, `array_any`, `array_all`, `array_find`, `mb_trim`, `array_first`, `array_last`), backed by typed Enums (`SearchCriteria`, `EditOperation`, `ReadCommand`, `WriteCommand`), Constructor Property Promotion, and modern `\Random\Randomizer` engines. If using Composer, a `composer.json` is also provided.
 
 The two files to configure are:
 

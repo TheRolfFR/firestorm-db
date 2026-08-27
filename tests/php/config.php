@@ -1,6 +1,15 @@
 <?php
-require_once './utils.php';
-require_once './classes/JSONDatabase.php';
+if (file_exists('./utils.php')) {
+    require_once './utils.php';
+} else {
+    require_once __DIR__ . '/../../src/server/utils.php';
+}
+
+if (file_exists('./classes/JSONDatabase.php')) {
+    require_once './classes/JSONDatabase.php';
+} else {
+    require_once __DIR__ . '/../../src/server/classes/JSONDatabase.php';
+}
 
 // whitelist of correct extensions
 $authorized_file_extension = ['.txt', '.png', '.jpg', '.jpeg'];

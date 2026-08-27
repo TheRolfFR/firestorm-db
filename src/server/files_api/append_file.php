@@ -9,7 +9,7 @@
  * @param mixed $token Authentication token.
  * @return string Confirmation message on success.
  */
-function append_file($path, $content, $create, $token): string {
+function append_file(mixed $path, mixed $content, mixed $create, mixed $token): string {
     /** @var string|null $STORAGE_LOCATION */
     global $STORAGE_LOCATION;
 
@@ -29,15 +29,15 @@ function append_file($path, $content, $create, $token): string {
         http_error(501, 'Developer is dumb and forgot to create $authorized_file_extension');
 
     // verifying token
-    if ($token === false || $token === null || !is_string($token) || $token === '')
+    if (!is_string($token) || $token === '')
         http_error(400, 'No token provided');
     if (!verify_token($token, $db_tokens))
         http_error(403, 'Invalid token');
 
-    if ($path === false || $path === null || !is_string($path) || trim($path) === '')
+    if (!is_string($path) || mb_trim($path) === '')
         http_error(400, 'No path provided');
 
-    if ($content === false || $content === null || !is_string($content))
+    if (!is_string($content))
         http_error(400, 'No content provided');
 
     $relativePath = remove_dots($path);

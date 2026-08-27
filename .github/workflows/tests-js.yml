@@ -8,12 +8,13 @@ on:
 
 jobs:
   js-wrapper-test:
-    name: Tests with PHP ${{ matrix.php }} & Node.js ${{ matrix.node }}
+    name: Tests (PHP ${{ matrix.php }}, Node ${{ matrix.node }}, Composer ${{ matrix.composer }})
     runs-on: ubuntu-latest
     strategy:
       matrix:
         php: ["8.2", "8.3", "8.4", "8.5"]
         node: ["^20.19.0", "^22.12.0", "24", "26"]
+        composer: [false, true]
         include:
           - node: "^20.19.0"
             pnpm: 10
@@ -36,6 +37,10 @@ jobs:
         uses: shivammathur/setup-php@v2
         with:
           php-version: ${{ matrix.php }}
+
+      - name: Install Composer dependencies
+        if: ${{ matrix.composer }}
+        run: composer install --no-interaction --prefer-dist --optimize-autoloader
 
       - name: Install dependencies
         run: pnpm install

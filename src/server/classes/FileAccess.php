@@ -2,8 +2,6 @@
 
 /** Carries a file's path, raw bytes, decoded collection data, and optional lock handle. */
 class FileObject {
-    /** Absolute or application-relative path used for every read and write operation. */
-    public string $filepath;
     /**
      * Raw bytes read from disk; JSONDatabase serializes decoded collections into this field before writing.
      */
@@ -15,14 +13,15 @@ class FileObject {
     public array $json = [];
     /**
      * Open stream retained only while a caller holds a shared lock and must later release it through write().
-     * @var resource $fd
+     * @var resource|null $fd
      */
-    public $fd;
+    public $fd = null;
 
     /** Initializes a transport object before any stream is opened. */
-    public function __construct(string $filepath) {
-        $this->filepath = $filepath;
-    }
+    public function __construct(
+        /** Absolute or application-relative path used for every read and write operation. */
+        public readonly string $filepath
+    ) {}
 }
 
 // basically a namespace
@@ -44,7 +43,7 @@ abstract class FileAccess {
 
         // exit if couldn't find file
         if ($file === false) {
-            if ($default == null)
+            if ($default === null)
                 throw new Exception("Could not open file: $filepath");
 
             // set default value in file and try opening again
@@ -104,7 +103,7 @@ abstract class FileAccess {
      * @return int The number of bytes written.
      * @throws HTTPException If the write fails or the file descriptor is invalid.
      */
-    public static function write(FileObject $fileObj) {
+    public static function write(FileObject $fileObj): int {
         if (!is_resource($fileObj->fd)) {
             throw new HTTPException("Invalid file descriptor for {$fileObj->filepath}. Check file lock state.", 400);
         }

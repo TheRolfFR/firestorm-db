@@ -27,7 +27,8 @@ async function setup_php() {
 	const [phpPaths, jsonPaths] = await Promise.all([
 		glob(join(process.cwd(), PHP_PATH, "**/*.*")),
 		glob(join(process.cwd(), "tests", "files", "*.json")),
-		mkdir(join(tmpFolder, "files")),
+		mkdir(join(tmpFolder, "files"), { recursive: true }),
+		mkdir(join(tmpFolder, "uploads"), { recursive: true }),
 	]);
 
 	const phpSymlinkProms = phpPaths.map(async (from) => {
@@ -73,6 +74,12 @@ async function setup_php() {
 			return res;
 		}),
 	);
+
+	if (existsSync(join(process.cwd(), "vendor"))) {
+		const vendorTo = join(tmpFolder, "vendor");
+		await symlink(join(process.cwd(), "vendor"), vendorTo, "dir");
+		consola.success(" Linked vendor/ directory");
+	}
 
 	const phpCommand = `sh tests/php/php_server_start.sh ${tmpFolder} ${PORT}`;
 	consola.info(` Starting php server with command:\n${phpCommand}\n`);

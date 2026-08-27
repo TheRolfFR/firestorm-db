@@ -16,7 +16,7 @@
  * @param mixed $token
  * @return string
  */
-function upload_file($path, $data, $overwrite, $token): string {
+function upload_file(mixed $path, mixed $data, mixed $overwrite, mixed $token): string {
     /** @var string|null $STORAGE_LOCATION */
     global $STORAGE_LOCATION;
 
@@ -36,12 +36,12 @@ function upload_file($path, $data, $overwrite, $token): string {
         http_error(501, 'Developer is dumb and forgot to create $authorized_file_extension');
 
     // verifying token
-    if ($token === false || !is_string($token) || $token === '')
+    if (!is_string($token) || $token === '')
         http_error(400, 'No token provided');
     if (!verify_token($token, $db_tokens))
         http_error(403, 'Invalid token');
 
-    if ($path === false || !is_string($path) || trim($path) === '')
+    if (!is_string($path) || mb_trim($path) === '')
         http_error(400, 'No path provided');
 
     $relativePath = remove_dots($path);

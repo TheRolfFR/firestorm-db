@@ -6,16 +6,16 @@
  * @param mixed $path
  * @return void
  */
-function get_file($path): void {
+function get_file(mixed $path): void {
     /** @var string|null $STORAGE_LOCATION */
     global $STORAGE_LOCATION;
 
     if (!$STORAGE_LOCATION)
         http_error(501, 'Developer forgot the $STORAGE_LOCATION');
 
-    if ($path === false || !is_string($path) || trim($path) === '')
+    if (!is_string($path) || mb_trim($path) === '')
         http_error(400, 'No path provided');
-    $path = trim($path);
+    $path = mb_trim($path);
 
     // check path lower than me
     $absolutePath = resolve_safe_path($STORAGE_LOCATION, $path);
@@ -44,7 +44,7 @@ function get_file($path): void {
         flush();
         readfile($absolutePath);
         die();
-    } catch (Throwable $th) {
+    } catch (Throwable) {
         $ext = strtolower(pathinfo($absolutePath, PATHINFO_EXTENSION));
         $mimeTypes = [
             'json' => 'application/json',

@@ -6,17 +6,17 @@
  * @param mixed $path File path to check.
  * @return bool True if path exists, false otherwise.
  */
-function exists_file($path): bool {
+function exists_file(mixed $path): bool {
     /** @var string|null $STORAGE_LOCATION */
     global $STORAGE_LOCATION;
 
     if (!$STORAGE_LOCATION)
         http_error(501, 'Developer forgot the $STORAGE_LOCATION');
 
-    if ($path === false || $path === null || !is_string($path) || trim($path) === '')
+    if (!is_string($path) || mb_trim($path) === '')
         http_error(400, 'No path provided');
 
-    $path = trim($path);
+    $path = mb_trim($path);
 
     $absolutePath = resolve_safe_path($STORAGE_LOCATION, $path);
 

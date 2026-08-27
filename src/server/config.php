@@ -1,6 +1,6 @@
 <?php
-require_once './utils.php';
-require_once './classes/JSONDatabase.php';
+require_once __DIR__ . '/utils.php';
+require_once __DIR__ . '/classes/JSONDatabase.php';
 
 $log_path = 'firestorm.log';
 

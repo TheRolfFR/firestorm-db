@@ -1,8 +1,9 @@
 <?php
 
 // import useful functions
-require_once './classes/HTTPException.php';
-require_once './utils.php';
+require_once __DIR__ . '/classes/HTTPException.php';
+require_once __DIR__ . '/utils.php';
+require_once __DIR__ . '/enums/ApiCommand.php';
 
 cors();
 
@@ -11,16 +12,21 @@ if ($method === 'GET') {
     http_error(400, "Incorrect request type, expected POST, not $method");
 }
 
-$inputJSON = json_decode(file_get_contents('php://input') ?: "", true);
+$rawInput = file_get_contents('php://input') ?: "";
+if ($rawInput === '' || !json_validate($rawInput)) {
+    http_error(400, 'No JSON body provided');
+}
 
-if (!$inputJSON)
+$inputJSON = json_decode($rawInput, true);
+
+if (!is_array($inputJSON))
     http_error(400, 'No JSON body provided');
 
 $token = check_key_json('token', $inputJSON);
-if (!$token)
+if (!$token || !is_string($token))
     http_error(400, 'No token provided');
 
-if (file_exists('./tokens.php') == false)
+if (!file_exists('./tokens.php'))
     http_error(501, 'Developer didn\'t implement a tokens.php file');
 
 // add tokens
@@ -35,10 +41,10 @@ if (!verify_token($token, $db_tokens))
     http_error(403, 'Invalid token');
 
 $collection = check_key_json('collection', $inputJSON);
-if (!check($collection))
+if (!check($collection) || !is_string($collection))
     http_error(400, 'No collection provided');
 
-if (file_exists('./config.php') == false)
+if (!file_exists('./config.php'))
     http_error(501, 'Developer didn\'t implement a config.php file');
 
 // import db config
@@ -55,26 +61,17 @@ try {
 
     $db = $database_list[$collection];
 
-    $command = check_key_json('command', $inputJSON);
-    if ($command === false)
+    $commandStr = check_key_json('command', $inputJSON);
+    if ($commandStr === false || !is_string($commandStr))
         http_error(400, 'No command provided');
 
-    $available_commands = [
-        'writeRaw',
-        'add',
-        'addBulk',
-        'remove',
-        'removeBulk',
-        'set',
-        'setBulk',
-        'editField',
-        'editFieldBulk'
-    ];
+    $command = WriteCommand::tryFrom($commandStr);
+    if ($command === null) {
+        $available_commands = array_map(fn(WriteCommand $c) => $c->value, WriteCommand::cases());
+        http_error(404, "Command not found: $commandStr. Available commands: " . implode(', ', $available_commands));
+    }
 
-    if (!in_array($command, $available_commands))
-        http_error(404, "Command not found: $command. Available commands: " . join(', ', $available_commands));
-
-    $isBulk = in_array($command, ['setBulk', 'addBulk', 'removeBulk', 'editFieldBulk']);
+    $isBulk = in_array($command, [WriteCommand::SetBulk, WriteCommand::AddBulk, WriteCommand::RemoveBulk, WriteCommand::EditFieldBulk], true);
     $valueKeyName = $isBulk ? 'values' : 'value';
     if (!array_key_exists($valueKeyName, $inputJSON))
         http_error(400, "No $valueKeyName provided");
@@ -82,58 +79,45 @@ try {
     $value = $inputJSON[$valueKeyName];
 
     switch ($command) {
-        case 'writeRaw':
+        case WriteCommand::WriteRaw:
             $db->writeRaw($value);
-            http_success("Successful $command command");
-            break;
-        case 'add':
+            http_success("Successful {$command->value} command");
+        case WriteCommand::Add:
             $newId = $db->add($value);
             http_message($newId, 'id', 200);
-            break;
-        case 'addBulk':
+        case WriteCommand::AddBulk:
             $id_array = $db->addBulk($value);
             http_message($id_array, 'ids', 200);
-            break;
-        case 'remove':
+        case WriteCommand::Remove:
             $db->remove($value);
-            http_success("Successful $command command");
-            break;
-        case 'removeBulk':
+            http_success("Successful {$command->value} command");
+        case WriteCommand::RemoveBulk:
             $db->removeBulk($value);
-            http_success("Successful $command command");
-            break;
-        case 'set':
+            http_success("Successful {$command->value} command");
+        case WriteCommand::Set:
             if (!array_key_exists('key', $inputJSON))
                 http_error(400, 'No key provided');
 
             $dbKey = $inputJSON['key'];
             $db->set($dbKey, $value);
-            http_success("Successful $command command");
-            break;
-        case 'setBulk':
+            http_success("Successful {$command->value} command");
+        case WriteCommand::SetBulk:
             if (!array_key_exists('keys', $inputJSON))
                 http_error(400, 'No keys provided');
 
             $dbKey = $inputJSON['keys'];
             $db->setBulk($dbKey, $value);
-            http_success("Successful $command command");
-            break;
-        case 'editField':
+            http_success("Successful {$command->value} command");
+        case WriteCommand::EditField:
             $db->editField($value);
-            http_success("Successful $command command");
-            break;
-        case 'editFieldBulk':
+            http_success("Successful {$command->value} command");
+        case WriteCommand::EditFieldBulk:
             $res = $db->editFieldBulk($value);
             if ($res === false)
                 http_error(400, 'Incorrect data provided');
 
-            http_success("Successful $command command");
-            break;
-        default:
-            break;
+            http_success("Successful {$command->value} command");
     }
-
-    http_error(404, "No request handler found for command $command");
 
 } catch (HTTPException $e) {
     http_error($e->getCode(), $e->getMessage());
