@@ -24,7 +24,7 @@
 		"ts:build:esm": "pnpm ts:build:version && tsc -p tsconfig.esm.json",
 		"ts:build:cjs": "pnpm ts:build:version && tsc -p tsconfig.cjs.json && node -e 'require(\"fs\").writeFileSync(\"dist/cjs/package.json\", JSON.stringify({type:\"commonjs\"}))'",
 		"ts:build": "pnpm ts:build:esm && pnpm ts:build:cjs",
-		"ts:tests:types": "pnpm tsx node_modules/mocha/bin/mocha.js --timeout 10000 tests/types/**/*.spec.ts",
+		"ts:tests:types": "tsc -p tests/tsconfig.json && pnpm tsx node_modules/mocha/bin/mocha.js --timeout 10000 tests/types/**/*.spec.ts",
 		"ts:tests:esm": "pnpm tsx node_modules/mocha/bin/mocha.js --timeout 10000 tests/esm/**/*.spec.ts",
 		"ts:tests:cjs": "pnpm tsx node_modules/mocha/bin/mocha.js --timeout 10000 tests/cjs/**/*.spec.cjs",
 		"ts:tests:browser": "pnpm tsx node_modules/mocha/bin/mocha.js --timeout 10000 tests/browser/**/*.spec.ts",
@@ -72,6 +72,7 @@
 		"form-data": "^4.0.6"
 	},
 	"devDependencies": {
+		"@ianvs/prettier-plugin-sort-imports": "^4.7.1",
 		"@types/chai": "^5.2.3",
 		"@types/mocha": "^10.0.10",
 		"@types/node": "^26.2.0",
