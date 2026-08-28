@@ -1,5 +1,6 @@
 import { expect } from "chai";
-import { TestTarget, createTestEnv } from "./test-target.js";
+
+import { createTestEnv, TestTarget } from "./test-target.js";
 
 export function runCollectionSuite(target: TestTarget) {
 	describe(`[${target.name}] Firestorm Collection Resource`, () => {
@@ -13,28 +14,26 @@ export function runCollectionSuite(target: TestTarget) {
 			it("throws TypeError if options is not an object", () => {
 				expect(() => {
 					// @ts-expect-error - testing invalid non-object options argument
-					new target.Collection(env.instance, "base" as any);
+					new target.Collection(env.instance, "base");
 				}).to.throw(TypeError, "Collection options must be an object");
 			});
 
 			it("throws Error if resource name is missing or empty", () => {
 				expect(() => new target.Collection(env.instance, { name: "" })).to.throw(
 					Error,
-					"Resource must have a name",
+					"Collection must have a name",
 				);
 			});
 
 			it("throws TypeError if transform parameter is not a function", () => {
 				expect(() => {
 					// @ts-expect-error - testing invalid non-function transform argument
-					new target.Collection(env.instance, { name: "base", transform: "not-a-function" as any });
+					new target.Collection(env.instance, { name: "base", transform: "not-a-function" });
 				}).to.throw(TypeError, "Collection transform must be a function");
 			});
 
-			it("exposes collectionName and manager", () => {
-				expect(env.base.collectionName).to.equal("base");
-				expect(env.base.manager).to.be.an.instanceOf(target.ResourceManager);
-				expect(env.base.manager.collectionName).to.equal("base");
+			it("exposes collection name", () => {
+				expect(env.base.name).to.equal("base");
 			});
 		});
 
@@ -435,7 +434,7 @@ export function runCollectionSuite(target: TestTarget) {
 		describe("Custom Methods & Method Injection Fluent API", () => {
 			it("injects methods into collection items via constructor", async () => {
 				interface GreetMethod {
-					id: string | number;
+					id: string;
 					name: string;
 					greet(): string;
 				}
@@ -444,6 +443,7 @@ export function runCollectionSuite(target: TestTarget) {
 						name: "base",
 						transform: (el) => ({
 							...el,
+							id: el[target.ID_FIELD],
 							name: String(el.name),
 							greet: () => `Hello ${el.name}`,
 						}),
@@ -457,7 +457,7 @@ export function runCollectionSuite(target: TestTarget) {
 
 			it("chains custom methods via transform fluent API", async () => {
 				interface MethodsA {
-					id: string | number;
+					id: string;
 					name: string;
 					sayHello(): string;
 				}
@@ -469,6 +469,7 @@ export function runCollectionSuite(target: TestTarget) {
 					name: "base",
 					transform: (el) => ({
 						...el,
+						id: el[target.ID_FIELD],
 						name: String(el.name),
 						sayHello: () => `Hi ${el.name}`,
 					}),
@@ -534,7 +535,7 @@ export function runCollectionSuite(target: TestTarget) {
 					.collection({ name: "base" })
 					.transform((el, col) => ({
 						...el,
-						getColName: () => col.collectionName,
+						getColName: () => col.name,
 					}));
 
 				const item = await collectionWithRef.get("0");
@@ -542,15 +543,14 @@ export function runCollectionSuite(target: TestTarget) {
 			});
 
 			it("injects computed values and constants into collection items", async () => {
-				const collectionWithComputed = env.instance.collection<{ name: string; age: number }>({
-					name: "base",
-					transform: (el) => ({
+				const collectionWithComputed = env.instance
+					.collection<{ name: string; age: number }>({ name: "base" })
+					.transform((el) => ({
 						...el,
 						veryUsefulConstant: 123,
 						fullName: `Person: ${el.name}`,
 						isAdult: el.age >= 18,
-					}),
-				});
+					}));
 
 				const item = await collectionWithComputed.get("0");
 				expect(item.veryUsefulConstant).to.equal(123);

@@ -1,14 +1,16 @@
 import { expect } from "chai";
-import { createFirestorm, Collection, ID_FIELD } from "../../dist/esm/index.js";
+
+import { Collection, createFirestorm, ID_FIELD } from "../../dist/esm/index.js";
+
 import type {
 	CollectionItem,
-	WriteConfirmation,
 	EditFieldOption,
 	SearchOption,
 	SearchResultOptions,
 	SelectOption,
 	ValueOption,
 	ValueReturnType,
+	WriteConfirmation,
 } from "../../dist/esm/index.js";
 import type { Equal, Expect, Extends } from "./type-helpers.js";
 
@@ -35,7 +37,7 @@ describe("Type Tests: src/client/collection.ts", () => {
 	it("Collection instance properties and constructor types", () => {
 		type _TUsers = Expect<Equal<typeof users, Collection<User, CollectionItem<User>>>>;
 
-		expect(users.collectionName).to.equal("users");
+		expect(users.name).to.equal("users");
 
 		// Test non-collision when document has its own 'id' field
 		type ItemWithDbId = { id: number; val: string };
@@ -45,7 +47,7 @@ describe("Type Tests: src/client/collection.ts", () => {
 		type _TDbItem = Expect<
 			Equal<Awaited<ReturnType<typeof customCollection.get>>, ItemWithDbId & { [ID_FIELD]: string }>
 		>;
-		expect(customCollection.collectionName).to.equal("custom");
+		expect(customCollection.name).to.equal("custom");
 	});
 
 	it("transform() and chaining fluent API typing", () => {
@@ -64,7 +66,7 @@ describe("Type Tests: src/client/collection.ts", () => {
 			.collection<User>({ name: "users" })
 			.transform<CollectionItem<User> & UserMethods>((el, col) => ({
 				...el,
-				getNameAsLowerCase: (): string => col.collectionName + el.name.toLowerCase(),
+				getNameAsLowerCase: (): string => col.name + el.name.toLowerCase(),
 			}));
 		type _TFluentCollection = Expect<
 			Equal<typeof usersWithFluentMethods, Collection<User, CollectionItem<User> & UserMethods>>
@@ -224,12 +226,7 @@ describe("Type Tests: src/client/collection.ts", () => {
 	it("random(), readRaw(), writeRaw() typing", () => {
 		type _TRand = Expect<Equal<ReturnType<typeof users.random>, Promise<CollectionItem<User>[]>>>;
 
-		type _TRaw = Expect<
-			Equal<
-				ReturnType<typeof users.readRaw>,
-				Promise<Record<string, CollectionItem<User>> | Record<string, User>>
-			>
-		>;
+		type _TRaw = Expect<Equal<ReturnType<typeof users.readRaw>, Promise<Record<string, User>>>>;
 
 		type _TWriteRaw = Expect<Equal<ReturnType<typeof users.writeRaw>, Promise<WriteConfirmation>>>;
 

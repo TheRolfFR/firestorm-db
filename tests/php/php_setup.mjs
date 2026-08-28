@@ -1,13 +1,13 @@
 // @ts-check
 
-import { existsSync } from "fs";
-import { mkdtemp, mkdir, symlink, unlink } from "fs/promises";
-import { join, relative, dirname, basename } from "path";
-import { tmpdir, platform } from "os";
 import { execSync, spawn } from "child_process";
+import { existsSync } from "fs";
+import { mkdir, mkdtemp, symlink, unlink } from "fs/promises";
+import { platform, tmpdir } from "os";
+import { basename, dirname, join, relative } from "path";
+import { consola } from "consola";
 import { glob } from "glob";
 import copy from "recursive-copy";
-import { consola } from "consola";
 
 const PHP_PATH = "src/server";
 const PHP_SERVER_START_DELAY = 2000;

@@ -1,7 +1,8 @@
 import { expect } from "chai";
+
 import type {
-	EditFieldOption,
 	DocumentEditFieldOption,
+	EditFieldOption,
 } from "../../../dist/esm/types/editFieldOption.js";
 import type { Equal, Expect, Extends } from "../type-helpers.js";
 

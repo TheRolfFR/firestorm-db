@@ -1,5 +1,6 @@
 import { expect } from "chai";
-import { ADDRESS, TestTarget, createTestEnv } from "./test-target.js";
+
+import { ADDRESS, createTestEnv, TestTarget } from "./test-target.js";
 
 interface ErrorWithResponse {
 	response?: { status: number };

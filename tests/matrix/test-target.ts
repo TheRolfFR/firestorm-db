@@ -1,5 +1,5 @@
-import path from "path";
 import fs from "fs";
+import path from "path";
 
 export const PORT = process.env.PORT || "8000";
 export const ADDRESS = `http://127.0.0.1:${PORT}/`;
@@ -51,6 +51,9 @@ export type DocContent = {
 	version: number;
 	active?: boolean;
 	features?: string[];
+	nested?: {
+		feature?: string;
+	};
 };
 
 export interface TestTarget {
@@ -62,10 +65,6 @@ export interface TestTarget {
 	FileManager: typeof import("../../dist/esm/index.js").FileManager;
 	ResourceManager: typeof import("../../dist/esm/index.js").ResourceManager;
 	ID_FIELD: typeof import("../../dist/esm/index.js").ID_FIELD;
-	colPostRequest?: any;
-	colGetRequest?: any;
-	documentPostRequest?: any;
-	documentGetRequest?: any;
 	isBrowser?: boolean;
 }
 

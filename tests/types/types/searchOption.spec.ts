@@ -1,12 +1,13 @@
 import { expect } from "chai";
+
 import type {
-	ComparisonCriteria,
-	BooleanCriteria,
-	NumberCriteria,
-	StringCriteria,
 	ArrayCriteria,
+	BooleanCriteria,
+	ComparisonCriteria,
+	NumberCriteria,
 	SearchOption,
 	SearchResultOptions,
+	StringCriteria,
 } from "../../../dist/esm/types/searchOption.js";
 import type { Equal, Expect, Extends } from "../type-helpers.js";
 
@@ -23,9 +24,9 @@ type User = {
 
 describe("Type Tests: src/client/types/searchOption.ts", () => {
 	it("Criteria types definitions", () => {
-		type _TCmp = Expect<Equal<ComparisonCriteria, "==" | "!=">>;
-		type _TBool = Expect<Equal<BooleanCriteria, ComparisonCriteria>>;
-		type _TNum = Expect<Equal<NumberCriteria, ComparisonCriteria | "<" | "<=" | ">" | ">=" | "in">>;
+		type _TBool = Expect<Equal<BooleanCriteria, "==" | "!=">>;
+		type _TCmp = Expect<Equal<ComparisonCriteria, BooleanCriteria | "<" | "<=" | ">" | ">=">>;
+		type _TNum = Expect<Equal<NumberCriteria, ComparisonCriteria | "in">>;
 		type _TStr = Expect<
 			Equal<StringCriteria, NumberCriteria | "includes" | "contains" | "startsWith" | "endsWith">
 		>;

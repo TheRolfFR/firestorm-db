@@ -1,6 +1,8 @@
 import { expect } from "chai";
+
 import { createFirestorm, Document } from "../../dist/esm/index.js";
-import type { WriteConfirmation, DocumentEditFieldOption } from "../../dist/esm/index.js";
+
+import type { DocumentEditFieldOption, WriteConfirmation } from "../../dist/esm/index.js";
 import type { Equal, Expect, Extends } from "./type-helpers.js";
 
 type Settings = {
@@ -24,10 +26,10 @@ describe("Type Tests: src/client/document.ts", () => {
 
 	it("Document instance and constructor types", () => {
 		type _TDoc = Expect<Equal<typeof doc, Document<Settings, Settings>>>;
-		expect(doc.collectionName).to.equal("settings");
+		expect(doc.name).to.equal("settings");
 
 		const docWithOptions = instance.document<Settings>({ name: "settings_opt" });
-		expect(docWithOptions.collectionName).to.equal("settings_opt");
+		expect(docWithOptions.name).to.equal("settings_opt");
 	});
 
 	it("transform() and chaining fluent API typing", () => {
@@ -139,9 +141,7 @@ describe("Type Tests: src/client/document.ts", () => {
 	});
 
 	it("readRaw() and writeRaw() return types", () => {
-		type _TRead = Expect<
-			Equal<ReturnType<typeof doc.readRaw>, Promise<Settings & Record<string, never>>>
-		>;
+		type _TRead = Expect<Equal<ReturnType<typeof doc.readRaw>, Promise<Settings>>>;
 
 		type _TWrite = Expect<Equal<ReturnType<typeof doc.writeRaw>, Promise<WriteConfirmation>>>;
 

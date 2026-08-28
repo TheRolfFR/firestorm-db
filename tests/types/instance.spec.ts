@@ -1,11 +1,13 @@
 import { expect } from "chai";
-import { Firestorm } from "../../dist/esm/instance.js";
+
 import { Collection } from "../../dist/esm/collection.js";
 import { Document } from "../../dist/esm/document.js";
 import { FileManager } from "../../dist/esm/files.js";
+import { Firestorm } from "../../dist/esm/instance.js";
 import { ID_FIELD } from "../../dist/esm/types/utils.js";
-import type { CollectionItem } from "../../dist/esm/types/utils.js";
+
 import type { FirestormCreationOption } from "../../dist/esm/instance.js";
+import type { CollectionItem } from "../../dist/esm/types/utils.js";
 import type { Equal, Expect, Extends } from "./type-helpers.js";
 
 describe("Type Tests: src/client/instance.ts", () => {

@@ -1,7 +1,9 @@
 import { expect } from "chai";
 import FormDataPkg from "form-data";
-import { Firestorm } from "../../dist/esm/instance.js";
+
 import { FileManager } from "../../dist/esm/files.js";
+import { Firestorm } from "../../dist/esm/instance.js";
+
 import type { WriteConfirmation } from "../../dist/esm/types/utils.js";
 import type { Equal, Expect, Extends } from "./type-helpers.js";
 

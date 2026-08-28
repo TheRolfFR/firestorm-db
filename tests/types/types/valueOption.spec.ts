@@ -1,4 +1,5 @@
 import { expect } from "chai";
+
 import type { ValueOption, ValueReturnType } from "../../../dist/esm/types/valueOption.js";
 import type { Equal, Expect, Extends } from "../type-helpers.js";
 

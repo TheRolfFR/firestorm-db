@@ -1,9 +1,9 @@
 import * as FirestormESM from "../../dist/esm/index.js";
 import * as utils from "../../dist/esm/utils.js";
-import { runSetupSuite } from "../matrix/setup.suite.js";
 import { runCollectionSuite } from "../matrix/collection.suite.js";
 import { runDocumentSuite } from "../matrix/document.suite.js";
 import { runFilesSuite } from "../matrix/files.suite.js";
+import { runSetupSuite } from "../matrix/setup.suite.js";
 import { TestTarget } from "../matrix/test-target.js";
 
 const target: TestTarget = {
@@ -16,10 +16,6 @@ const target: TestTarget = {
 	FileManager: FirestormESM.FileManager,
 	ResourceManager: FirestormESM.ResourceManager,
 	ID_FIELD: FirestormESM.ID_FIELD,
-	colPostRequest: utils.colPostRequest,
-	colGetRequest: utils.colGetRequest,
-	documentPostRequest: utils.documentPostRequest,
-	documentGetRequest: utils.documentGetRequest,
 };
 
 describe("ESM (ECMAScript Modules) Matrix Suite", () => {

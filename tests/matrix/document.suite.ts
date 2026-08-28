@@ -1,5 +1,6 @@
 import { expect } from "chai";
-import { DocContent, TestTarget, createTestEnv } from "./test-target.js";
+
+import { createTestEnv, DocContent, TestTarget } from "./test-target.js";
 
 export function runDocumentSuite(target: TestTarget) {
 	describe(`[${target.name}] Firestorm Document Resource`, () => {
@@ -13,24 +14,22 @@ export function runDocumentSuite(target: TestTarget) {
 			it("throws TypeError if options is not an object", () => {
 				expect(() => {
 					// @ts-expect-error - testing invalid non-object options argument
-					new target.Document(env.instance, "settings" as any);
+					new target.Document(env.instance, "settings");
 				}).to.throw(TypeError, "Document options must be an object");
 			});
 
 			it("throws TypeError if constructor transform is not a function", () => {
 				expect(() => {
-					// @ts-expect-error - testing invalid transform type
 					new target.Document(env.instance, {
 						name: "settings",
-						transform: "invalid-transform" as any,
+						// @ts-expect-error - testing invalid transform type
+						transform: "invalid-transform",
 					});
 				}).to.throw(TypeError, "Document transform must be a function");
 			});
 
-			it("exposes collectionName, readAddress, and writeAddress", () => {
-				expect(env.testDoc.collectionName).to.equal("settings");
-				expect(env.testDoc.readAddress).to.include("get.php");
-				expect(env.testDoc.writeAddress).to.include("post.php");
+			it("exposes document name", () => {
+				expect(env.testDoc.name).to.equal("settings");
 			});
 		});
 
@@ -231,7 +230,7 @@ export function runDocumentSuite(target: TestTarget) {
 					.document<DocContent>({ name: "settings" })
 					.transform((c, doc) => ({
 						...c,
-						getDocName: () => doc.collectionName,
+						getDocName: () => doc.name,
 					}));
 
 				const content = await docWithRef.readRaw();
@@ -239,14 +238,13 @@ export function runDocumentSuite(target: TestTarget) {
 			});
 
 			it("injects computed values and constants into document content", async () => {
-				const docWithComputed = env.instance.document<DocContent>({
-					name: "settings",
-					transform: (c) => ({
+				const docWithComputed = env.instance
+					.document<DocContent>({ name: "settings" })
+					.transform((c) => ({
 						...c,
 						computedTitle: `App Config (${c.theme})`,
 						isDefaultVersion: c.version === 1,
-					}),
-				});
+					}));
 
 				const content = await docWithComputed.readRaw();
 				expect(content.computedTitle).to.equal("App Config (dark)");

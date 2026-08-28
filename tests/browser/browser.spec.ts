@@ -1,10 +1,10 @@
 import * as FirestormESM from "../../dist/esm/index.js";
 import * as utils from "../../dist/esm/utils.js";
-import { runSetupSuite } from "../matrix/setup.suite.js";
 import { runCollectionSuite } from "../matrix/collection.suite.js";
 import { runDocumentSuite } from "../matrix/document.suite.js";
 import { runFilesSuite } from "../matrix/files.suite.js";
-import { TestTarget, ADDRESS } from "../matrix/test-target.js";
+import { runSetupSuite } from "../matrix/setup.suite.js";
+import { ADDRESS, TestTarget } from "../matrix/test-target.js";
 
 describe("Browser Environment Usage & 1:1 Web APIs Matrix Suite", function () {
 	let originalWindow: typeof globalThis.window;
@@ -45,10 +45,6 @@ describe("Browser Environment Usage & 1:1 Web APIs Matrix Suite", function () {
 		FileManager: FirestormESM.FileManager,
 		ResourceManager: FirestormESM.ResourceManager,
 		ID_FIELD: FirestormESM.ID_FIELD,
-		colPostRequest: utils.colPostRequest,
-		colGetRequest: utils.colGetRequest,
-		documentPostRequest: utils.documentPostRequest,
-		documentGetRequest: utils.documentGetRequest,
 	};
 
 	runSetupSuite(target);

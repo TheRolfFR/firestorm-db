@@ -1,32 +1,34 @@
+import { createRequire } from "module";
 import { expect } from "chai";
+
 import {
-	createFirestorm,
-	ID_FIELD,
-	VERSION,
 	Collection,
+	createFirestorm,
 	Document,
 	FileManager,
+	ID_FIELD,
 	ResourceManager,
+	VERSION,
 } from "../../dist/esm/index.js";
 import { Firestorm } from "../../dist/esm/instance.js";
+
 import type {
-	CollectionOptions,
-	DocumentOptions,
-	FirestormCreationOption,
 	CollectionItem,
-	IdEncoding,
-	WriteConfirmation,
-	EditFieldOption,
+	CollectionOptions,
 	DocumentEditFieldOption,
+	DocumentOptions,
+	EditFieldOption,
+	FirestormCreationOption,
+	IdEncoding,
+	Path,
+	PathValue,
 	SearchOption,
 	SearchResultOptions,
 	SelectOption,
 	ValueOption,
 	ValueReturnType,
-	Path,
-	PathValue,
+	WriteConfirmation,
 } from "../../dist/esm/index.js";
-import { createRequire } from "module";
 import type { Equal, Expect, Extends } from "./type-helpers.js";
 
 let expectedPackageVersion: string | undefined;
@@ -44,7 +46,7 @@ describe("Type Tests: src/client/index.ts", () => {
 		const instance = createFirestorm();
 		type _T1 = Expect<Equal<typeof instance, Firestorm>>;
 		type _T2 = Expect<Extends<typeof ID_FIELD, symbol>>;
-		type _T3 = Expect<Equal<typeof VERSION, string>>;
+		type _T3 = Expect<Extends<typeof VERSION, string>>;
 
 		expect(instance).to.be.an.instanceOf(Firestorm);
 		expect(typeof ID_FIELD).to.equal("symbol");
@@ -92,7 +94,7 @@ describe("Type Tests: src/client/index.ts", () => {
 			>
 		>;
 		type _TSearchOption = Expect<
-			Extends<SearchOption<{ age: number }>, { field: "age"; criteria: string; value?: unknown }>
+			Extends<SearchOption<{ age: number }>, { field: "age"; criteria: string }>
 		>;
 		type _TSearchResult = Expect<
 			Equal<SearchResultOptions, { random?: boolean | number; limit?: number }>

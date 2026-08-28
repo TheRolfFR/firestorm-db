@@ -1,5 +1,6 @@
 import { expect } from "chai";
-import { ADDRESS, TOKEN, TestTarget, ensureServerRunning } from "./test-target.js";
+
+import { ADDRESS, ensureServerRunning, TestTarget, TOKEN } from "./test-target.js";
 
 export function runSetupSuite(target: TestTarget) {
 	describe(`[${target.name}] Firestorm Instance Setup & Configuration`, function () {
@@ -116,24 +117,12 @@ export function runSetupSuite(target: TestTarget) {
 				"Document options must be an object",
 			);
 
-			expect(() => instance.collection({ name: "" })).to.throw(Error, "Resource must have a name");
+			expect(() => instance.collection({ name: "" })).to.throw(
+				Error,
+				"Collection must have a name",
+			);
 
-			expect(() => instance.document({ name: "" })).to.throw(Error, "Resource must have a name");
+			expect(() => instance.document({ name: "" })).to.throw(Error, "Document must have a name");
 		});
-
-		if (target.colGetRequest) {
-			it("executes lower-level utils helpers (colPostRequest, colGetRequest, documentPostRequest, documentGetRequest)", async () => {
-				const instance = target.createFirestorm({ address: ADDRESS, token: TOKEN });
-				const colObj = { instance, collectionName: "base" };
-				const readRes = await target.colGetRequest(colObj, "readRaw", {}, false);
-				expect(readRes).to.exist;
-
-				if (target.documentGetRequest) {
-					const docObj = { instance, collectionName: "settings" };
-					const docRes = await target.documentGetRequest(docObj, "get", { id: "theme" }, false);
-					expect(docRes).to.be.a("string");
-				}
-			});
-		}
 	});
 }

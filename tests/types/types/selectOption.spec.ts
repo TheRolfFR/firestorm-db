@@ -1,4 +1,5 @@
 import { expect } from "chai";
+
 import type { SelectOption } from "../../../dist/esm/types/selectOption.js";
 import type { Equal, Expect, Extends } from "../type-helpers.js";
 

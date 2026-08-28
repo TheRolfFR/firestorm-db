@@ -1,12 +1,13 @@
 import { expect } from "chai";
+
 import { ID_FIELD } from "../../../dist/esm/types/utils.js";
+
 import type {
-	IdEncoding,
-	WriteConfirmation,
-	MaybeArray,
 	CollectionItem,
+	IdEncoding,
 	Path,
 	PathValue,
+	WriteConfirmation,
 } from "../../../dist/esm/types/utils.js";
 import type { Equal, Expect, Extends } from "../type-helpers.js";
 
@@ -24,16 +25,6 @@ describe("Type Tests: src/client/types/utils.ts", () => {
 
 		// @ts-expect-error - boolean is not a valid IdEncoding
 		const _invalidId: IdEncoding = true;
-	});
-
-	it("WriteConfirmation and MaybeArray<T>", () => {
-		type _TWrite = Expect<Equal<WriteConfirmation, { message: string }>>;
-
-		type StringOrArray = MaybeArray<string>;
-		type _TMaybeSingle = Expect<Extends<string, StringOrArray>>;
-		type _TMaybeArray = Expect<Extends<string[], StringOrArray>>;
-		// @ts-expect-error - number does not extend MaybeArray<string>
-		const _invalid: MaybeArray<string> = 123;
 	});
 
 	it("CollectionItem<Item>", () => {
