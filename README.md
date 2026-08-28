@@ -43,7 +43,7 @@ const instance = createFirestorm({
 	token: "my_secret_token_probably_from_an_env_file",
 });
 
-instance.address; // "https://example.com/path/to/firestorm/root"
+instance.address; // "https://example.com/path/to/firestorm/root/"
 instance.name = "dev"; // updates the debug name
 ```
 
@@ -63,7 +63,10 @@ Collections use a `Raw` $\rightarrow$ `Transformed` pipeline:
 - **`ID_FIELD`**: Global `unique symbol` representing the document key/ID. Because `ID_FIELD` is a symbol, it **never collides** with user database properties (even if your documents already have an `id` field) and is automatically ignored during JSON serialization on writes.
 
 ```ts
-import { createFirestorm, ID_FIELD, type CollectionItem } from "firestorm-db";
+import { createFirestorm, ID_FIELD } from "firestorm-db";
+
+import type { CollectionItem } from "firestorm-db";
+
 const instance = createFirestorm({ address, token });
 
 interface User {
@@ -337,7 +340,9 @@ Firestorm uses a global unique symbol `ID_FIELD` for document keys. This guarant
 3. Complex generic types are avoided—`Collection<Raw, Transformed>` only requires the data types you actually care about.
 
 ```ts
-import { createFirestorm, ID_FIELD, type CollectionItem } from "firestorm-db";
+import { createFirestorm, ID_FIELD } from "firestorm-db";
+
+import type { CollectionItem } from "firestorm-db";
 
 interface Product {
 	id: number; // Stored numeric product SKU
@@ -401,38 +406,39 @@ The package exports all types and interfaces for full type-safety:
 
 ```ts
 import type {
+	ArrayCriteria,
+	BooleanCriteria,
+	Collection,
+	// Common Utilities
+	CollectionItem,
+	CollectionOptions,
+	// Criteria Unions
+	ComparisonCriteria,
+	Document,
+	DocumentEditFieldOption,
+	DocumentOptions,
+	EditFieldOption,
+	FileManager,
 	// Resources & Instances
 	Firestorm,
-	Collection,
-	Document,
-	FileManager,
-	ResourceManager,
 	FirestormCreationOption,
-	CollectionOptions,
-	DocumentOptions,
-
+	FirestormError,
+	IdEncoding,
+	NumberCriteria,
+	// Deep Path Types
+	Path,
+	PathValue,
+	ResourceLike,
+	ResourceManager,
+	ResponseDetails,
 	// Query & Options
 	SearchOption,
 	SearchResultOptions,
 	SelectOption,
+	StringCriteria,
 	ValueOption,
 	ValueReturnType,
-	EditFieldOption,
-	DocumentEditFieldOption,
-
-	// Criteria Unions
-	ComparisonCriteria,
-	BooleanCriteria,
-	NumberCriteria,
-	StringCriteria,
-	ArrayCriteria,
-
-	// Common Utilities
-	CollectionItem,
-	IdEncoding,
 	WriteConfirmation,
-	ResponseDetails,
-	FirestormError,
 } from "firestorm-db";
 ```
 
@@ -528,8 +534,8 @@ memory_limit = 256M
 
 The client communicates with the server via three specialized entrypoints:
 
-- **Read operations** $\rightarrow$ `GET /get.php`
+- **Read operations** $\rightarrow$ `POST /get.php` (JSON payload)
 - **Write operations** $\rightarrow$ `POST /post.php` (JSON payload)
-- **File operations** $\rightarrow$ `POST /files.php` (multipart form data)
+- **File operations** $\rightarrow$ `/files.php` (`GET`, `POST`, `PATCH`)
 
 If you do not use file management features, you can safely remove `files.php` and the `files_api/` directory.
