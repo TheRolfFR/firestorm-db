@@ -174,15 +174,11 @@ function matches_search_conditions(mixed $el, array $conditions): bool {
  * @return array<int|string, mixed>
  */
 function filter_search_conditions(array $content, array $conditions, bool $has_limit = false, int|false $limit = false, mixed $random = false): array {
-    $res = [];
-    foreach ($content as $key => $el) {
-        if (matches_search_conditions($el, $conditions)) {
-            $res[$key] = $el;
+    $res = array_filter($content, fn($el) => matches_search_conditions($el, $conditions));
 
-            // only stop early if results will not be ordered randomly
-            if ($has_limit && $random === false && $limit !== false && count($res) >= $limit)
-                break;
-        }
+    if ($has_limit && $random === false && $limit !== false) {
+        return array_slice($res, 0, $limit, true);
     }
+
     return $res;
 }
