@@ -44,7 +44,6 @@ switch ($method) {
         } else {
             get_file($path);
         }
-        break;
 
     case 'PUT':
         $rawInput = file_get_contents('php://input') ?: "";
@@ -57,7 +56,6 @@ switch ($method) {
 
         $msg = write_file($path, $content, $overwrite, $token);
         http_success($msg);
-        break;
 
     case 'PATCH':
         $rawInput = file_get_contents('php://input') ?: "";
@@ -70,7 +68,6 @@ switch ($method) {
 
         $msg = append_file($path, $content, $create, $token);
         http_success($msg);
-        break;
 
     case 'POST':
         $rawInput = file_get_contents('php://input') ?: "";
@@ -91,7 +88,6 @@ switch ($method) {
                     : move_file($oldPath, $newPath, $overwrite, $token);
 
                 http_success($msg);
-                break;
 
             case 'append':
                 $token = is_array($json) ? ($json['token'] ?? null) : p('token');
@@ -101,7 +97,6 @@ switch ($method) {
 
                 $msg = append_file($path, $content, $create, $token);
                 http_success($msg);
-                break;
 
             case 'write':
             case 'put':
@@ -112,7 +107,6 @@ switch ($method) {
 
                 $msg = write_file($path, $content, $overwrite, $token);
                 http_success($msg);
-                break;
 
             default:
                 $path = p('path');
@@ -122,9 +116,7 @@ switch ($method) {
 
                 $msg = upload_file($path, $data, $overwrite, $token);
                 http_success($msg);
-                break;
         }
-        break;
 
     case 'DELETE':
         $rawInput = file_get_contents('php://input') ?: "";
@@ -135,9 +127,7 @@ switch ($method) {
 
         delete_file($path, $token);
         http_success("Successfully deleted file");
-        break;
 
     default:
         http_error(400, "Incorrect request type, expected GET, POST, PUT, PATCH or DELETE, not $method");
-        break;
 }

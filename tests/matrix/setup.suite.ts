@@ -52,7 +52,7 @@ export function runSetupSuite(target: TestTarget) {
 
 		it("gets the server version field correctly", async () => {
 			const instance = target.createFirestorm({ address: ADDRESS, token: TOKEN });
-			const version = await instance.serverVersion;
+			const version = await instance.getServerVersion();
 			expect(version).to.be.a("string");
 			expect(version).to.match(/\d+\.\d+\.\d+/);
 		});
@@ -63,11 +63,11 @@ export function runSetupSuite(target: TestTarget) {
 			expect(isCompatible).to.be.true;
 		});
 
-		it("throws error when accessing serverVersion without configured address", async () => {
+		it("throws error when accessing getServerVersion without configured address", async () => {
 			const instanceWithoutAddress = target.createFirestorm({});
 			let threw = false;
 			try {
-				await instanceWithoutAddress.serverVersion;
+				await instanceWithoutAddress.getServerVersion();
 			} catch (err) {
 				threw = true;
 				expect((err as Error).message).to.include("was not configured");
@@ -75,14 +75,14 @@ export function runSetupSuite(target: TestTarget) {
 			expect(threw).to.be.true;
 		});
 
-		it("fails serverVersion call when token is missing or invalid on server", async () => {
+		it("fails getServerVersion call when token is missing or invalid on server", async () => {
 			const instanceWithBadToken = target.createFirestorm({
 				address: ADDRESS,
 				token: "InvalidTokenHere",
 			});
 			let threw = false;
 			try {
-				await instanceWithBadToken.serverVersion;
+				await instanceWithBadToken.getServerVersion();
 			} catch (err) {
 				threw = true;
 				expect(err).to.exist;
@@ -92,9 +92,7 @@ export function runSetupSuite(target: TestTarget) {
 
 		it("returns false for isCompatibleAddress on invalid version responses", async () => {
 			const tmp = target.createFirestorm({ address: ADDRESS, token: TOKEN });
-			Object.defineProperty(tmp, "serverVersion", {
-				get: async () => "invalid.version.number",
-			});
+			tmp.getServerVersion = async () => "invalid.version.number";
 
 			const compatible = await tmp.isCompatibleAddress();
 			expect(compatible).to.be.false;

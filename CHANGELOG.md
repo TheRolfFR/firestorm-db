@@ -26,6 +26,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- **Async Method for Server Version**: Replaced the `instance.serverVersion` Promise getter with an explicit async method `instance.getServerVersion()` for better developer ergonomics and TypeScript consistency.
 - **Object-Only Resource Constructors**: `instance.collection()`, `instance.document()`, and class constructors now require a configuration object (`{ name: string, transform?: Function }`) rather than positional arguments.
 - **PHP Requirements**: Modernized server requirements to PHP 8.2+ with strict typing and support for named constructor arguments in `JSONDatabase`.
 - **File Locking Diagnostics**: Refactored `FileAccess` file locking to provide descriptive error context including file paths on lock or descriptor failure.

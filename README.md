@@ -410,7 +410,7 @@ const customerOrders = await customer.getOrders();
 instance.clientVersion;
 
 // Server version string from version.ini
-await instance.serverVersion;
+await instance.getServerVersion();
 
 // Check if client and server versions match
 const isCompatible = await instance.isCompatibleAddress();

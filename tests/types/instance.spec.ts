@@ -23,7 +23,7 @@ describe("Type Tests: src/client/instance.ts", () => {
 		type _TAddr = Expect<Equal<Firestorm["address"], string | undefined>>;
 		type _TToken = Expect<Equal<Firestorm["token"], string | undefined>>;
 		type _TClientVer = Expect<Equal<Firestorm["clientVersion"], string>>;
-		type _TServerVer = Expect<Equal<Firestorm["serverVersion"], Promise<string>>>;
+		type _TServerVer = Expect<Equal<ReturnType<Firestorm["getServerVersion"]>, Promise<string>>>;
 		type _TCompat = Expect<Equal<ReturnType<Firestorm["isCompatibleAddress"]>, Promise<boolean>>>;
 
 		expect(f.files).to.be.an.instanceOf(FileManager);

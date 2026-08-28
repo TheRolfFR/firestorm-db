@@ -111,7 +111,7 @@ export class Firestorm {
 	/**
 	 * Get the server-side version string
 	 */
-	public get serverVersion(): Promise<string> {
+	public getServerVersion(): Promise<string> {
 		if (!this.address) {
 			throw new Error(`Address for Firestorm instance "${this.name}" was not configured`);
 		}
@@ -131,7 +131,7 @@ export class Firestorm {
 	 * @returns True if compatible, false otherwise
 	 */
 	public async isCompatibleAddress(): Promise<boolean> {
-		const serverVersion = await this.serverVersion;
+		const serverVersion = await this.getServerVersion();
 		const [serverMajor, serverMinor] = serverVersion.split(".");
 		const [clientMajor, clientMinor] = this.clientVersion.split(".");
 
