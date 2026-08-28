@@ -226,7 +226,12 @@ export class Collection<
 	}
 
 	/**
-	 * Read the raw content of the collection
+	 * Read the raw content of the collection.
+	 *
+	 * @remarks
+	 * If you find yourself using `readRaw(true)` (i.e. without ID injection or relational entities),
+	 * you probably should use a {@link Document} instead of a {@link Collection}.
+	 *
 	 * @param original - If true, original raw JSON format is returned without ID injection
 	 * @returns An object with keys and elements
 	 */
