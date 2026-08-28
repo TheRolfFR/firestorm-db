@@ -6,16 +6,25 @@
 <a href="https://www.npmjs.com/package/firestorm-db" target="_blank">
     <img alt="npm" src="https://img.shields.io/npm/v/firestorm-db?color=cb0000&logo=npm&style=flat-square">
 </a>
-<img alt="GitHub file size in bytes" src="https://img.shields.io/github/size/TheRolfFR/firestorm-db/src%2Findex.js?color=43A047&label=Script%20size&logoColor=green&style=flat-square">
+<a href="https://bundlephobia.com/package/firestorm-db" target="_blank">
+    <img alt="npm bundle size" src="https://img.shields.io/bundlephobia/minzip/firestorm-db?color=43A047&label=bundle%20size&style=flat-square">
+</a>
 <a href="https://github.com/TheRolfFR/firestorm-db/blob/main/CHANGELOG.md">
     <img alt="Changelog" src="https://img.shields.io/badge/Changelog-Read_here-blue?style=flat-square">
+</a>
+<a href="https://github.com/TheRolfFR/firestorm-db/blob/main/MIGRATION.md">
+    <img alt="Migration Guide" src="https://img.shields.io/badge/Migration-v1_to_v2-orange?style=flat-square">
 </a>
 <a href="https://github.com/TheRolfFR/firestorm-db/actions/workflows/tests-js.yml">
     <img src="https://img.shields.io/github/actions/workflow/status/TheRolfFR/firestorm-db/tests-js.yml?style=flat-square" alt="Tests" />
 </a>
 </div>
 
+<div align="center">
+
 _Self-hosted Firestore-like database written purely in TypeScript/JavaScript and PHP with API endpoints based on micro bulk operations._
+
+</div>
 
 ---
 
@@ -428,7 +437,13 @@ import type {
 	DocumentEditFieldOption,
 	DocumentOptions,
 	EditFieldOption,
+	// File Manager & Options
+	FileCopyOptions,
+	FileExistsOptions,
 	FileManager,
+	FileMoveOptions,
+	FilePatchCustomOptions,
+	FilePutCustomOptions,
 	// Resources & Instances
 	Firestorm,
 	FirestormCreationOption,
@@ -545,6 +560,6 @@ The client communicates with the server via three specialized entrypoints:
 
 - **Read operations** $\rightarrow$ `POST /get.php` (JSON payload)
 - **Write operations** $\rightarrow$ `POST /post.php` (JSON payload)
-- **File operations** $\rightarrow$ `/files.php` (`GET`, `POST`, `PATCH`)
+- **File operations** $\rightarrow$ `/files.php` (`GET`, `POST`, `PUT`, `PATCH`, `DELETE`)
 
 If you do not use file management features, you can safely remove `files.php` and the `files_api/` directory.

@@ -19,6 +19,11 @@ import type {
 	DocumentEditFieldOption,
 	DocumentOptions,
 	EditFieldOption,
+	FileCopyOptions,
+	FileExistsOptions,
+	FileMoveOptions,
+	FilePatchCustomOptions,
+	FilePutCustomOptions,
 	FirestormCreationOption,
 	IdEncoding,
 	Path,
@@ -102,5 +107,11 @@ describe("Type Tests: src/client/index.ts", () => {
 		type _TSelect = Expect<Equal<SelectOption<{ a: string; b: number }, "a">["fields"], "a"[]>>;
 		type _TValueOption = Expect<Equal<ValueOption<{ tags: string[] }, "tags">["field"], "tags">>;
 		type _TValueReturn = Expect<Equal<ValueReturnType<{ tags: string[] }, "tags", true>, string[]>>;
+
+		type _TFileCopy = Expect<Equal<FileCopyOptions["oldPath"], string>>;
+		type _TFileMove = Expect<Equal<FileMoveOptions["newPath"], string>>;
+		type _TFileExists = Expect<Equal<FileExistsOptions["path"], string>>;
+		type _TFilePatch = Expect<Equal<FilePatchCustomOptions["create"], boolean | undefined>>;
+		type _TFilePut = Expect<Equal<FilePutCustomOptions["overwrite"], boolean | undefined>>;
 	});
 });
