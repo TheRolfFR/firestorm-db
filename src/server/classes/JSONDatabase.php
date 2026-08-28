@@ -8,7 +8,7 @@ require_once __DIR__ . '/FileAccess.php';
 require_once __DIR__ . '/HTTPException.php';
 
 require_once __DIR__ . '/../read/search.php';
-require_once __DIR__ . '/../write/editField.php';
+require_once __DIR__ . '/../write/edit_field.php';
 require_once __DIR__ . '/../read/random.php';
 
 /** Manages locked, JSON-backed collection operations. */
