@@ -29,6 +29,7 @@ require_once __DIR__ . '/files_api/copy_file.php';
 require_once __DIR__ . '/files_api/move_file.php';
 require_once __DIR__ . '/files_api/exists_file.php';
 require_once __DIR__ . '/files_api/append_file.php';
+require_once __DIR__ . '/files_api/write_file.php';
 
 $method = $_SERVER['REQUEST_METHOD'] ?? '';
 
@@ -44,9 +45,34 @@ switch ($method) {
             get_file($path);
         }
         break;
-    case 'POST':
+
     case 'PUT':
+        $rawInput = file_get_contents('php://input') ?: "";
+        $json = ($rawInput !== '' && json_validate($rawInput)) ? json_decode($rawInput, true) : null;
+
+        $token = is_array($json) ? ($json['token'] ?? null) : p('token');
+        $path = is_array($json) ? ($json['path'] ?? null) : p('path');
+        $content = is_array($json) ? ($json['content'] ?? null) : p('content');
+        $overwrite = is_array($json) ? ($json['overwrite'] ?? null) : p('overwrite');
+
+        $msg = write_file($path, $content, $overwrite, $token);
+        http_success($msg);
+        break;
+
     case 'PATCH':
+        $rawInput = file_get_contents('php://input') ?: "";
+        $json = ($rawInput !== '' && json_validate($rawInput)) ? json_decode($rawInput, true) : null;
+
+        $token = is_array($json) ? ($json['token'] ?? null) : p('token');
+        $path = is_array($json) ? ($json['path'] ?? null) : p('path');
+        $content = is_array($json) ? ($json['content'] ?? null) : p('content');
+        $create = is_array($json) ? ($json['create'] ?? null) : p('create');
+
+        $msg = append_file($path, $content, $create, $token);
+        http_success($msg);
+        break;
+
+    case 'POST':
         $rawInput = file_get_contents('php://input') ?: "";
         $json = ($rawInput !== '' && json_validate($rawInput)) ? json_decode($rawInput, true) : null;
 
@@ -65,6 +91,8 @@ switch ($method) {
                     : move_file($oldPath, $newPath, $overwrite, $token);
 
                 http_success($msg);
+                break;
+
             case 'append':
                 $token = is_array($json) ? ($json['token'] ?? null) : p('token');
                 $path = is_array($json) ? ($json['path'] ?? null) : p('path');
@@ -73,6 +101,19 @@ switch ($method) {
 
                 $msg = append_file($path, $content, $create, $token);
                 http_success($msg);
+                break;
+
+            case 'write':
+            case 'put':
+                $token = is_array($json) ? ($json['token'] ?? null) : p('token');
+                $path = is_array($json) ? ($json['path'] ?? null) : p('path');
+                $content = is_array($json) ? ($json['content'] ?? null) : p('content');
+                $overwrite = is_array($json) ? ($json['overwrite'] ?? null) : p('overwrite');
+
+                $msg = write_file($path, $content, $overwrite, $token);
+                http_success($msg);
+                break;
+
             default:
                 $path = p('path');
                 $data = $_FILES['file'] ?? null;
@@ -81,7 +122,10 @@ switch ($method) {
 
                 $msg = upload_file($path, $data, $overwrite, $token);
                 http_success($msg);
+                break;
         }
+        break;
+
     case 'DELETE':
         $rawInput = file_get_contents('php://input') ?: "";
         $inputData = ($rawInput !== '' && json_validate($rawInput)) ? json_decode($rawInput, true) : null;
@@ -91,6 +135,9 @@ switch ($method) {
 
         delete_file($path, $token);
         http_success("Successfully deleted file");
+        break;
+
     default:
         http_error(400, "Incorrect request type, expected GET, POST, PUT, PATCH or DELETE, not $method");
+        break;
 }

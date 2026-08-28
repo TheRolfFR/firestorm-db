@@ -77,6 +77,13 @@ export function runFilesSuite(target: TestTarget) {
 			} catch (err) {
 				expect((err as Error).message).to.include("Token for Firestorm instance");
 			}
+
+			try {
+				await noToken.files.put({ path: "file.txt", body: "content" });
+				expect.fail("Should have thrown error for put");
+			} catch (err) {
+				expect((err as Error).message).to.include("Token for Firestorm instance");
+			}
 		});
 
 		it("returns 404 for unknown file", async () => {
@@ -252,6 +259,42 @@ export function runFilesSuite(target: TestTarget) {
 			expect(destContent).to.equal("move test content");
 
 			await env.instance.files.delete({ path: "/move-dest.txt" });
+		});
+
+		it("writes and overwrites file content directly with put()", async () => {
+			const putRes = await env.instance.files.put({
+				path: "/put-test.txt",
+				body: "initial put content",
+				options: { overwrite: true },
+			});
+			expect(putRes.response).to.include("Written file successfully");
+
+			const retrieved = await env.instance.files.get<string>({ path: "/put-test.txt" });
+			expect(retrieved).to.equal("initial put content");
+
+			let threw = false;
+			try {
+				await env.instance.files.put({
+					path: "/put-test.txt",
+					body: "new content without overwrite",
+					options: { overwrite: false },
+				});
+			} catch (err) {
+				threw = true;
+				expect((err as ErrorWithResponse).response?.status).to.equal(403);
+			}
+			expect(threw).to.be.true;
+
+			await env.instance.files.put({
+				path: "/put-test.txt",
+				body: "overwritten put content",
+				options: { overwrite: true },
+			});
+
+			const retrievedAfter = await env.instance.files.get<string>({ path: "/put-test.txt" });
+			expect(retrievedAfter).to.equal("overwritten put content");
+
+			await env.instance.files.delete({ path: "/put-test.txt" });
 		});
 
 		it("deletes file successfully", async () => {
