@@ -58,8 +58,8 @@ if (!function_exists('array_find')) {
     /**
      * Returns the value of the first element in the array that satisfies the callback.
      *
-     * @param array<mixed> $array
-     * @param callable(mixed, int|string): bool $callback
+     * @param array<mixed> $array The array to search through.
+     * @param callable(mixed, int|string): bool $callback The callback to apply to each element.
      */
     function array_find(array $array, callable $callback): mixed
     {
@@ -77,8 +77,8 @@ if (!function_exists('array_find_key')) {
     /**
      * Returns the key of the first element in the array that satisfies the callback.
      *
-     * @param array<mixed> $array
-     * @param callable(mixed, int|string): bool $callback
+     * @param array<mixed> $array The array to search through.
+     * @param callable(mixed, int|string): bool $callback The callback to apply to each element.
      */
     function array_find_key(array $array, callable $callback): int|string|null
     {
@@ -96,8 +96,8 @@ if (!function_exists('array_any')) {
     /**
      * Checks whether any element in the array satisfies the callback.
      *
-     * @param array<mixed> $array
-     * @param callable(mixed, int|string): bool $callback
+     * @param array<mixed> $array The array to iterate over.
+     * @param callable(mixed, int|string): bool $callback The callback to test against each element.
      */
     function array_any(array $array, callable $callback): bool
     {
@@ -115,8 +115,8 @@ if (!function_exists('array_all')) {
     /**
      * Checks whether all elements in the array satisfy the callback.
      *
-     * @param array<mixed> $array
-     * @param callable(mixed, int|string): bool $callback
+     * @param array<mixed> $array The array to iterate over.
+     * @param callable(mixed, int|string): bool $callback The callback to test against each element.
      */
     function array_all(array $array, callable $callback): bool
     {
@@ -133,6 +133,10 @@ if (!function_exists('array_all')) {
 if (!function_exists('mb_trim')) {
     /**
      * Strips whitespace (or other characters) from the beginning and end of a string with multibyte support.
+     *
+     * @param string $string The string that will be trimmed.
+     * @param string $characters Optionally, the stripped characters can also be specified.
+     * @param string|null $encoding The character encoding. If omitted, internal character encoding is used.
      */
     function mb_trim(string $string, string $characters = " \f\n\r\t\v\x00\u{00A0}\u{1680}\u{2000}\u{2001}\u{2002}\u{2003}\u{2004}\u{2005}\u{2006}\u{2007}\u{2008}\u{2009}\u{200A}\u{2028}\u{2029}\u{202F}\u{205F}\u{3000}\u{0085}\u{180E}", ?string $encoding = null): string
     {
@@ -155,7 +159,7 @@ if (!function_exists('array_first')) {
     /**
      * Returns the first value of an array, or null if the array is empty.
      *
-     * @param array<mixed> $array
+     * @param array<mixed> $array The array to search in.
      */
     function array_first(array $array): mixed
     {
@@ -172,7 +176,7 @@ if (!function_exists('array_last')) {
     /**
      * Returns the last value of an array, or null if the array is empty.
      *
-     * @param array<mixed> $array
+     * @param array<mixed> $array The array to search in.
      */
     function array_last(array $array): mixed
     {

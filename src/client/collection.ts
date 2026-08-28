@@ -375,8 +375,8 @@ export class Collection<
 	}
 
 	/**
-	 * Remove an element from the collection by its key
-	 * @param key The key from the entry to remove
+	 * Delete an entry by its key
+	 * @param key - The key of the entry to remove
 	 * @returns Write confirmation
 	 */
 	public remove(key: IdEncoding): Promise<WriteConfirmation> {
@@ -384,8 +384,8 @@ export class Collection<
 	}
 
 	/**
-	 * Remove multiple elements from the collection by their keys
-	 * @param keys The key from the entries to remove
+	 * Delete multiple entries by their keys
+	 * @param keys - The keys of the entries to remove
 	 * @returns Write confirmation
 	 */
 	public removeBulk(keys: IdEncoding[]): Promise<WriteConfirmation> {

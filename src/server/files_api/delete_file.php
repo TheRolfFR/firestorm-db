@@ -3,8 +3,8 @@
 /**
  * Deletes a file.
  *
- * @param mixed $path
- * @param mixed $token
+ * @param mixed $path Target file path to delete.
+ * @param mixed $token Authentication token.
  * @return void
  */
 function delete_file(mixed $path, mixed $token): void {

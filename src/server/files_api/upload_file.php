@@ -10,10 +10,10 @@
 /**
  * Uploads a file.
  *
- * @param mixed $path
- * @param mixed $data
- * @param mixed $overwrite
- * @param mixed $token
+ * @param mixed $path Target file path within storage.
+ * @param mixed $data Uploaded file metadata array from $_FILES.
+ * @param mixed $overwrite Whether to overwrite if the file already exists.
+ * @param mixed $token Authentication token.
  * @return string
  */
 function upload_file(mixed $path, mixed $data, mixed $overwrite, mixed $token): string {

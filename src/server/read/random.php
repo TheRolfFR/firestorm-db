@@ -23,10 +23,10 @@ function global_randomizer(): Randomizer {
 /**
  * Selects distinct entries by key, with optional deterministic ordering, limit, and skipped selections.
  *
- * @param array<mixed> $json
- * @param int|false $seed
- * @param int $max
- * @param int $offset
+ * @param array<mixed> $json Collection content map to sample from.
+ * @param int|false $seed Optional deterministic PRNG integer seed.
+ * @param int $max Maximum number of items to pick (-1 for all).
+ * @param int $offset Number of initial random entries to skip.
  * @return array<mixed>
  */
 function choose_random(array $json, int|false $seed = false, int $max = -1, int $offset = 0): array {

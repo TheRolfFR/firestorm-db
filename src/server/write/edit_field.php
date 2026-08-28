@@ -7,9 +7,8 @@ require_once __DIR__ . '/../enums/EditOperation.php';
 /**
  * Mutates one field of an existing collection entry in place after validating the requested operation and operands.
  * The reference avoids copying the full collection before the caller persists its locked FileObject.
- *
- * @param array<int|string, mixed> $content
- * @param mixed $editObj
+ * @param array<int|string, mixed> $content Collection or document content array to mutate.
+ * @param mixed $editObj Specification object containing field, operation, and optional id/value.
  */
 function edit_field(array &$content, mixed $editObj): bool {
 	// must be associative array

@@ -70,9 +70,9 @@ function search(mixed $field, string $criteria, mixed $value, bool $ignoreCase):
 /**
  * Tests whether a sequential field contains one requested value, using case-insensitive string matching when requested.
  *
- * @param array<mixed> $array
- * @param mixed $value
- * @param bool $ignoreCase
+ * @param array<mixed> $array Haystack array to inspect.
+ * @param mixed $value Needle value to look for.
+ * @param bool $ignoreCase Whether string comparisons should be case-insensitive.
  * @return bool
  */
 function array_contains(array $array, mixed $value, bool $ignoreCase = false): bool {
@@ -86,9 +86,9 @@ function array_contains(array $array, mixed $value, bool $ignoreCase = false): b
 /**
  * Rejects malformed comparison data and reports whether any requested value occurs in the stored field.
  *
- * @param array<mixed> $concernedField
- * @param mixed $value
- * @param bool $ignoreCase
+ * @param array<mixed> $concernedField Haystack array stored in collection item.
+ * @param mixed $value Needles array to look for.
+ * @param bool $ignoreCase Whether string comparisons should be case-insensitive.
  * @return bool
  * @throws HTTPException
  */
@@ -102,9 +102,9 @@ function array_contains_any(array $concernedField, mixed $value, bool $ignoreCas
 /**
  * Rejects malformed comparison data and reports whether every requested value occurs in the stored field.
  *
- * @param array<mixed> $concernedField
- * @param mixed $value
- * @param bool $ignoreCase
+ * @param array<mixed> $concernedField Haystack array stored in collection item.
+ * @param mixed $value Needles array to match against.
+ * @param bool $ignoreCase Whether string comparisons should be case-insensitive.
  * @return bool
  * @throws HTTPException
  */
@@ -118,8 +118,8 @@ function array_contains_all(array $concernedField, mixed $value, bool $ignoreCas
 /**
  * Evaluates whether an element matches all specified search conditions.
  *
- * @param mixed $el
- * @param array<int, array{field: string, criteria: mixed, value: mixed, ignoreCase?: bool}> $conditions
+ * @param mixed $el Collection element to evaluate.
+ * @param array<int, array{field: string, criteria: mixed, value: mixed, ignoreCase?: bool}> $conditions List of search condition rules.
  * @return bool
  */
 function matches_search_conditions(mixed $el, array $conditions): bool {
@@ -166,12 +166,12 @@ function matches_search_conditions(mixed $el, array $conditions): bool {
 /**
  * Filters a collection array using search conditions, with optional limit early exit support.
  *
- * @param array<int|string, mixed> $content
- * @param array<int, array{field: string, criteria: mixed, value: mixed, ignoreCase?: bool}> $conditions
- * @param bool $has_limit
- * @param int|false $limit
- * @param mixed $random
- * @return array<int|string, mixed>
+ * @param array<int|string, mixed> $content Collection content map to filter.
+ * @param array<int, array{field: string, criteria: mixed, value: mixed, ignoreCase?: bool}> $conditions Array of search filter criteria.
+ * @param bool $has_limit Whether limit option is provided.
+ * @param int|false $limit Maximum items to return.
+ * @param mixed $random Optional random selection settings or boolean.
+ * @return array<int|string, mixed> Filtered elements with preserved keys.
  */
 function filter_search_conditions(array $content, array $conditions, bool $has_limit = false, int|false $limit = false, mixed $random = false): array {
     $res = array_filter($content, fn($el) => matches_search_conditions($el, $conditions));

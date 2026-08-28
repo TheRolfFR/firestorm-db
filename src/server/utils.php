@@ -5,7 +5,7 @@ require_once __DIR__ . '/polyfills/polyfills.php';
 /**
  * Applies the application's “provided” rule, treating null, empty strings, zero-like values, and empty arrays as absent.
  *
- * @param mixed $var
+ * @param mixed $var The variable to check for presence and non-emptiness.
  */
 function check(mixed $var): bool {
     return isset($var) && !empty($var);
@@ -14,8 +14,8 @@ function check(mixed $var): bool {
 /**
  * Sends a final JSON response and terminates execution so endpoint code cannot emit a second response.
  *
- * @param string $body
- * @param int $code
+ * @param string $body JSON payload body to send.
+ * @param int $code HTTP response status code.
  * @return never
  */
 function http_response(string $body, int $code = 200): never {
@@ -29,8 +29,8 @@ function http_response(string $body, int $code = 200): never {
 /**
  * Encodes an arbitrary value as JSON and falls back to a stable error document when encoding fails.
  *
- * @param mixed $json
- * @param int $code
+ * @param mixed $json Data payload to encode as JSON.
+ * @param int $code HTTP response status code.
  * @return never
  */
 function http_json_response(mixed $json, int $code = 200): never {
@@ -41,9 +41,9 @@ function http_json_response(mixed $json, int $code = 200): never {
 /**
  * Wraps a successful or error payload under a caller-selected response key before JSON encoding it.
  *
- * @param string|array<mixed> $message
- * @param string $key
- * @param int $code
+ * @param string|array<mixed> $message Message string or payload array.
+ * @param string $key JSON root envelope key name.
+ * @param int $code HTTP response status code.
  * @return never
  */
 function http_message(string|array $message, string $key = 'message', int $code = 200): never {
@@ -54,8 +54,8 @@ function http_message(string|array $message, string $key = 'message', int $code 
 /**
  * Sends a JSON error envelope and stops the current request with the supplied HTTP status.
  *
- * @param int $code
- * @param string $message
+ * @param int $code HTTP error status code.
+ * @param string $message Error message string.
  * @return never
  */
 function http_error(int $code, string $message): never {
@@ -65,7 +65,7 @@ function http_error(int $code, string $message): never {
 /**
  * Identifies scalar and null values that the collection API must reject where object-like data is required.
  *
- * @param mixed $value
+ * @param mixed $value Value to evaluate.
  */
 function is_primitive(mixed $value): bool {
     return $value === null ||
@@ -78,7 +78,7 @@ function is_primitive(mixed $value): bool {
 /**
  * Distinguishes integer and floating-point values for numeric edit and search operations.
  *
- * @param mixed $value
+ * @param mixed $value Value to evaluate.
  */
 function is_number_like(mixed $value): bool {
     return is_int($value) || is_float($value);
@@ -87,7 +87,7 @@ function is_number_like(mixed $value): bool {
 /**
  * Accepts only values that PHP can safely use as collection keys without implicit object or array conversion.
  *
- * @param mixed $value
+ * @param mixed $value Value to evaluate.
  */
 function is_keyable(mixed $value): bool {
     return is_int($value) || is_string($value);
@@ -96,7 +96,7 @@ function is_keyable(mixed $value): bool {
 /**
  * Sends the standard success envelope while allowing string messages or structured result data.
  *
- * @param string|array<mixed> $message
+ * @param string|array<mixed> $message Success message or structured result payload.
  * @return never
  */
 function http_success(string|array $message): never {
@@ -106,8 +106,8 @@ function http_success(string|array $message): never {
 /**
  * Retrieves a JSON member; missing members use false as the endpoint sentinel.
  *
- * @param int|string $key
- * @param array<mixed> $arr
+ * @param int|string $key Key name or index to lookup.
+ * @param array<mixed> $arr Source array to retrieve key from.
  * @return mixed
  */
 function check_key_json(int|string $key, array $arr): mixed {
@@ -119,7 +119,7 @@ function check_key_json(int|string $key, array $arr): mixed {
 /**
  * Detects non-zero-based or non-consecutive keys so callers can distinguish JSON objects from JSON lists.
  *
- * @param mixed $arr
+ * @param mixed $arr Array or value to inspect.
  */
 function array_assoc(mixed $arr): bool {
     return is_array($arr) && !array_is_list($arr);
@@ -128,7 +128,7 @@ function array_assoc(mixed $arr): bool {
 /**
  * Treats arrays without associative keys as lists, including the empty list used by bulk commands.
  *
- * @param mixed $arr
+ * @param mixed $arr Array or value to inspect.
  */
 function array_sequential(mixed $arr): bool {
     return is_array($arr) && array_is_list($arr);

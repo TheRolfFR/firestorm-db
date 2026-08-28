@@ -3,7 +3,7 @@
 /**
  * Retrieves file content or streams file.
  *
- * @param mixed $path
+ * @param mixed $path Target file path within storage.
  * @return void
  */
 function get_file(mixed $path): void {
