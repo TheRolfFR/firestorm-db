@@ -1,10 +1,21 @@
 {
-    "semi": true,
-    "trailingComma": "all",
-    "singleQuote": false,
-    "printWidth": 100,
-    "useTabs": true,
-    "bracketSpacing": true,
-    "arrowParens": "always",
-    "parser": "typescript"
+	"semi": true,
+	"trailingComma": "all",
+	"singleQuote": false,
+	"printWidth": 100,
+	"useTabs": true,
+	"bracketSpacing": true,
+	"arrowParens": "always",
+	"endOfLine": "lf",
+	"plugins": ["@ianvs/prettier-plugin-sort-imports"],
+	"importOrder": [
+		"<THIRD_PARTY_MODULES>",
+		"",
+		"^[../]",
+		"^[./]",
+		"",
+		"<TYPES>",
+		"<TYPES>^[.]"
+	],
+	"importOrderTypeScriptVersion": "5.0.0"
 }

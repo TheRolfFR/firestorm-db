@@ -1,48 +1,48 @@
 {
-  "opts": {
-    "template": "node_modules/docdash"
-  },
-  "plugins": ["plugins/markdown"],
-  "docdash": {
-    "static": true,
-    "sort": true,
-    "search": true,
-    "collapse": false,
-    "typedefs": false,
-    "wrap": true,
-    "removeQuotes": "none",
-    "scripts": [],
-    "openGraph": {
-      "title": "TheRolfFR/firestorm-db: Self hosted Firestore-like database",
-      "description": "Self hosted Firestore-like database with API endpoints based on micro bulk operations",
-      "type": "website",
-      "image": "https://github.com/TheRolfFR/firestorm-db/raw/main/img/firestorm-512.png",
-      "site_name": "firestorm-db",
-      "url": "https://github.com/TheRolfFR/firestorm-db/"
-    },
-    "meta": {
-        "title": "TheRolfFR/firestorm-db: Self hosted Firestore-like database",
-        "description": "Self hosted Firestore-like database with API endpoints based on micro bulk operations",
-        "keyword": "firebase,firestore,db,api,php,micro-operations,bulk"
-    },
-    "menu": {
-      "Repository": {
-        "href": "https://github.com/TheRolfFR/firestorm",
-        "target": "_blank",
-        "class": "menu-item",
-        "id": "repository"
-      },
-      "npm": {
-        "href": "https://www.npmjs.com/package/firestorm-db",
-        "target": "_blank",
-        "class": "menu-item",
-        "id": "npm"
-      }
-    }
-  },
-  "templates": {
-    "default": {
-      "useLongnameInNav": true
-    }
-  }
+	"opts": {
+		"template": "node_modules/docdash"
+	},
+	"plugins": ["plugins/markdown"],
+	"docdash": {
+		"static": true,
+		"sort": true,
+		"search": true,
+		"collapse": false,
+		"typedefs": false,
+		"wrap": true,
+		"removeQuotes": "none",
+		"scripts": [],
+		"openGraph": {
+			"title": "TheRolfFR/firestorm-db: Self hosted Firestore-like database",
+			"description": "Self hosted Firestore-like database with API endpoints based on micro bulk operations",
+			"type": "website",
+			"image": "https://github.com/TheRolfFR/firestorm-db/raw/main/img/firestorm-512.png",
+			"site_name": "firestorm-db",
+			"url": "https://github.com/TheRolfFR/firestorm-db/"
+		},
+		"meta": {
+			"title": "TheRolfFR/firestorm-db: Self hosted Firestore-like database",
+			"description": "Self hosted Firestore-like database with API endpoints based on micro bulk operations",
+			"keyword": "firebase,firestore,db,api,php,micro-operations,bulk"
+		},
+		"menu": {
+			"Repository": {
+				"href": "https://github.com/TheRolfFR/firestorm",
+				"target": "_blank",
+				"class": "menu-item",
+				"id": "repository"
+			},
+			"npm": {
+				"href": "https://www.npmjs.com/package/firestorm-db",
+				"target": "_blank",
+				"class": "menu-item",
+				"id": "npm"
+			}
+		}
+	},
+	"templates": {
+		"default": {
+			"useLongnameInNav": true
+		}
+	}
 }

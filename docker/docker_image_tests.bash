@@ -23,10 +23,8 @@ cp tests/files/*.json $temp_dir
 
 echo -n "Finding free port for docker HTTP port..."
 port=$BASE_PORT
-is_free=$(netstat -taln | grep $port)
-while [[ -n "$is_free" ]]; do
-    port=$[port+INCREMENT]
-    is_free=$(netstat -taln | grep $port)
+while lsof -i :$port &>/dev/null || (command -v netstat &>/dev/null && netstat -taln 2>/dev/null | grep -q ":$port "); do
+    port=$((port + INCREMENT))
 done
 echo " [:$port]"
 
@@ -36,14 +34,22 @@ echo "Starting docker container..."
 # & expose the container port to the host machine so we can test it
 docker_container_id=$(docker run -d \
     --user "$(id -u):$(id -g)" \
-    -v ./tests/php/config.php:/var/www/html/config.php \
-    -v ./tests/php/tokens.php:/var/www/html/tokens.php \
-    -v $temp_dir/:/var/www/html/files \
+    -v "$(pwd)/tests/php/config.php:/var/www/html/config.php" \
+    -v "$(pwd)/tests/php/tokens.php:/var/www/html/tokens.php" \
+    -v "$temp_dir/:/var/www/html/files" \
     -p $port:80 $IMAGE_NAME:$IMAGE_TAG \
 )
 
+echo "Waiting for docker container to be ready..."
+for i in {1..50}; do
+    if curl -s "http://127.0.0.1:$port" &>/dev/null; then
+        break
+    fi
+    sleep 0.1
+done
+
 echo "Running tests..."
-env PORT=$port $npm_runner run js:tests
+env PORT=$port $npm_runner run ts:tests
 
 e=$?
 

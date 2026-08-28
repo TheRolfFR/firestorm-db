@@ -4,16 +4,16 @@ on:
   push:
     branches: [main]
     paths:
-      - "php/**"
       - "src/**"
-      - "tsconfig.json"
-      - ".github/workflowsstatic-analysis.yml"
+      - "tests/**"
+      - "tsconfig*.json"
+      - ".github/workflows/static-analysis.yml"
   pull_request:
     branches: [main]
     paths:
-      - "php/**"
       - "src/**"
-      - "tsconfig.json"
+      - "tests/**"
+      - "tsconfig*.json"
       - ".github/workflows/static-analysis.yml"
   workflow_dispatch:
 
@@ -23,17 +23,17 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Copy PHP config files into php folder
         run: |
-          cp tests/php/*.php php/
-          ls php/
+          cp tests/php/*.php src/server/
+          ls src/server/
 
       - name: Set up PHP
         uses: shivammathur/setup-php@v2
         with:
-          php-version: '7.4' # onyly test 7.4 it will be enough
+          php-version: "8.2"
 
       - name: Download PHPStan (PHAR)
         run: |
@@ -42,7 +42,7 @@ jobs:
 
       - name: Run PHPStan on php/
         run: |
-          ./phpstan.phar analyse php --level=8
+          ./phpstan.phar analyse -c phpstan.neon
 
   typescript:
     name: TypeScript Check
@@ -50,9 +50,9 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
-      - uses: pnpm/action-setup@v4
+      - uses: pnpm/action-setup@v6
         with:
           version: 11
 
@@ -60,7 +60,7 @@ jobs:
         uses: actions/setup-node@v7
         with:
           node-version: "22"
-          cache: 'pnpm'
+          cache: "pnpm"
 
       - name: Install dependencies
         run: pnpm install

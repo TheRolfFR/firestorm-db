@@ -2,40 +2,76 @@ name: Tests
 
 on:
   push:
-    branches: [ main ]
+    branches: [main]
   pull_request:
-    branches: [ main ]
+    branches: [main]
 
 jobs:
   js-wrapper-test:
-    name: Tests with PHP ${{ matrix.php }} & Node.js ${{ matrix.node }}
+    name: Tests (PHP ${{ matrix.php }}, Node ${{ matrix.node }}, Composer ${{ matrix.composer }})
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        php: ["7.4", "8.2"]
-        node: ["22", "24", "26"]
+        php: ["8.2", "8.3", "8.4", "8.5"]
+        node: ["^20.19.0", "^22.12.0", "24", "26"]
+        composer: [false, true]
+        include:
+          - node: "^20.19.0"
+            pnpm: 10
 
     steps:
       - name: Check out repository code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
-      - uses: pnpm/action-setup@v4
+      - uses: pnpm/action-setup@v6
         with:
-          version: 11
+          version: ${{ matrix.pnpm || 11 }}
 
       - name: Use Node.js ${{ matrix.node }}
         uses: actions/setup-node@v7
         with:
           node-version: ${{ matrix.node }}
-          cache: 'pnpm'
+          cache: "pnpm"
 
       - name: Install PHP
         uses: shivammathur/setup-php@v2
         with:
           php-version: ${{ matrix.php }}
 
-      - name: Install developer dependencies
+      - name: Install Composer dependencies
+        if: ${{ matrix.composer }}
+        run: composer install --no-interaction --prefer-dist --optimize-autoloader
+
+      - name: Install dependencies
         run: pnpm install
 
-      - name: Test da code
+      - name: Run tests
         run: pnpm php:tests
+
+  coverage:
+    name: Coverage Check
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository code
+        uses: actions/checkout@v7
+
+      - uses: pnpm/action-setup@v6
+        with:
+          version: 11
+
+      - name: Use Node.js 22
+        uses: actions/setup-node@v7
+        with:
+          node-version: "22"
+          cache: "pnpm"
+
+      - name: Install PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: "8.2"
+
+      - name: Install dependencies
+        run: pnpm install
+
+      - name: Run coverage check
+        run: pnpm coverage

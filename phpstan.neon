@@ -1,6 +1,6 @@
 parameters:
-    ignoreErrors:
-        - identifiers:
-            - missingType.return
-            - missingType.parameter
-            - variable.undefined
+  phpVersion: 80200 # PHP 8.2 baseline
+  level: 8
+  paths:
+    - src/server
+  treatPhpDocTypesAsCertain: false

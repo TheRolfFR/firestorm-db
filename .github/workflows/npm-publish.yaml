@@ -9,17 +9,17 @@ jobs:
     runs-on: "ubuntu-latest"
     steps:
       - name: Check out repository code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
-      - uses: pnpm/action-setup@v4
+      - uses: pnpm/action-setup@v6
         with:
           version: 11
 
       - name: Use Node.js
         uses: actions/setup-node@v7
         with:
-          node-version: '22'
-          cache: 'pnpm'
+          node-version: "22"
+          cache: "pnpm"
 
       - run: npm adduser --registry=https://registry.npmjs.org/
       - run: npm set //registry.npmjs.org/:_authToken "${{ secrets.NPM_TOKEN }}"
