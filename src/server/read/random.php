@@ -10,6 +10,17 @@ function make_seed(): int {
 }
 
 /**
+ * Returns a globally shared Randomizer instance to avoid repeated instantiation overhead.
+ */
+function global_randomizer(): Randomizer {
+    static $randomizer = null;
+    if ($randomizer === null) {
+        $randomizer = new Randomizer();
+    }
+    return $randomizer;
+}
+
+/**
  * Selects distinct entries by key, with optional deterministic ordering, limit, and skipped selections.
  *
  * @param array<mixed> $json
@@ -27,7 +38,7 @@ function choose_random(array $json, int|false $seed = false, int $max = -1, int 
 
     if ($max === -1 || $max > $keys_length) $max = $keys_length;
 
-    $randomizer = $seed !== false ? new Randomizer(new Mt19937($seed)) : new Randomizer();
+    $randomizer = $seed !== false ? new Randomizer(new Mt19937($seed)) : global_randomizer();
 
     // splice keys before the offset
     for ($i = 0; $i < $offset; ++$i) {

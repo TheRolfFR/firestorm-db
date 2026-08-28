@@ -1,8 +1,5 @@
 <?php
 
-use Random\Randomizer;
-use Random\Engine\Secure;
-
 require_once __DIR__ . '/../utils.php';
 require_once __DIR__ . '/FileAccess.php';
 require_once __DIR__ . '/HTTPException.php';
@@ -242,8 +239,7 @@ class JSONDatabase {
      */
     private function newKey(): string {
         if ($this->secureKeys) {
-            $randomizer = new Randomizer(new Secure());
-            return bin2hex($randomizer->getBytes(16));
+            return bin2hex(global_randomizer()->getBytes(16));
         }
         return uniqid();
     }
