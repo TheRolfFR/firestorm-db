@@ -45,6 +45,7 @@ switch ($method) {
         }
         break;
     case 'POST':
+    case 'PUT':
     case 'PATCH':
         $rawInput = file_get_contents('php://input') ?: "";
         $json = ($rawInput !== '' && json_validate($rawInput)) ? json_decode($rawInput, true) : null;
@@ -91,5 +92,5 @@ switch ($method) {
         delete_file($path, $token);
         http_success("Successfully deleted file");
     default:
-        http_error(400, "Incorrect request type, expected GET, POST, PATCH or DELETE, not $method");
+        http_error(400, "Incorrect request type, expected GET, POST, PUT, PATCH or DELETE, not $method");
 }

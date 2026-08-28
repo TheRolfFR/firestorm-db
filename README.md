@@ -164,7 +164,7 @@ console.log(item.bye()); // "Bye John Doe!"
 | Method                         | Parameters                                                                     | Description                                                                                                                              |
 | ------------------------------ | ------------------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------- |
 | `sha1()`                       | _none_                                                                         | Get the [SHA-1](https://www.php.net/manual/en/function.sha1.php) hash of the collection file to verify content without downloading JSON. |
-| `readRaw(original?)`           | `original?: boolean`                                                           | Read the entire collection. Set `original: true` to disable ID injection (if doing so, consider using a `Document` instead).            |
+| `readRaw(original?)`           | `original?: boolean`                                                           | Read the entire collection. Set `original: true` to disable ID injection (if doing so, consider using a `Document` instead).             |
 | `get(key)`                     | `key: string \| number`                                                        | Get an element by its ID/key.                                                                                                            |
 | `searchKeys(keys)`             | `keys: (string \| number)[]`                                                   | Get multiple elements by their keys.                                                                                                     |
 | `search(filter, options?)`     | `filter: SearchOption[]`, `options?: boolean \| number \| SearchResultOptions` | Search through the collection with filtering criteria, limit, and optional randomization (`random: true \| seed`).                       |
@@ -289,42 +289,51 @@ await settingsDoc.editField({
 
 Firestorm includes a file management API under `instance.files`:
 
-| Method                               | Parameters                                              | Description                               | Returns                      |
-| ------------------------------------ | ------------------------------------------------------- | ----------------------------------------- | ---------------------------- |
-| `get<T>(path)`                       | `path: string`                                          | Retrieve file content by path             | `Promise<T>`                 |
-| `upload(form)`                       | `form: FormData`                                        | Upload a file (with optional overwrite)   | `Promise<WriteConfirmation>` |
-| `delete(path)`                       | `path: string`                                          | Delete a file from the server             | `Promise<WriteConfirmation>` |
-| `copy(oldPath, newPath, overwrite?)` | `oldPath: string, newPath: string, overwrite?: boolean` | Copy a file directly on the server        | `Promise<WriteConfirmation>` |
-| `move(oldPath, newPath, overwrite?)` | `oldPath: string, newPath: string, overwrite?: boolean` | Move/rename a file directly on the server | `Promise<WriteConfirmation>` |
-| `exists(path)`                       | `path: string`                                          | Check if a file exists on the server      | `Promise<boolean>`           |
-| `append(path, content, create?)`     | `path: string, content: string, create?: boolean`       | Append text to a file on the server       | `Promise<WriteConfirmation>` |
+| Method          | Parameters                                               | Description                               | Returns                 |
+| --------------- | -------------------------------------------------------- | ----------------------------------------- | ----------------------- |
+| `get<T>(req)`   | `request: HttpGetRequest`                                | Retrieve file content by path             | `Promise<T>`            |
+| `post(req)`     | `request: HttpBodyRequest`                               | Upload/post a file via `body: FormData`   | `Promise<Confirmation>` |
+| `delete(req)`   | `request: HttpBodyRequest`                               | Delete a file from the server             | `Promise<Confirmation>` |
+| `copy(options)` | `options: FileCopyOptions`                               | Copy a file directly on the server        | `Promise<Confirmation>` |
+| `move(options)` | `options: FileMoveOptions`                               | Move/rename a file directly on the server | `Promise<Confirmation>` |
+| `exists(req)`   | `options: FileExistsOptions`                             | Check if a file exists on the server      | `Promise<boolean>`      |
+| `patch(req)`    | `request: HttpBodyRequest<Body, FilePatchCustomOptions>` | Append/patch text to a file on the server | `Promise<Confirmation>` |
+| `put(req)`      | `request: HttpBodyRequest<Body, FilePutCustomOptions>`   | Write/put text to a file on the server    | `Promise<Confirmation>` |
 
 ### File Examples
 
 ```ts
 import FormData from "form-data"; // in Node.js (or browser native FormData)
 
-// Upload
+// Upload / Post
 const form = new FormData();
 form.append("path", "/quote.txt");
 form.append("file", "Great Scott!", "quote.txt");
 form.append("overwrite", "true");
-await instance.files.upload(form);
+await instance.files.post({ body: form });
 
 // Get content
-const text = await instance.files.get<string>("/quote.txt");
+const text = await instance.files.get<string>({ path: "/quote.txt" });
 console.log(text); // "Great Scott!"
 
-// Append text
-await instance.files.append("/quote.txt", "\n- Doc Brown");
+// Patch / Append text
+await instance.files.patch({
+	path: "/quote.txt",
+	body: "\n- Doc Brown",
+	options: { create: true },
+});
 
 // Copy & Move
-await instance.files.copy("/quote.txt", "/quote_backup.txt", true);
-await instance.files.move("/quote_backup.txt", "/quote_archive.txt", true);
+await instance.files.copy({ oldPath: "/quote.txt", newPath: "/quote_backup.txt", overwrite: true });
+await instance.files.move({
+	oldPath: "/quote_backup.txt",
+	newPath: "/quote_archive.txt",
+	overwrite: true,
+});
 
 // Check existence & Delete
-const exists = await instance.files.exists("/quote_archive.txt"); // true
-await instance.files.delete("/quote_archive.txt");
+const exists = await instance.files.exists({ path: "/quote_archive.txt" }); // true
+await instance.files.delete({ path: "/quote_archive.txt" });
 ```
 
 ---
@@ -414,6 +423,7 @@ import type {
 	CollectionOptions,
 	// Criteria Unions
 	ComparisonCriteria,
+	Confirmation,
 	Document,
 	DocumentEditFieldOption,
 	DocumentOptions,
@@ -438,7 +448,6 @@ import type {
 	StringCriteria,
 	ValueOption,
 	ValueReturnType,
-	WriteConfirmation,
 } from "firestorm-db";
 ```
 

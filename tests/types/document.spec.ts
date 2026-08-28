@@ -2,7 +2,7 @@ import { expect } from "chai";
 
 import { createFirestorm, Document } from "../../dist/esm/index.js";
 
-import type { DocumentEditFieldOption, WriteConfirmation } from "../../dist/esm/index.js";
+import type { Confirmation, DocumentEditFieldOption } from "../../dist/esm/index.js";
 import type { Equal, Expect, Extends } from "./type-helpers.js";
 
 type Settings = {
@@ -143,7 +143,7 @@ describe("Type Tests: src/client/document.ts", () => {
 	it("readRaw() and writeRaw() return types", () => {
 		type _TRead = Expect<Equal<ReturnType<typeof doc.readRaw>, Promise<Settings>>>;
 
-		type _TWrite = Expect<Equal<ReturnType<typeof doc.writeRaw>, Promise<WriteConfirmation>>>;
+		type _TWrite = Expect<Equal<ReturnType<typeof doc.writeRaw>, Promise<Confirmation>>>;
 
 		function _rawValidations() {
 			// @ts-expect-error - writeRaw value must match Settings
@@ -152,7 +152,7 @@ describe("Type Tests: src/client/document.ts", () => {
 	});
 
 	it("set() typing and field value matching", () => {
-		type _TSet = Expect<Equal<ReturnType<typeof doc.set<"theme">>, Promise<WriteConfirmation>>>;
+		type _TSet = Expect<Equal<ReturnType<typeof doc.set<"theme">>, Promise<Confirmation>>>;
 
 		function _setValidations() {
 			// @ts-expect-error - value must be number for 'version' field
@@ -164,8 +164,8 @@ describe("Type Tests: src/client/document.ts", () => {
 	});
 
 	it("editField() and editFieldBulk() typing", () => {
-		type _TEf1 = Expect<Equal<ReturnType<typeof doc.editField>, Promise<WriteConfirmation>>>;
-		type _TEfBulk = Expect<Equal<ReturnType<typeof doc.editFieldBulk>, Promise<WriteConfirmation>>>;
+		type _TEf1 = Expect<Equal<ReturnType<typeof doc.editField>, Promise<Confirmation>>>;
+		type _TEfBulk = Expect<Equal<ReturnType<typeof doc.editFieldBulk>, Promise<Confirmation>>>;
 
 		function _editFieldValidations() {
 			// @ts-expect-error - operation 'increment' is not allowed on string field 'theme'

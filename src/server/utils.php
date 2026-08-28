@@ -100,7 +100,7 @@ function is_keyable(mixed $value): bool {
  * @return never
  */
 function http_success(string|array $message): never {
-    http_message($message, 'message', 200);
+    http_message($message, 'response', 200);
 }
 
 /**
@@ -171,7 +171,7 @@ function cors(): void {
     if (($_SERVER['REQUEST_METHOD'] ?? '') === 'OPTIONS') {
 
         if (isset($_SERVER['HTTP_ACCESS_CONTROL_REQUEST_METHOD']))
-            header("Access-Control-Allow-Methods: GET, POST, PATCH, DELETE, OPTIONS");
+            header("Access-Control-Allow-Methods: GET, POST, PUT, PATCH, DELETE, OPTIONS");
 
         if (isset($_SERVER['HTTP_ACCESS_CONTROL_REQUEST_HEADERS']))
             header("Access-Control-Allow-Headers: {$_SERVER['HTTP_ACCESS_CONTROL_REQUEST_HEADERS']}");

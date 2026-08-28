@@ -33,18 +33,17 @@ describe("CommonJS (CJS) Matrix & Module Interop Suite", () => {
 		});
 
 		it("allows requiring individual subpath modules", () => {
-			const collectionModule = require("../../dist/cjs/collection.js");
-			const documentModule = require("../../dist/cjs/document.js");
-			const filesModule = require("../../dist/cjs/files.js");
+			const collectionModule = require("../../dist/cjs/resources/collection.js");
+			const documentModule = require("../../dist/cjs/resources/document.js");
+			const filesModule = require("../../dist/cjs/managers/files.js");
 			const instanceModule = require("../../dist/cjs/instance.js");
-			const resourceModule = require("../../dist/cjs/resource.js");
+			const resourceModule = require("../../dist/cjs/managers/resource.js");
 			const utilsModule = require("../../dist/cjs/utils.js");
 
 			expect(collectionModule.Collection).to.be.a("function");
 			expect(documentModule.Document).to.be.a("function");
 			expect(filesModule.FileManager).to.be.a("function");
 			expect(instanceModule.Firestorm).to.be.a("function");
-			expect(instanceModule.createFirestorm).to.be.a("function");
 			expect(resourceModule.ResourceManager).to.be.a("function");
 			expect(utilsModule.requestJson).to.be.a("function");
 			expect(utilsModule.FirestormError).to.be.a("function");

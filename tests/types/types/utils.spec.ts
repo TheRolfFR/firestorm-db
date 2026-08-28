@@ -4,17 +4,18 @@ import { ID_FIELD } from "../../../dist/esm/types/utils.js";
 
 import type {
 	CollectionItem,
+	Confirmation,
 	IdEncoding,
 	Path,
 	PathValue,
-	WriteConfirmation,
 } from "../../../dist/esm/types/utils.js";
 import type { Equal, Expect, Extends } from "../type-helpers.js";
 
 describe("Type Tests: src/client/types/utils.ts", () => {
-	it("ID_FIELD and IdEncoding", () => {
+	it("ID_FIELD and IdEncoding and Confirmation", () => {
 		type _TID = Expect<Extends<typeof ID_FIELD, symbol>>;
 		type _TEncoding = Expect<Equal<IdEncoding, string | number>>;
+		type _TConf = Expect<Extends<Confirmation, { response?: unknown }>>;
 
 		const strId: IdEncoding = "123";
 		const numId: IdEncoding = 123;

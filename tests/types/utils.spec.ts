@@ -2,7 +2,7 @@ import { expect } from "chai";
 
 import { FirestormError, requestJson } from "../../dist/esm/utils.js";
 
-import type { WriteConfirmation } from "../../dist/esm/types/utils.js";
+import type { Confirmation } from "../../dist/esm/types/utils.js";
 import type { ResourceLike, ResponseDetails } from "../../dist/esm/utils.js";
 import type { Equal, Expect, Extends } from "./type-helpers.js";
 
@@ -16,6 +16,7 @@ describe("Type Tests: src/client/utils.ts", () => {
 		});
 
 		type _TErr = Expect<Extends<typeof err, Error>>;
+		type _TErrConf = Expect<Extends<typeof err, Confirmation>>;
 		type _TName = Expect<Equal<typeof err.name, string>>;
 		type _TResp = Expect<
 			Equal<typeof err.response, ResponseDetails<{ error: string }> | undefined>

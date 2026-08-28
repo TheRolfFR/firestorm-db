@@ -1,9 +1,9 @@
 import { expect } from "chai";
 
-import { Collection } from "../../dist/esm/collection.js";
-import { Document } from "../../dist/esm/document.js";
-import { FileManager } from "../../dist/esm/files.js";
 import { Firestorm } from "../../dist/esm/instance.js";
+import { FileManager } from "../../dist/esm/managers/files.js";
+import { Collection } from "../../dist/esm/resources/collection.js";
+import { Document } from "../../dist/esm/resources/document.js";
 import { ID_FIELD } from "../../dist/esm/types/utils.js";
 
 import type { FirestormCreationOption } from "../../dist/esm/instance.js";

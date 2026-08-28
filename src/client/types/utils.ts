@@ -4,7 +4,11 @@
 export const ID_FIELD: unique symbol = Symbol.for("firestorm.id");
 
 export type IdEncoding = string | number;
-export type WriteConfirmation = { message: string };
+
+/** Confirmation interface returned by server operations or attached to errors */
+export interface Confirmation<T = unknown> {
+	response?: T;
+}
 
 export type CollectionItem<Item extends Record<string, unknown> = Record<string, unknown>> =
 	Item & {

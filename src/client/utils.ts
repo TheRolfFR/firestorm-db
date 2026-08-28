@@ -1,4 +1,5 @@
 import type { Firestorm } from "./instance.ts";
+import type { Confirmation } from "./types/utils.ts";
 
 /**
  * A resource-like object that contains the necessary
@@ -22,7 +23,7 @@ export interface ResponseDetails<T = unknown> {
 /**
  * Error thrown when an HTTP request fails.
  */
-export class FirestormError<T = unknown> extends Error {
+export class FirestormError<T = unknown> extends Error implements Confirmation<ResponseDetails<T>> {
 	public readonly response?: ResponseDetails<T>;
 
 	constructor(message: string, response?: ResponseDetails<T>) {

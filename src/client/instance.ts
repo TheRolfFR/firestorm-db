@@ -1,11 +1,11 @@
-import { Collection } from "./collection.ts";
-import { Document } from "./document.ts";
-import { FileManager } from "./files.ts";
+import { FileManager } from "./managers/files.ts";
+import { Collection } from "./resources/collection.ts";
+import { Document } from "./resources/document.ts";
 import { requestJson } from "./utils.ts";
 import { VERSION } from "./version.ts";
 
-import type { CollectionOptions } from "./collection.ts";
-import type { DocumentOptions } from "./document.ts";
+import type { CollectionOptions } from "./resources/collection.ts";
+import type { DocumentOptions } from "./resources/document.ts";
 import type { CollectionItem } from "./types/utils.ts";
 
 export interface FirestormCreationOption {

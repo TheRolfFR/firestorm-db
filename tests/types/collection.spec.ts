@@ -2,16 +2,7 @@ import { expect } from "chai";
 
 import { Collection, createFirestorm, ID_FIELD } from "../../dist/esm/index.js";
 
-import type {
-	CollectionItem,
-	EditFieldOption,
-	SearchOption,
-	SearchResultOptions,
-	SelectOption,
-	ValueOption,
-	ValueReturnType,
-	WriteConfirmation,
-} from "../../dist/esm/index.js";
+import type { CollectionItem, Confirmation } from "../../dist/esm/index.js";
 import type { Equal, Expect, Extends } from "./type-helpers.js";
 
 type User = {
@@ -228,7 +219,7 @@ describe("Type Tests: src/client/collection.ts", () => {
 
 		type _TRaw = Expect<Equal<ReturnType<typeof users.readRaw>, Promise<Record<string, User>>>>;
 
-		type _TWriteRaw = Expect<Equal<ReturnType<typeof users.writeRaw>, Promise<WriteConfirmation>>>;
+		type _TWriteRaw = Expect<Equal<ReturnType<typeof users.writeRaw>, Promise<Confirmation>>>;
 
 		function _rawValidations() {
 			// @ts-expect-error - writeRaw value must be Record<string, User>
@@ -239,10 +230,10 @@ describe("Type Tests: src/client/collection.ts", () => {
 	it("add(), addBulk(), set(), setBulk(), remove(), removeBulk() typing", () => {
 		type _TAdd = Expect<Equal<ReturnType<typeof users.add>, Promise<string>>>;
 		type _TAddBulk = Expect<Equal<ReturnType<typeof users.addBulk>, Promise<string[]>>>;
-		type _TSet = Expect<Equal<ReturnType<typeof users.set>, Promise<WriteConfirmation>>>;
-		type _TSetBulk = Expect<Equal<ReturnType<typeof users.setBulk>, Promise<WriteConfirmation>>>;
-		type _TRem = Expect<Equal<ReturnType<typeof users.remove>, Promise<WriteConfirmation>>>;
-		type _TRemBulk = Expect<Equal<ReturnType<typeof users.removeBulk>, Promise<WriteConfirmation>>>;
+		type _TSet = Expect<Equal<ReturnType<typeof users.set>, Promise<Confirmation>>>;
+		type _TSetBulk = Expect<Equal<ReturnType<typeof users.setBulk>, Promise<Confirmation>>>;
+		type _TRem = Expect<Equal<ReturnType<typeof users.remove>, Promise<Confirmation>>>;
+		type _TRemBulk = Expect<Equal<ReturnType<typeof users.removeBulk>, Promise<Confirmation>>>;
 
 		function _crudValidations() {
 			// @ts-expect-error - add requires full User object
@@ -254,10 +245,8 @@ describe("Type Tests: src/client/collection.ts", () => {
 	});
 
 	it("editField() and editFieldBulk() typing", () => {
-		type _TEf1 = Expect<Equal<ReturnType<typeof users.editField>, Promise<WriteConfirmation>>>;
-		type _TEfBulk = Expect<
-			Equal<ReturnType<typeof users.editFieldBulk>, Promise<WriteConfirmation>>
-		>;
+		type _TEf1 = Expect<Equal<ReturnType<typeof users.editField>, Promise<Confirmation>>>;
+		type _TEfBulk = Expect<Equal<ReturnType<typeof users.editFieldBulk>, Promise<Confirmation>>>;
 
 		function _editFieldValidations() {
 			users.editField({

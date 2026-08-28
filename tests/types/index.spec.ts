@@ -15,6 +15,7 @@ import { Firestorm } from "../../dist/esm/instance.js";
 import type {
 	CollectionItem,
 	CollectionOptions,
+	Confirmation,
 	DocumentEditFieldOption,
 	DocumentOptions,
 	EditFieldOption,
@@ -27,7 +28,6 @@ import type {
 	SelectOption,
 	ValueOption,
 	ValueReturnType,
-	WriteConfirmation,
 } from "../../dist/esm/index.js";
 import type { Equal, Expect, Extends } from "./type-helpers.js";
 
@@ -77,7 +77,7 @@ describe("Type Tests: src/client/index.ts", () => {
 				{ name: string; age: number } & { [ID_FIELD]: string }
 			>
 		>;
-		type _TWriteConf = Expect<Equal<WriteConfirmation, { message: string }>>;
+		type _TConf = Expect<Extends<Confirmation, { response?: unknown }>>;
 		type _TPath = Expect<Equal<Path<{ a: { b: string }; c: number }>, "a" | "c" | "a.b">>;
 		type _TPathValue = Expect<Equal<PathValue<{ a: { b: string }; c: number }, "a.b">, string>>;
 

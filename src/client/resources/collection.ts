@@ -1,13 +1,13 @@
-import { ResourceManager } from "./resource.ts";
-import { ID_FIELD } from "./types/utils.ts";
+import { ResourceManager } from "../managers/resource.ts";
+import { ID_FIELD } from "../types/utils.ts";
 
-import type { Firestorm } from "./instance.ts";
-import type { EditFieldOption } from "./types/editFieldOption.ts";
-import type { SearchOption, SearchResultOptions } from "./types/searchOption.ts";
-import type { SelectOption } from "./types/selectOption.ts";
-import type { CollectionItem, IdEncoding, WriteConfirmation } from "./types/utils.ts";
-import type { ValueOption, ValueReturnType } from "./types/valueOption.ts";
-import type { ResourceLike } from "./utils.ts";
+import type { Firestorm } from "../instance.ts";
+import type { EditFieldOption } from "../types/editFieldOption.ts";
+import type { SearchOption, SearchResultOptions } from "../types/searchOption.ts";
+import type { SelectOption } from "../types/selectOption.ts";
+import type { CollectionItem, Confirmation, IdEncoding } from "../types/utils.ts";
+import type { ValueOption, ValueReturnType } from "../types/valueOption.ts";
+import type { ResourceLike } from "../utils.ts";
 
 /**
  * Configuration options for creating a Collection resource.
@@ -24,8 +24,8 @@ export interface CollectionOptions<
 
 /**
  * Represents a Firestorm Collection resource with a Raw (pre-transform) -> Transformed (post-transform) architecture.
- * @template Raw - Type of the stored documents in the collection (write type).
- * @template Transformed - Type of the transformed elements returned by queries (read type).
+ * @template Raw - Base collection element type (write type).
+ * @template Transformed - Transformed element type returned by queries (read type).
  */
 export class Collection<
 	Raw extends Record<string, unknown> = Record<string, unknown>,
@@ -39,20 +39,17 @@ export class Collection<
 
 	/**
 	 * @param instance - Root Firestorm instance.
-	 * @param options - Collection configuration options object.
+	 * @param options - Configuration options (name, transform).
 	 */
 	constructor(instance: Firestorm, options: CollectionOptions<Raw, Transformed>) {
 		if (typeof options !== "object" || options === null) {
 			throw new TypeError("Collection options must be an object");
 		}
-
 		const name = options.name;
 		if (!name) {
 			throw new Error("Collection must have a name");
 		}
-
 		this.manager = new ResourceManager(instance, name);
-
 		if (options.transform !== undefined && typeof options.transform !== "function") {
 			throw new TypeError("Collection transform must be a function");
 		}
@@ -61,7 +58,7 @@ export class Collection<
 	}
 
 	/**
-	 * Firestorm instance managing this collection.
+	 * Access the root Firestorm instance.
 	 */
 	public get instance(): Firestorm {
 		return this.manager.instance;
@@ -81,7 +78,7 @@ export class Collection<
 	 * @returns The SHA-1 hash of the JSON.
 	 */
 	public sha1(): Promise<string> {
-		return this.manager.getRequest<string>("sha1", {}, false);
+		return this.manager.get<string>({ path: "sha1", options: { objectLike: false } });
 	}
 
 	/**
@@ -123,7 +120,11 @@ export class Collection<
 	 * @returns The element with the specified key
 	 */
 	public async get(key: IdEncoding): Promise<Transformed> {
-		const item = await this.manager.getRequest<Raw>("get", { id: key }, false);
+		const item = await this.manager.get<Raw>({
+			path: "get",
+			params: { id: key },
+			options: { objectLike: false },
+		});
 		return this.applyTransformation(this.withId(item, key));
 	}
 
@@ -135,8 +136,9 @@ export class Collection<
 	public async searchKeys(keys: IdEncoding[]): Promise<Transformed[]> {
 		if (!Array.isArray(keys)) throw new TypeError("Keys must be an array");
 
-		const res = await this.manager.getRequest<Record<string, Raw>>("searchKeys", {
-			search: keys,
+		const res = await this.manager.get<Record<string, Raw>>({
+			path: "searchKeys",
+			params: { search: keys },
 		});
 
 		return Object.entries(res).map(([id, value]) =>
@@ -221,7 +223,10 @@ export class Collection<
 			}
 		}
 
-		const res = await this.manager.getRequest<Record<string, Raw>>("search", params);
+		const res = await this.manager.get<Record<string, Raw>>({
+			path: "search",
+			params,
+		});
 		return Object.entries(res).map(([id, item]) => this.applyTransformation(this.withId(item, id)));
 	}
 
@@ -240,7 +245,10 @@ export class Collection<
 	public async readRaw(
 		original = false,
 	): Promise<Record<string, Transformed> | Record<string, Raw>> {
-		const res = await this.manager.getRequest<Record<string, Raw>>("readRaw", {}, false);
+		const res = await this.manager.get<Record<string, Raw>>({
+			path: "readRaw",
+			options: { objectLike: false },
+		});
 		if (original) {
 			return res;
 		}
@@ -256,13 +264,16 @@ export class Collection<
 	/**
 	 * Set the entire content of the collection. Very dangerous!
 	 * @param value - The value you want to write
-	 * @returns Write confirmation
+	 * @returns Mutation confirmation
 	 */
-	public writeRaw(value: Record<string, Raw>): Promise<WriteConfirmation> {
+	public writeRaw(value: Record<string, Raw>): Promise<Confirmation> {
 		if (value === undefined || value === null)
 			throw new TypeError("writeRaw value cannot be undefined or null");
 
-		return this.manager.postRequest<WriteConfirmation>("writeRaw", value);
+		return this.manager.post<Confirmation>({
+			path: "writeRaw",
+			body: value,
+		});
 	}
 
 	/**
@@ -280,7 +291,10 @@ export class Collection<
 			params.search = option.search;
 		}
 
-		const data = await this.manager.getRequest<Record<string, Pick<Raw, K>>>("select", params);
+		const data = await this.manager.get<Record<string, Pick<Raw, K>>>({
+			path: "select",
+			params,
+		});
 		const result: Record<string, CollectionItem<Pick<Raw, K>>> = {};
 
 		Object.entries(data).forEach(([key, item]) => {
@@ -303,11 +317,11 @@ export class Collection<
 		if (option.flatten !== undefined && typeof option.flatten !== "boolean")
 			throw new TypeError("Flatten must be a boolean");
 
-		const data = await this.manager.getRequest<Record<string, unknown>>(
-			"values",
-			{ values: option },
-			false,
-		);
+		const data = await this.manager.get<Record<string, unknown>>({
+			path: "values",
+			params: { values: option },
+			options: { objectLike: false },
+		});
 
 		return Object.values(data).filter((d) => d !== null) as ValueReturnType<Raw, Key, Flatten>;
 	}
@@ -345,8 +359,9 @@ export class Collection<
 			params.offset = offset ?? 0;
 		}
 
-		const data = await this.manager.getRequest<Record<string, Raw>>("random", {
-			random: params,
+		const data = await this.manager.get<Record<string, Raw>>({
+			path: "random",
+			params: { random: params },
 		});
 
 		return Object.entries(data).map(([key, item]) =>
@@ -360,7 +375,10 @@ export class Collection<
 	 * @returns The generated key for the added element
 	 */
 	public async add(value: Raw): Promise<string> {
-		const res = await this.manager.postRequest<{ id: string }>("add", value);
+		const res = await this.manager.post<{ id: string }>({
+			path: "add",
+			body: value,
+		});
 		return res.id;
 	}
 
@@ -370,37 +388,54 @@ export class Collection<
 	 * @returns The generated keys of the added elements
 	 */
 	public async addBulk(values: Raw[]): Promise<string[]> {
-		const res = await this.manager.postRequest<{ ids: string[] }>("addBulk", values, true);
+		const res = await this.manager.post<{ ids: string[] }>({
+			path: "addBulk",
+			body: values,
+			options: { multiple: true },
+		});
 		return res.ids;
 	}
 
 	/**
 	 * Delete an entry by its key
 	 * @param key - The key of the entry to remove
-	 * @returns Write confirmation
+	 * @returns Mutation confirmation
 	 */
-	public remove(key: IdEncoding): Promise<WriteConfirmation> {
-		return this.manager.postRequest<WriteConfirmation>("remove", String(key), false);
+	public remove(key: IdEncoding): Promise<Confirmation> {
+		return this.manager.delete<Confirmation>({
+			path: "remove",
+			body: String(key),
+			options: { multiple: false },
+		});
 	}
 
 	/**
 	 * Delete multiple entries by their keys
 	 * @param keys - The keys of the entries to remove
-	 * @returns Write confirmation
+	 * @returns Mutation confirmation
 	 */
-	public removeBulk(keys: IdEncoding[]): Promise<WriteConfirmation> {
-		return this.manager.postRequest<WriteConfirmation>("removeBulk", keys.map(String), true);
+	public removeBulk(keys: IdEncoding[]): Promise<Confirmation> {
+		return this.manager.delete<Confirmation>({
+			path: "removeBulk",
+			body: keys.map(String),
+			options: { multiple: true },
+		});
 	}
 
 	/**
 	 * Set a value in the collection by key
 	 * @param key - The key of the element you want to edit
 	 * @param value - The value you want to edit
-	 * @returns Write confirmation
+	 * @returns Mutation confirmation
 	 */
-	public set(key: IdEncoding, value: Raw): Promise<WriteConfirmation> {
-		return this.manager.postRequest<WriteConfirmation>("set", value, false, {
-			key: String(key),
+	public set(key: IdEncoding, value: Raw): Promise<Confirmation> {
+		return this.manager.put<Confirmation>({
+			path: "set",
+			body: value,
+			options: {
+				multiple: false,
+				additionalData: { key: String(key) },
+			},
 		});
 	}
 
@@ -408,29 +443,42 @@ export class Collection<
 	 * Set multiple values in the collection by their keys
 	 * @param keys - The keys of the elements you want to edit
 	 * @param values - The values you want to edit
-	 * @returns Write confirmation
+	 * @returns Mutation confirmation
 	 */
-	public setBulk(keys: IdEncoding[], values: Raw[]): Promise<WriteConfirmation> {
-		return this.manager.postRequest<WriteConfirmation>("setBulk", values, true, {
-			keys: keys.map(String),
+	public setBulk(keys: IdEncoding[], values: Raw[]): Promise<Confirmation> {
+		return this.manager.put<Confirmation>({
+			path: "setBulk",
+			body: values,
+			options: {
+				multiple: true,
+				additionalData: { keys: keys.map(String) },
+			},
 		});
 	}
 
 	/**
 	 * Edit an element's field in the collection
 	 * @param option - The edit object
-	 * @returns Edit confirmation
+	 * @returns Mutation confirmation
 	 */
-	public editField(option: EditFieldOption<Raw>): Promise<WriteConfirmation> {
-		return this.manager.postRequest<WriteConfirmation>("editField", option, false);
+	public editField(option: EditFieldOption<Raw>): Promise<Confirmation> {
+		return this.manager.patch<Confirmation>({
+			path: "editField",
+			body: option,
+			options: { multiple: false },
+		});
 	}
 
 	/**
 	 * Edit multiple elements' fields in the collection
 	 * @param options - The edit objects
-	 * @returns Edit confirmation
+	 * @returns Mutation confirmation
 	 */
-	public editFieldBulk(options: EditFieldOption<Raw>[]): Promise<WriteConfirmation> {
-		return this.manager.postRequest<WriteConfirmation>("editFieldBulk", options, true);
+	public editFieldBulk(options: EditFieldOption<Raw>[]): Promise<Confirmation> {
+		return this.manager.patch<Confirmation>({
+			path: "editFieldBulk",
+			body: options,
+			options: { multiple: true },
+		});
 	}
 }

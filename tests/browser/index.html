@@ -145,10 +145,10 @@
 				const form = new FormData();
 				form.append("path", "browser_ui_test.txt");
 				form.append("file", blob, "browser_ui_test.txt");
-				await instance.files.upload(form);
-				const content = await instance.files.get("browser_ui_test.txt");
-				await instance.files.delete("browser_ui_test.txt");
-				logResult("Files Manager via Blob/FormData", content === "Browser File Content", "Upload/Get/Delete success");
+				await instance.files.post({ body: form });
+				const content = await instance.files.get({ path: "browser_ui_test.txt" });
+				await instance.files.delete({ path: "browser_ui_test.txt" });
+				logResult("Files Manager via Blob/FormData", content === "Browser File Content", "Post/Get/Delete success");
 			} catch (err) {
 				logResult("Files Manager via Blob/FormData", false, err.message);
 			}
