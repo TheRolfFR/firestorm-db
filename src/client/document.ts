@@ -1,14 +1,15 @@
 import { ResourceManager } from "./resource.ts";
-import type { ResourceLike } from "./utils.ts";
+
 import type { Firestorm } from "./instance.ts";
 import type { DocumentEditFieldOption } from "./types/editFieldOption.ts";
-import type { WriteConfirmation } from "./types/utils.ts";
+import type { Path, PathValue, WriteConfirmation } from "./types/utils.ts";
+import type { ResourceLike } from "./utils.ts";
 
 /**
  * Configuration options for creating a Document resource.
  */
 export interface DocumentOptions<
-	Raw extends Record<string, any> = Record<string, any>,
+	Raw extends Record<string, unknown> = Record<string, unknown>,
 	Transformed = Raw,
 > {
 	/** Name of the document stored in Firestorm */
@@ -23,11 +24,11 @@ export interface DocumentOptions<
  * @template Transformed - Type of the transformed document returned by queries (read type).
  */
 export class Document<
-	Raw extends Record<string, any> = Record<string, any>,
+	Raw extends Record<string, unknown> = Record<string, unknown>,
 	Transformed = Raw,
 > implements ResourceLike {
-	public readonly manager: ResourceManager;
-	private readonly transformFn?: (el: Raw, document: Document<Raw, Transformed>) => Transformed;
+	protected readonly manager: ResourceManager;
+	private readonly transformFn: (el: Raw, document: Document<Raw, Transformed>) => Transformed;
 
 	/**
 	 * @param instance - Root Firestorm instance
@@ -39,16 +40,14 @@ export class Document<
 		}
 		const name = options.name;
 		if (!name) {
-			throw new Error("Resource must have a name");
+			throw new Error("Document must have a name");
 		}
 		this.manager = new ResourceManager(instance, name);
-		if (options.transform && typeof options.transform !== "function") {
+		if (options.transform !== undefined && typeof options.transform !== "function") {
 			throw new TypeError("Document transform must be a function");
 		}
 
-		if (options.transform) {
-			this.transformFn = options.transform;
-		}
+		this.transformFn = options.transform ?? ((el) => el as unknown as Transformed);
 	}
 
 	/**
@@ -59,31 +58,20 @@ export class Document<
 	}
 
 	/**
-	 * Name of the document collection.
+	 * Name of the document resource.
 	 */
-	public get collectionName(): string {
-		return this.manager.collectionName;
+	public get name(): string {
+		return this.manager.resourceName;
 	}
 
 	/**
-	 * Read address for the document endpoint.
+	 * Returns the SHA-1 hash of the JSON.
+	 * - Can be used to compare file content without downloading the file.
+	 *
+	 * @returns The SHA-1 hash of the JSON.
 	 */
-	public get readAddress(): string {
-		return this.manager.readAddress;
-	}
-
-	/**
-	 * Write address for the document endpoint.
-	 */
-	public get writeAddress(): string {
-		return this.manager.writeAddress;
-	}
-
-	/**
-	 * Returns the SHA-1 hash of the document JSON.
-	 */
-	public async sha1(): Promise<string> {
-		return this.manager.sha1();
+	public sha1(): Promise<string> {
+		return this.manager.getRequest<string>("sha1", {}, false);
 	}
 
 	/**
@@ -93,19 +81,11 @@ export class Document<
 	 * @returns A new Document instance with the updated Transformed type.
 	 */
 	public transform<NextTransformed>(
-		transformFn: (el: Transformed, document: Document<Raw, NextTransformed>) => NextTransformed,
+		transformFn: (el: Transformed, document: Document<Raw, Transformed>) => NextTransformed,
 	): Document<Raw, NextTransformed> {
-		const prevTransform = this.transformFn;
-		const chainedFn = (raw: Raw, doc: Document<Raw, NextTransformed>): NextTransformed => {
-			const current = prevTransform
-				? prevTransform(raw, this as unknown as Document<Raw, Transformed>)
-				: (raw as unknown as Transformed);
-			return transformFn(current, doc);
-		};
-
 		return new Document<Raw, NextTransformed>(this.instance, {
-			name: this.collectionName,
-			transform: chainedFn,
+			name: this.name,
+			transform: (raw) => transformFn(this.applyTransform(raw), this),
 		});
 	}
 
@@ -113,7 +93,6 @@ export class Document<
 	 * Apply transformation to raw document
 	 */
 	private applyTransform(el: Raw): Transformed {
-		if (!this.transformFn) return el as unknown as Transformed;
 		return this.transformFn(el, this);
 	}
 
@@ -122,9 +101,8 @@ export class Document<
 	 * @param key - The key of the field to retrieve.
 	 * @returns A Promise containing the part of Raw that matches the key.
 	 */
-	public async get<K extends keyof Raw>(key: K): Promise<Raw[K]> {
-		const item = await this.manager.getRequest<Raw[K]>("get", { id: key }, false);
-		return item;
+	public get<K extends keyof Raw>(key: K): Promise<Raw[K]> {
+		return this.manager.getRequest<Raw[K]>("get", { id: key }, false);
 	}
 
 	/**
@@ -141,7 +119,7 @@ export class Document<
 			search: keys,
 		});
 
-		return keys.map((key) => res[String(key)]) as unknown as {
+		return keys.map((key) => res[String(key)]) as {
 			[Index in keyof Keys]: Raw[Keys[Index]];
 		};
 	}
@@ -160,7 +138,7 @@ export class Document<
 	 * @param value - The value to write
 	 * @returns Write confirmation
 	 */
-	public async writeRaw(value: Raw): Promise<WriteConfirmation> {
+	public writeRaw(value: Raw): Promise<WriteConfirmation> {
 		if (value === undefined || value === null)
 			throw new TypeError("writeRaw value cannot be undefined or null");
 
@@ -173,15 +151,14 @@ export class Document<
 	 * @param value - The value to set
 	 * @returns Write confirmation
 	 */
-	public async set<K extends keyof Raw>(key: K, value: Raw[K]): Promise<WriteConfirmation>;
-	public async set<P extends string>(key: P, value: unknown): Promise<WriteConfirmation>;
-	public async set(key: string, value: unknown): Promise<WriteConfirmation> {
+	public set<P extends Path<Raw>>(key: P, value: PathValue<Raw, P>): Promise<WriteConfirmation>;
+	public set(key: string, value: unknown): Promise<WriteConfirmation> {
 		if (typeof key !== "string" || key.trim() === "") {
 			throw new TypeError("Document set key must be a non-empty string");
 		}
 		if (key.includes(".")) {
 			return this.editField({
-				field: key as any,
+				field: key,
 				operation: "set",
 				value,
 			});
@@ -196,7 +173,7 @@ export class Document<
 	 * @param option - The edit option object.
 	 * @returns Write confirmation.
 	 */
-	public async editField(option: DocumentEditFieldOption<Raw>): Promise<WriteConfirmation> {
+	public editField(option: DocumentEditFieldOption<Raw>): Promise<WriteConfirmation> {
 		return this.manager.postRequest<WriteConfirmation>("editField", option, false);
 	}
 
@@ -205,7 +182,7 @@ export class Document<
 	 * @param options - Array of edit option objects.
 	 * @returns Write confirmation.
 	 */
-	public async editFieldBulk(options: DocumentEditFieldOption<Raw>[]): Promise<WriteConfirmation> {
+	public editFieldBulk(options: DocumentEditFieldOption<Raw>[]): Promise<WriteConfirmation> {
 		return this.manager.postRequest<WriteConfirmation>("editFieldBulk", options, true);
 	}
 }

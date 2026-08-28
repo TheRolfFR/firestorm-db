@@ -4,10 +4,9 @@ import { FileManager } from "./files.ts";
 import { requestJson } from "./utils.ts";
 import { VERSION } from "./version.ts";
 
-import type { CollectionItem } from "./types/utils.ts";
-
 import type { CollectionOptions } from "./collection.ts";
 import type { DocumentOptions } from "./document.ts";
+import type { CollectionItem } from "./types/utils.ts";
 
 export interface FirestormCreationOption {
 	/** Instance name */
@@ -51,7 +50,7 @@ export class Firestorm {
 	 * @returns The Collection instance
 	 */
 	public collection<
-		Raw extends Record<string, any> = Record<string, any>,
+		Raw extends Record<string, unknown> = Record<string, unknown>,
 		Transformed = CollectionItem<Raw>,
 	>(options: CollectionOptions<Raw, Transformed>): Collection<Raw, Transformed> {
 		return new Collection<Raw, Transformed>(this, options);
@@ -65,7 +64,7 @@ export class Firestorm {
 	 * @param options - Document configuration options object
 	 * @returns The Document instance
 	 */
-	public document<Raw extends Record<string, any> = Record<string, any>, Transformed = Raw>(
+	public document<Raw extends Record<string, unknown> = Record<string, unknown>, Transformed = Raw>(
 		options: DocumentOptions<Raw, Transformed>,
 	): Document<Raw, Transformed> {
 		return new Document<Raw, Transformed>(this, options);
@@ -145,7 +144,7 @@ export class Firestorm {
 }
 
 /**
- * Create a new instance of Firestorm
+ * Creates a new Firestorm server instance
  *
  * @param params - Firestorm instance configuration options (name, address, token)
  * @returns New Firestorm instance

@@ -1,15 +1,12 @@
-import type { IdEncoding, MaybeArray, WriteConfirmation } from "./types/utils.ts";
-import type { EditFieldOption } from "./types/editFieldOption.ts";
-
-import { ResourceManager } from "./resource.ts";
+import type { Firestorm } from "./instance.ts";
 
 /**
  * A resource-like object that contains the necessary
  * properties for identifying a resource (Document or Collection).
  */
 export interface ResourceLike {
-	instance: { name?: string; address?: string; token?: string };
-	collectionName: string;
+	instance: Partial<Pick<Firestorm, "name" | "address" | "token">>;
+	name: string;
 }
 
 /**
@@ -77,88 +74,4 @@ export async function requestJson<ReturnType = unknown>(
 	}
 
 	return body as ReturnType;
-}
-
-/**
- * Send POST request for Document operations and return extracted response
- * @param doc - The document instance
- * @param command - The write command name
- * @param value - The value for the command
- * @param multiple - Used for bulk operations
- * @param additionalData - Additional payload fields
- * @returns Extracted response
- */
-export async function documentPostRequest<ReturnType = WriteConfirmation>(
-	doc: ResourceLike,
-	command: string,
-	value: unknown = undefined,
-	multiple: boolean | null = false,
-	additionalData: Record<string, unknown> = {},
-): Promise<ReturnType> {
-	const mgr = new ResourceManager(doc.instance as any, doc.collectionName);
-	return mgr.postRequest<ReturnType>(command, value, multiple, additionalData);
-}
-
-/**
- * Send GET request for Document operations and return extracted response
- * @param doc - The document instance
- * @param command - The read command name
- * @param params - Body data
- * @param objectLike - Reject if an object or array isn't being returned
- * @returns Extracted response
- */
-export async function documentGetRequest<ReturnType>(
-	doc: ResourceLike,
-	command: string,
-	params: Record<string, unknown> = {},
-	objectLike = true,
-): Promise<ReturnType> {
-	const mgr = new ResourceManager(doc.instance as any, doc.collectionName);
-	return mgr.getRequest<ReturnType>(command, params, objectLike);
-}
-
-/**
- * Send POST request for Collection operations and return extracted response
- * @param collection - The collection instance
- * @param command - The write command name
- * @param value - The value for the command
- * @param multiple - Used for bulk operations
- * @param additionalData - Additional payload fields
- * @returns Extracted response
- */
-export async function colPostRequest<
-	Item extends Record<string, unknown>,
-	ReturnType = WriteConfirmation,
->(
-	collection: ResourceLike,
-	command: string,
-	value:
-		| Record<string, Item>
-		| MaybeArray<Item>
-		| MaybeArray<IdEncoding>
-		| MaybeArray<EditFieldOption<Item>>
-		| undefined = undefined,
-	multiple: boolean | null = false,
-	additionalData: Record<string, unknown> = {},
-): Promise<ReturnType> {
-	const mgr = new ResourceManager(collection.instance as any, collection.collectionName);
-	return mgr.postRequest<ReturnType>(command, value, multiple, additionalData);
-}
-
-/**
- * Send GET request for Collection operations and return extracted response
- * @param collection - The collection instance
- * @param command - The read command name
- * @param params - Body data
- * @param objectLike - Reject if an object or array isn't being returned
- * @returns Extracted response
- */
-export async function colGetRequest<ReturnType>(
-	collection: ResourceLike,
-	command: string,
-	params: Record<string, unknown> = {},
-	objectLike = true,
-): Promise<ReturnType> {
-	const mgr = new ResourceManager(collection.instance as any, collection.collectionName);
-	return mgr.getRequest<ReturnType>(command, params, objectLike);
 }

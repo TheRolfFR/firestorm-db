@@ -1,7 +1,8 @@
-import type FormDataPkg from "form-data";
 import { FirestormError, requestJson } from "./utils.ts";
-import type { WriteConfirmation } from "./types/utils.ts";
+
+import type FormDataPkg from "form-data";
 import type { Firestorm } from "./index.ts";
+import type { WriteConfirmation } from "./types/utils.ts";
 
 /** Firestorm file manager */
 export class FileManager {
@@ -69,10 +70,10 @@ export class FileManager {
 		}
 
 		const arrayBuf = await response.arrayBuffer();
-		if (typeof Buffer !== "undefined" && typeof (Buffer as any).from === "function") {
-			return Buffer.from(arrayBuf) as unknown as T;
+		if (typeof Buffer !== "undefined" && typeof Buffer.from === "function") {
+			return Buffer.from(arrayBuf) as T;
 		}
-		return arrayBuf as unknown as T;
+		return arrayBuf as T;
 	}
 
 	/**
@@ -88,7 +89,7 @@ export class FileManager {
 		form.append("token", token);
 
 		let init: RequestInit;
-		const formAny = form as unknown as {
+		const formAny = form as {
 			getHeaders?: () => Record<string, string>;
 			getBuffer?: () => Buffer;
 		};
@@ -96,12 +97,12 @@ export class FileManager {
 			init = {
 				method: "POST",
 				headers: formAny.getHeaders(),
-				body: formAny.getBuffer() as unknown as BodyInit,
+				body: formAny.getBuffer() as BodyInit,
 			};
 		} else {
 			init = {
 				method: "POST",
-				body: form as unknown as BodyInit,
+				body: form as BodyInit,
 			};
 		}
 

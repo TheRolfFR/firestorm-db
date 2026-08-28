@@ -1,22 +1,15 @@
 import type { Path, PathValue } from "./utils.ts";
 
-export type ComparisonCriteria = "==" | "!=";
+export type BooleanCriteria = "==" | "!=";
 
-export type BooleanCriteria = ComparisonCriteria;
+export type ComparisonCriteria = BooleanCriteria | "<" | "<=" | ">" | ">=";
 
-export type NumberCriteria = ComparisonCriteria | "<" | "<=" | ">" | ">=" | "in";
+export type InArrayCriteria = "in";
+
+export type NumberCriteria = ComparisonCriteria | InArrayCriteria;
 
 export type StringCriteria =
-	| ComparisonCriteria
-	| "<"
-	| "<="
-	| ">"
-	| ">="
-	| "in"
-	| "includes"
-	| "contains"
-	| "startsWith"
-	| "endsWith";
+	ComparisonCriteria | InArrayCriteria | "includes" | "contains" | "startsWith" | "endsWith";
 
 export type ArrayLengthCriteria =
 	| "array-length-eq"
@@ -70,22 +63,13 @@ export type ArraySearchOption<P extends string, E> =
 export type StringSearchOption<P extends string> =
 	| {
 			field: P;
-			criteria:
-				| BooleanCriteria
-				| "<"
-				| "<="
-				| ">"
-				| ">="
-				| "includes"
-				| "contains"
-				| "startsWith"
-				| "endsWith";
+			criteria: Exclude<StringCriteria, InArrayCriteria>;
 			value: string;
 			ignoreCase?: boolean;
 	  }
 	| {
 			field: P;
-			criteria: "in";
+			criteria: InArrayCriteria;
 			value: string[];
 			ignoreCase?: boolean;
 	  };
@@ -93,12 +77,12 @@ export type StringSearchOption<P extends string> =
 export type NumberSearchOption<P extends string> =
 	| {
 			field: P;
-			criteria: BooleanCriteria | "<" | "<=" | ">" | ">=";
+			criteria: Exclude<NumberCriteria, InArrayCriteria>;
 			value: number;
 	  }
 	| {
 			field: P;
-			criteria: "in";
+			criteria: InArrayCriteria;
 			value: number[];
 	  };
 

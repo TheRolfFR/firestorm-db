@@ -1,5 +1,6 @@
+import { FirestormError, requestJson } from "./utils.ts";
+
 import type { Firestorm } from "./instance.ts";
-import { requestJson, FirestormError } from "./utils.ts";
 import type { WriteConfirmation } from "./types/utils.ts";
 
 /**
@@ -20,7 +21,7 @@ export class ResourceManager {
 	/**
 	 * Get the name of the resource.
 	 */
-	public get collectionName(): string {
+	public get resourceName(): string {
 		return this.name;
 	}
 
@@ -59,7 +60,7 @@ export class ResourceManager {
 		objectLike = true,
 	): Promise<ReturnType> {
 		const obj = {
-			collection: this.collectionName,
+			collection: this.resourceName,
 			command,
 			...params,
 		};
@@ -98,7 +99,7 @@ export class ResourceManager {
 	): Promise<ReturnType> {
 		const data: Record<string, unknown> = {
 			token: this.instance.token,
-			collection: this.collectionName,
+			collection: this.resourceName,
 			command,
 			...additionalData,
 		};
@@ -116,15 +117,5 @@ export class ResourceManager {
 			},
 			body: JSON.stringify(data),
 		});
-	}
-
-	/**
-	 * Returns the SHA-1 hash of the JSON.
-	 * - Can be used to compare file content without downloading the file.
-	 *
-	 * @returns The SHA-1 hash of the JSON.
-	 */
-	public async sha1(): Promise<string> {
-		return this.getRequest<string>("sha1", {}, false);
 	}
 }

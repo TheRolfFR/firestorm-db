@@ -1,18 +1,15 @@
 /**
  * Global unique symbol used to access the Firestorm document ID on collection items.
  */
-export const ID_FIELD: unique symbol = (
-	typeof Symbol.for === "function" ? Symbol.for("firestorm.id") : Symbol("firestorm.id")
-) as typeof ID_FIELD;
+export const ID_FIELD: unique symbol = Symbol.for("firestorm.id");
 
 export type IdEncoding = string | number;
 export type WriteConfirmation = { message: string };
 
-export type MaybeArray<T> = T | T[];
-
-export type CollectionItem<Item extends Record<string, any> = Record<string, any>> = Item & {
-	[ID_FIELD]: string;
-};
+export type CollectionItem<Item extends Record<string, unknown> = Record<string, unknown>> =
+	Item & {
+		[ID_FIELD]: string;
+	};
 
 /**
  * type below is taken from
@@ -25,9 +22,9 @@ type IsAny<T> = unknown extends T ? ([keyof T] extends [never] ? false : true) :
 type PathImpl<T, Key extends keyof T> = Key extends string
 	? IsAny<T[Key]> extends true
 		? never
-		: T[Key] extends Record<string, unknown>
-			? | `${Key}.${PathImpl<T[Key], Exclude<keyof T[Key], keyof unknown[]>> & string}`
-				| `${Key}.${Exclude<keyof T[Key], keyof unknown[]> & string}`
+		: NonNullable<T[Key]> extends Record<string, unknown>
+			? | `${Key}.${PathImpl<NonNullable<T[Key]>, Exclude<keyof NonNullable<T[Key]>, keyof unknown[]>> & string}`
+				| `${Key}.${Exclude<keyof NonNullable<T[Key]>, keyof unknown[]> & string}`
 			: never
 	: never;
 

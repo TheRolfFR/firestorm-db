@@ -1,18 +1,19 @@
 import { ResourceManager } from "./resource.ts";
-import type { ResourceLike } from "./utils.ts";
+import { ID_FIELD } from "./types/utils.ts";
+
 import type { Firestorm } from "./instance.ts";
+import type { EditFieldOption } from "./types/editFieldOption.ts";
 import type { SearchOption, SearchResultOptions } from "./types/searchOption.ts";
 import type { SelectOption } from "./types/selectOption.ts";
-import type { ValueOption, ValueReturnType } from "./types/valueOption.ts";
-import type { EditFieldOption } from "./types/editFieldOption.ts";
 import type { CollectionItem, IdEncoding, WriteConfirmation } from "./types/utils.ts";
-import { ID_FIELD } from "./types/utils.ts";
+import type { ValueOption, ValueReturnType } from "./types/valueOption.ts";
+import type { ResourceLike } from "./utils.ts";
 
 /**
  * Configuration options for creating a Collection resource.
  */
 export interface CollectionOptions<
-	Raw extends Record<string, any> = Record<string, any>,
+	Raw extends Record<string, unknown> = Record<string, unknown>,
 	Transformed = CollectionItem<Raw>,
 > {
 	/** Name of the collection stored in Firestorm */
@@ -27,11 +28,11 @@ export interface CollectionOptions<
  * @template Transformed - Type of the transformed elements returned by queries (read type).
  */
 export class Collection<
-	Raw extends Record<string, any> = Record<string, any>,
+	Raw extends Record<string, unknown> = Record<string, unknown>,
 	Transformed = CollectionItem<Raw>,
 > implements ResourceLike {
-	public readonly manager: ResourceManager;
-	private readonly transformFn?: (
+	protected readonly manager: ResourceManager;
+	private readonly transformFn: (
 		el: CollectionItem<Raw>,
 		collection: Collection<Raw, Transformed>,
 	) => Transformed;
@@ -47,18 +48,16 @@ export class Collection<
 
 		const name = options.name;
 		if (!name) {
-			throw new Error("Resource must have a name");
+			throw new Error("Collection must have a name");
 		}
 
 		this.manager = new ResourceManager(instance, name);
 
-		if (options.transform && typeof options.transform !== "function") {
+		if (options.transform !== undefined && typeof options.transform !== "function") {
 			throw new TypeError("Collection transform must be a function");
 		}
 
-		if (options.transform) {
-			this.transformFn = options.transform;
-		}
+		this.transformFn = options.transform ?? ((el) => el as unknown as Transformed);
 	}
 
 	/**
@@ -71,29 +70,18 @@ export class Collection<
 	/**
 	 * Name of the collection.
 	 */
-	public get collectionName(): string {
-		return this.manager.collectionName;
+	public get name(): string {
+		return this.manager.resourceName;
 	}
 
 	/**
-	 * Read API endpoint address (get.php)
+	 * Returns the SHA-1 hash of the JSON.
+	 * - Can be used to compare file content without downloading the file.
+	 *
+	 * @returns The SHA-1 hash of the JSON.
 	 */
-	public get readAddress(): string {
-		return this.manager.readAddress;
-	}
-
-	/**
-	 * Write API endpoint address (post.php)
-	 */
-	public get writeAddress(): string {
-		return this.manager.writeAddress;
-	}
-
-	/**
-	 * Returns the SHA-1 hash of the collection JSON.
-	 */
-	public async sha1(): Promise<string> {
-		return this.manager.sha1();
+	public sha1(): Promise<string> {
+		return this.manager.getRequest<string>("sha1", {}, false);
 	}
 
 	/**
@@ -103,22 +91,11 @@ export class Collection<
 	 * @returns A new Collection instance with the updated Transformed type.
 	 */
 	public transform<NextTransformed>(
-		transformFn: (el: Transformed, collection: Collection<Raw, NextTransformed>) => NextTransformed,
+		transformFn: (el: Transformed, collection: Collection<Raw, Transformed>) => NextTransformed,
 	): Collection<Raw, NextTransformed> {
-		const prevTransform = this.transformFn;
-		const chainedFn = (
-			rawWithId: CollectionItem<Raw>,
-			col: Collection<Raw, NextTransformed>,
-		): NextTransformed => {
-			const current = prevTransform
-				? prevTransform(rawWithId, this as unknown as Collection<Raw, Transformed>)
-				: (rawWithId as unknown as Transformed);
-			return transformFn(current, col);
-		};
-
 		return new Collection<Raw, NextTransformed>(this.instance, {
-			name: this.collectionName,
-			transform: chainedFn,
+			name: this.name,
+			transform: (rawWithId) => transformFn(this.applyTransformation(rawWithId), this),
 		});
 	}
 
@@ -128,25 +105,15 @@ export class Collection<
 	 * @param key - The key to identify the element
 	 * @returns The element with the ID field added
 	 */
-	private withId(el: Raw, key: IdEncoding): CollectionItem<Raw>;
-	private withId(el: Partial<Raw>, key: IdEncoding): CollectionItem<Partial<Raw>>;
-	private withId<K extends keyof Raw>(
-		el: Pick<Raw, K>,
-		key: IdEncoding,
-	): CollectionItem<Pick<Raw, K>>;
-	private withId<K extends keyof Raw>(
-		el: Raw | Partial<Raw> | Pick<Raw, K>,
-		key: IdEncoding,
-	): CollectionItem<Raw> | CollectionItem<Partial<Raw>> | CollectionItem<Pick<Raw, K>> {
+	private withId<T extends Record<string, unknown>>(el: T, key: IdEncoding): CollectionItem<T> {
 		(el as Record<string | symbol, unknown>)[ID_FIELD] = String(key);
-		return el as CollectionItem<Raw>;
+		return el as CollectionItem<T>;
 	}
 
 	/**
 	 * Apply configured transformation to item with injected ID
 	 */
-	private applyTransform(el: CollectionItem<Raw>): Transformed {
-		if (!this.transformFn) return el as unknown as Transformed;
+	private applyTransformation(el: CollectionItem<Raw>): Transformed {
 		return this.transformFn(el, this);
 	}
 
@@ -157,9 +124,7 @@ export class Collection<
 	 */
 	public async get(key: IdEncoding): Promise<Transformed> {
 		const item = await this.manager.getRequest<Raw>("get", { id: key }, false);
-		const itemWithId = this.withId(item, key);
-
-		return this.applyTransform(itemWithId);
+		return this.applyTransformation(this.withId(item, key));
 	}
 
 	/**
@@ -174,7 +139,9 @@ export class Collection<
 			search: keys,
 		});
 
-		return Object.entries(res).map(([id, value]) => this.applyTransform(this.withId(value, id)));
+		return Object.entries(res).map(([id, value]) =>
+			this.applyTransformation(this.withId(value, id)),
+		);
 	}
 
 	/**
@@ -255,7 +222,7 @@ export class Collection<
 		}
 
 		const res = await this.manager.getRequest<Record<string, Raw>>("search", params);
-		return Object.entries(res).map(([id, item]) => this.applyTransform(this.withId(item, id)));
+		return Object.entries(res).map(([id, item]) => this.applyTransformation(this.withId(item, id)));
 	}
 
 	/**
@@ -275,7 +242,7 @@ export class Collection<
 
 		const formattedResult: Record<string, Transformed> = {};
 		Object.entries(res).forEach(([key, item]) => {
-			formattedResult[key] = this.applyTransform(this.withId(item, key));
+			formattedResult[key] = this.applyTransformation(this.withId(item, key));
 		});
 
 		return formattedResult;
@@ -286,7 +253,7 @@ export class Collection<
 	 * @param value - The value you want to write
 	 * @returns Write confirmation
 	 */
-	public async writeRaw(value: Record<string, Raw>): Promise<WriteConfirmation> {
+	public writeRaw(value: Record<string, Raw>): Promise<WriteConfirmation> {
 		if (value === undefined || value === null)
 			throw new TypeError("writeRaw value cannot be undefined or null");
 
@@ -337,11 +304,7 @@ export class Collection<
 			false,
 		);
 
-		return Object.values(data).filter((d) => d !== null) as unknown as ValueReturnType<
-			Raw,
-			Key,
-			Flatten
-		>;
+		return Object.values(data).filter((d) => d !== null) as ValueReturnType<Raw, Key, Flatten>;
 	}
 
 	/**
@@ -380,7 +343,10 @@ export class Collection<
 		const data = await this.manager.getRequest<Record<string, Raw>>("random", {
 			random: params,
 		});
-		return Object.entries(data).map(([key, item]) => this.applyTransform(this.withId(item, key)));
+
+		return Object.entries(data).map(([key, item]) =>
+			this.applyTransformation(this.withId(item, key)),
+		);
 	}
 
 	/**
@@ -408,7 +374,7 @@ export class Collection<
 	 * @param key The key from the entry to remove
 	 * @returns Write confirmation
 	 */
-	public async remove(key: IdEncoding): Promise<WriteConfirmation> {
+	public remove(key: IdEncoding): Promise<WriteConfirmation> {
 		return this.manager.postRequest<WriteConfirmation>("remove", String(key), false);
 	}
 
@@ -417,7 +383,7 @@ export class Collection<
 	 * @param keys The key from the entries to remove
 	 * @returns Write confirmation
 	 */
-	public async removeBulk(keys: IdEncoding[]): Promise<WriteConfirmation> {
+	public removeBulk(keys: IdEncoding[]): Promise<WriteConfirmation> {
 		return this.manager.postRequest<WriteConfirmation>("removeBulk", keys.map(String), true);
 	}
 
@@ -427,7 +393,7 @@ export class Collection<
 	 * @param value - The value you want to edit
 	 * @returns Write confirmation
 	 */
-	public async set(key: IdEncoding, value: Raw): Promise<WriteConfirmation> {
+	public set(key: IdEncoding, value: Raw): Promise<WriteConfirmation> {
 		return this.manager.postRequest<WriteConfirmation>("set", value, false, {
 			key: String(key),
 		});
@@ -439,7 +405,7 @@ export class Collection<
 	 * @param values - The values you want to edit
 	 * @returns Write confirmation
 	 */
-	public async setBulk(keys: IdEncoding[], values: Raw[]): Promise<WriteConfirmation> {
+	public setBulk(keys: IdEncoding[], values: Raw[]): Promise<WriteConfirmation> {
 		return this.manager.postRequest<WriteConfirmation>("setBulk", values, true, {
 			keys: keys.map(String),
 		});
@@ -450,7 +416,7 @@ export class Collection<
 	 * @param option - The edit object
 	 * @returns Edit confirmation
 	 */
-	public async editField(option: EditFieldOption<Raw>): Promise<WriteConfirmation> {
+	public editField(option: EditFieldOption<Raw>): Promise<WriteConfirmation> {
 		return this.manager.postRequest<WriteConfirmation>("editField", option, false);
 	}
 
@@ -459,7 +425,7 @@ export class Collection<
 	 * @param options - The edit objects
 	 * @returns Edit confirmation
 	 */
-	public async editFieldBulk(options: EditFieldOption<Raw>[]): Promise<WriteConfirmation> {
+	public editFieldBulk(options: EditFieldOption<Raw>[]): Promise<WriteConfirmation> {
 		return this.manager.postRequest<WriteConfirmation>("editFieldBulk", options, true);
 	}
 }
