@@ -71,14 +71,36 @@ jobs:
           php-version: "8.2"
           coverage: pcov
 
+      # the apt lcov 2.0 prints bogus per-file rates in `lcov --list`, so overlay lcov 2.6 (without docs, which need sphinx, and without the optional XS extension)
       - name: Setup LCOV
-        uses: hrishikesh-kadam/setup-lcov@v1
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y lcov
+          git clone --depth 1 --branch v2.6 https://github.com/linux-test-project/lcov.git /tmp/lcov
+          sudo make -C /tmp/lcov install LCOV_NO_DOC=1 LCOV_NO_XS=1
+          hash -r
+          lcov --version
 
       - name: Install dependencies
         run: pnpm install
 
       - name: Run coverage check (client with c8, server with pcov)
         run: pnpm coverage
+
+      - name: Build the coverage table of every file
+        id: coverage-table
+        if: always()
+        run: |
+          {
+            echo 'table<<EOF_COVERAGE_TABLE'
+            echo '<details><summary>📚 Coverage of every file (client built files and server)</summary>'
+            echo
+            sh scripts/lcov-table.sh coverage/lcov.info coverage/php/lcov.info
+            echo
+            echo '</details>'
+            echo
+            echo 'EOF_COVERAGE_TABLE'
+          } >> "$GITHUB_OUTPUT"
 
       - name: Report coverage
         if: always()
@@ -88,6 +110,9 @@ jobs:
           artifact-name: code-coverage-report
           working-directory: .
           minimum-coverage: 0
+          # c8 reports hit lines without branch data, which lcov 2.x flags as inconsistent once branch coverage is on
+          genhtml-ignore-errors: inconsistent,corrupt,empty
           update-comment: true
+          additional-message: ${{ steps.coverage-table.outputs.table }}
           # forks only get a read-only token, so only comment on same-repo PRs
           github-token: ${{ github.event.pull_request.head.repo.full_name == github.repository && secrets.GITHUB_TOKEN || '' }}
