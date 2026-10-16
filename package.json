@@ -27,8 +27,9 @@
 		"ts:tests:types": "tsc -p tests/tsconfig.json && pnpm tsx node_modules/mocha/bin/mocha.js --timeout 10000 tests/types/**/*.spec.ts",
 		"ts:tests:esm": "pnpm tsx node_modules/mocha/bin/mocha.js --timeout 10000 tests/esm/**/*.spec.ts",
 		"ts:tests:cjs": "pnpm tsx node_modules/mocha/bin/mocha.js --timeout 10000 tests/cjs/**/*.spec.cjs",
+		"ts:tests:server": "pnpm tsx node_modules/mocha/bin/mocha.js --timeout 10000 tests/server/**/*.spec.ts",
 		"ts:tests:browser": "pnpm tsx node_modules/mocha/bin/mocha.js --timeout 10000 tests/browser/**/*.spec.ts",
-		"ts:tests": "pnpm ts:build && pnpm ts:tests:types && pnpm ts:tests:esm && pnpm ts:tests:cjs && pnpm ts:tests:browser",
+		"ts:tests": "pnpm ts:build && pnpm ts:tests:types && pnpm ts:tests:esm && pnpm ts:tests:cjs && pnpm ts:tests:browser && pnpm ts:tests:server",
 		"php:start": "node tests/php/php_setup.mjs",
 		"php:stop": "sh tests/php/php_server_kill.sh",
 		"php:lint": "phpstan analyse -c phpstan.neon --memory-limit 1G",
@@ -43,9 +44,9 @@
 		"lint:check": "prettier \"{,!(node_modules|dist)/**/}*.{cjs,mjs,js,ts,json,md,yml,yaml}\" --config .prettierrc --check",
 		"coverage": "sh scripts/with-pcov.sh pnpm coverage:run",
 		"coverage:setup": "sh scripts/install-pcov.sh",
-		"coverage:run": "pnpm coverage:clean ; pnpm ts:build ; pnpm php:stop ; PHP_COVERAGE_DIR=\"$PWD/coverage/php-raw\" pnpm php:start && c8 pnpm tsx node_modules/mocha/bin/mocha.js tests/esm/**/*.spec.ts tests/types/**/*.spec.ts tests/cjs/**/*.spec.cjs tests/browser/**/*.spec.ts ; e=$? ; pnpm php:stop ; pnpm coverage:php && exit $e",
+		"coverage:run": "pnpm coverage:clean ; pnpm ts:build ; pnpm php:stop ; PHP_COVERAGE_DIR=\"$PWD/coverage/php-raw\" pnpm php:start && c8 pnpm tsx node_modules/mocha/bin/mocha.js tests/esm/**/*.spec.ts tests/types/**/*.spec.ts tests/cjs/**/*.spec.cjs tests/browser/**/*.spec.ts tests/server/**/*.spec.ts ; e=$? ; pnpm php:stop ; pnpm coverage:php && exit $e",
 		"coverage:clean": "rm -rf coverage/php-raw && mkdir -p coverage/php-raw",
-		"coverage:php": "sh scripts/php-coverage.sh 65"
+		"coverage:php": "sh scripts/php-coverage.sh 95"
 	},
 	"repository": {
 		"type": "git",

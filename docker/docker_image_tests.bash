@@ -36,6 +36,7 @@ docker_container_id=$(docker run -d \
     --user "$(id -u):$(id -g)" \
     -v "$(pwd)/tests/php/config.php:/var/www/html/config.php" \
     -v "$(pwd)/tests/php/tokens.php:/var/www/html/tokens.php" \
+    -v "$(pwd)/tests/php/probe.php:/var/www/html/probe.php" \
     -v "$temp_dir/:/var/www/html/files" \
     -p $port:80 $IMAGE_NAME:$IMAGE_TAG \
 )

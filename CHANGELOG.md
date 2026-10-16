@@ -11,6 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **Raw Server Tests**: `tests/server` suites exercising the PHP endpoints over raw HTTP (plus the test-only `tests/php/probe.php`), with a 95% minimum enforced by `pnpm coverage`.
 - **Migration Guide**: Added comprehensive [`MIGRATION.md`](./MIGRATION.md) detailing migration steps from 1.15.1 to 2.0.0.
 
 - **Collision-Free `ID_FIELD` Unique Symbol**: Transitioned `ID_FIELD` from a `"id"` string constant to a global `unique symbol` (`Symbol.for("firestorm.id")`). Document keys attached by Firestorm are indexed via `item[ID_FIELD]`, guaranteeing zero collisions with document schema fields (even if documents have their own `id` property) and native exclusion from `JSON.stringify` during writes.

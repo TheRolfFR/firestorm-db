@@ -37,3 +37,8 @@ $settingsDoc = new JSONDatabase('settings', false);
 $database_list['settings'] = $settingsDoc;
 
 $log_path = 'firestorm.log';
+
+// collections used by the raw server tests (tests/server), their files are created on demand
+foreach (['scratch', 'fresh', 'corrupt'] as $name) {
+	$database_list[$name] = new JSONDatabase($name, true, true);
+}
