@@ -90,7 +90,7 @@ class JSONDatabase {
             throw new HTTPException('Failed to encode database content', 500);
         }
         $obj->content = $content;
-        return FileAccess::write($obj);
+        return write_json_file($obj);
     }
 
     /**
@@ -111,7 +111,7 @@ class JSONDatabase {
      */
     public function readRaw(bool $waitLock = false): FileObject {
         // fall back to empty array if failed
-        return FileAccess::read($this->fullPath(), $waitLock, '[]');
+        return read_json_file($this->fullPath(), $waitLock, '[]');
     }
 
     /**
