@@ -1,7 +1,6 @@
 <?php
 
 require_once __DIR__ . '/../classes/HTTPException.php';
-require_once __DIR__ . '/../enums/SearchCriteria.php';
 require_once __DIR__ . '/../polyfills/polyfills.php';
 
 /**
@@ -174,10 +173,15 @@ function matches_search_conditions(mixed $el, array $conditions): bool {
  * @return array<int|string, mixed> Filtered elements with preserved keys.
  */
 function filter_search_conditions(array $content, array $conditions, bool $has_limit = false, int|false $limit = false, mixed $random = false): array {
-    $res = array_filter($content, fn($el) => matches_search_conditions($el, $conditions));
+    $early_exit = $has_limit && $random === false && $limit !== false;
 
-    if ($has_limit && $random === false && $limit !== false) {
-        return array_slice($res, 0, $limit, true);
+    $res = [];
+    foreach ($content as $key => $el) {
+        if ($early_exit && count($res) >= $limit)
+            break;
+
+        if (matches_search_conditions($el, $conditions))
+            $res[$key] = $el;
     }
 
     return $res;

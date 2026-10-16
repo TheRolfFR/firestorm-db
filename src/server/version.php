@@ -5,6 +5,11 @@ require_once __DIR__ . '/utils.php';
 
 cors();
 
+// hide error display from client responses
+ini_set('display_errors', '0');
+ini_set('display_startup_errors', '0');
+error_reporting(E_ALL);
+
 /**
  * Reads the deployed version marker so authenticated clients can compare their protocol version.
  *

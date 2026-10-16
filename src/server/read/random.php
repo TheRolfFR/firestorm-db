@@ -3,12 +3,6 @@
 use Random\Randomizer;
 use Random\Engine\Mt19937;
 
-/** Generates a time-derived seed for callers that need a non-repeatable selection order. */
-function make_seed(): int {
-    [$usec, $sec] = explode(' ', microtime());
-    return (int) ($sec . substr((string) intval((float) $usec * 1000000), 0, 6));
-}
-
 /**
  * Returns a globally shared Randomizer instance to avoid repeated instantiation overhead.
  */

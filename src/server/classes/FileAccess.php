@@ -38,6 +38,10 @@ function read_json_file(string $filepath, bool $waitLock = false, ?string $defau
 
     $mode = $waitLock ? 'c+b' : 'rb';
 
+    // 'c+b' creates missing files empty, so seed the default before opening
+    if ($waitLock && $default !== null && !file_exists($filepath))
+        file_put_contents($filepath, $default, LOCK_EX);
+
     $file = @fopen($filepath, $mode);
 
     // exit if couldn't find file

@@ -2,7 +2,6 @@
 
 require_once __DIR__ . '/../classes/HTTPException.php';
 require_once __DIR__ . '/../utils.php';
-require_once __DIR__ . '/../enums/EditOperation.php';
 
 /**
  * Mutates one field of an existing collection entry in place after validating the requested operation and operands.
@@ -66,8 +65,14 @@ function edit_field(array &$content, mixed $editObj): bool {
 	$curr = &$target;
 	for ($i = 0; $i < count($segments) - 1; $i++) {
 		$seg = $segments[$i];
-		if (!isset($curr[$seg]) || !is_array($curr[$seg])) {
-			if ($operation === 'set' || $operation === 'array-push') {
+		if (isset($curr[$seg]) && !is_array($curr[$seg])) {
+			throw new HTTPException("Field $seg is not an object in path $field", 400);
+		}
+		if (!isset($curr[$seg])) {
+			if ($operation === 'remove') {
+				// nothing to remove, already gone
+				return true;
+			} else if ($operation === 'set' || $operation === 'array-push') {
 				$curr[$seg] = [];
 			} else {
 				$msg = $hasId ? "Field $field doesn't exist in ID {$editObj['id']}" : "Field $field doesn't exist in document";

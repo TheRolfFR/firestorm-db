@@ -125,7 +125,8 @@ class JSONDatabase {
         $res = $this->readRaw($waitLock);
         $decoded = json_decode($res->content, true);
         if (!is_array($decoded)) {
-            throw new HTTPException('Database content must be a JSON object or array', 500);
+            $reason = json_last_error() !== JSON_ERROR_NONE ? json_last_error_msg() : 'content is not a JSON object or array';
+            throw new HTTPException("Failed to decode database file {$res->filepath}: $reason", 500);
         }
         $res->json = $decoded;
         return $res;
@@ -224,6 +225,9 @@ class JSONDatabase {
             if (!is_keyable($keys_decoded[$i]))
                 throw new HTTPException("Incorrect key type, got $key_var_type, expected string or integer");
 
+            if (!array_key_exists($i, $value_decoded) || $value_decoded[$i] === null)
+                throw new HTTPException("Undefined value at index $i in value array.", 400);
+
             $key = strval($keys_decoded[$i]);
 
             $obj->json[$key] = $value_decoded[$i];
@@ -253,9 +257,7 @@ class JSONDatabase {
     private function newLastKey(array $arr): string {
         if ($this->autoIncrement) {
             $int_keys = array_filter(array_keys($arr), is_int(...));
-            sort($int_keys);
-            $last_val = array_last($int_keys);
-            $last_key = $last_val !== null ? $last_val + 1 : 0;
+            $last_key = $int_keys !== [] ? max($int_keys) + 1 : 0;
         } else {
             do {
                 $last_key = $this->newKey();
@@ -303,9 +305,6 @@ class JSONDatabase {
         if (!$this->autoKey)
             throw new HTTPException('Automatic key generation is disabled');
 
-        if ($values !== [] && $values === null)
-            throw new HTTPException('null-like value not accepted', 400);
-
         if (!is_array($values))
             throw new HTTPException("value must be an array not a " . gettype($values), 400);
 
@@ -320,10 +319,6 @@ class JSONDatabase {
             if (is_primitive($value) || (array_sequential($value) && count($value) > 0))
                 throw new HTTPException("array value must be an object not a $value_type", 400);
         }
-
-        // verify that values is an array with number indices
-        if (array_assoc($values))
-            throw new HTTPException('Wanted sequential array');
 
         // set it at the corresponding value
         $obj = $this->read(true);

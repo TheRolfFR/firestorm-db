@@ -147,12 +147,16 @@ function array_sequential(mixed $arr): bool {
  * @return string|false JSON-encoded string representation, or false on error.
  */
 function stringifier(mixed $obj, int $depth = 1): string|false {
-    if ($depth === 0 || !is_array($obj) || !array_assoc($obj))
+    if ($depth === 0 || !is_array($obj))
         return json_encode($obj);
 
     $formed = [];
     foreach (array_keys($obj) as $key) {
-        $formed[] = '"' . strval($key) . '":' . stringifier($obj[$key], $depth - 1);
+        $encodedKey = json_encode(strval($key));
+        $encodedValue = stringifier($obj[$key], $depth - 1);
+        if ($encodedKey === false || $encodedValue === false)
+            return false;
+        $formed[] = $encodedKey . ':' . $encodedValue;
     }
 
     return '{' . implode(',', $formed) . '}';
@@ -304,11 +308,7 @@ function check_file_extension(string $path, array $authorized_extensions): void 
  * @return never
  */
 function http_response_stringified(mixed $data): never {
-    if (is_array($data) && array_assoc($data)) {
-        $stringified = stringifier($data);
-    } else {
-        $stringified = json_encode($data);
-    }
+    $stringified = stringifier($data);
     if ($stringified === false)
         http_error(500, 'Failed to stringify response data');
 

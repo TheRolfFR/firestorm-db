@@ -126,6 +126,8 @@ try {
 
 } catch (HTTPException $e) {
     http_error($e->getCode(), $e->getMessage());
+} catch (TypeError $e) {
+    http_error(400, 'Invalid parameter type in request');
 } catch (Exception $e) {
     http_error(400, $e->getMessage());
 }
