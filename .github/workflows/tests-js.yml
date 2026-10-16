@@ -51,6 +51,9 @@ jobs:
   coverage:
     name: Coverage Check
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
     steps:
       - name: Check out repository code
         uses: actions/checkout@v7
@@ -69,9 +72,25 @@ jobs:
         uses: shivammathur/setup-php@v2
         with:
           php-version: "8.2"
+          coverage: pcov
+
+      - name: Setup LCOV
+        uses: hrishikesh-kadam/setup-lcov@v1
 
       - name: Install dependencies
         run: pnpm install
 
-      - name: Run coverage check
+      - name: Run coverage check (client with c8, server with pcov)
         run: pnpm coverage
+
+      - name: Report coverage
+        if: always()
+        uses: zgosalvez/github-actions-report-lcov@v7.2.0
+        with:
+          coverage-files: coverage/**/lcov.info
+          artifact-name: code-coverage-report
+          working-directory: .
+          minimum-coverage: 0
+          update-comment: true
+          # forks only get a read-only token, so only comment on same-repo PRs
+          github-token: ${{ github.event.pull_request.head.repo.full_name == github.repository && secrets.GITHUB_TOKEN || '' }}

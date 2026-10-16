@@ -563,3 +563,17 @@ The client communicates with the server via three specialized entrypoints:
 - **File operations** $\rightarrow$ `/files.php` (`GET`, `POST`, `PUT`, `PATCH`, `DELETE`)
 
 If you do not use file management features, you can safely remove `files.php` and the `files_api/` directory.
+
+---
+
+## Development
+
+```sh
+pnpm install
+pnpm php:tests     # starts a local PHP server and runs every test suite
+pnpm coverage      # client (c8) and server (pcov) coverage, with minimum thresholds
+```
+
+`pnpm coverage` enforces minimum coverage (c8 for the client, 65% of lines for the server) and writes `coverage/lcov.info` (client) and `coverage/php/lcov.info` (server). If `genhtml` is installed (`brew install lcov` / `apt install lcov`), it also builds one browsable report for both in `coverage/html/index.html`.
+
+PHP server coverage needs the [pcov](https://github.com/krakjoe/pcov) extension. If it isn't installed, run `pnpm coverage:setup` once: it builds pcov into a git-ignored `.pcov/` folder (requires `phpize`, `curl` and a C toolchain) and `pnpm coverage` picks it up automatically. A system-wide `pecl install pcov` works as well.

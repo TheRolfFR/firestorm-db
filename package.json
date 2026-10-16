@@ -41,7 +41,11 @@
 		"doc:watch": "nodemon -x \"pnpm doc:gen\" --watch dist/esm --watch jsdoc.json --watch README.md",
 		"lint:write": "prettier \"{,!(node_modules|dist)/**/}*.{cjs,mjs,js,ts,json,md,yml,yaml}\" --config .prettierrc --write",
 		"lint:check": "prettier \"{,!(node_modules|dist)/**/}*.{cjs,mjs,js,ts,json,md,yml,yaml}\" --config .prettierrc --check",
-		"coverage": "pnpm ts:build ; pnpm php:stop ; pnpm php:start && c8 pnpm tsx node_modules/mocha/bin/mocha.js tests/esm/**/*.spec.ts tests/types/**/*.spec.ts tests/cjs/**/*.spec.cjs tests/browser/**/*.spec.ts; pnpm php:stop"
+		"coverage": "sh scripts/with-pcov.sh pnpm coverage:run",
+		"coverage:setup": "sh scripts/install-pcov.sh",
+		"coverage:run": "pnpm coverage:clean ; pnpm ts:build ; pnpm php:stop ; PHP_COVERAGE_DIR=\"$PWD/coverage/php-raw\" pnpm php:start && c8 pnpm tsx node_modules/mocha/bin/mocha.js tests/esm/**/*.spec.ts tests/types/**/*.spec.ts tests/cjs/**/*.spec.cjs tests/browser/**/*.spec.ts ; e=$? ; pnpm php:stop ; pnpm coverage:php && exit $e",
+		"coverage:clean": "rm -rf coverage/php-raw && mkdir -p coverage/php-raw",
+		"coverage:php": "sh scripts/php-coverage.sh 65"
 	},
 	"repository": {
 		"type": "git",
@@ -107,7 +111,7 @@
 		"reporter": [
 			"text",
 			"text-summary",
-			"html"
+			"lcovonly"
 		],
 		"sourceMap": false,
 		"exclude-after-remap": true,

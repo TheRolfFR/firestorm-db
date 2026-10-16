@@ -132,3 +132,6 @@ docs/
 
 # tests
 tests/downloaded.txt
+
+# local pcov build (scripts/install-pcov.sh)
+.pcov/
