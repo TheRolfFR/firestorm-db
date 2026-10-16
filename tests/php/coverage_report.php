@@ -3,8 +3,9 @@
 // Merges the per-request pcov dumps written by coverage_prepend.php into a summary and an lcov file.
 // usage: php tests/php/coverage_report.php <raw dir> <lcov output> [minimum line coverage percent]
 
-[, $rawDir, $lcovPath] = $argv + [null, null, null];
-$minimum = isset($argv[3]) ? (float) $argv[3] : 0.0;
+$args = $_SERVER['argv'] ?? [];
+[, $rawDir, $lcovPath] = $args + [null, null, null];
+$minimum = isset($args[3]) ? (float) $args[3] : 0.0;
 
 if (!$rawDir || !$lcovPath) {
     fwrite(STDERR, "usage: php coverage_report.php <raw dir> <lcov output> [minimum percent]\n");
@@ -12,6 +13,10 @@ if (!$rawDir || !$lcovPath) {
 }
 
 $srcRoot = realpath(__DIR__ . '/../../src/server');
+if ($srcRoot === false) {
+    fwrite(STDERR, "Could not resolve src/server\n");
+    exit(2);
+}
 
 // pcov line states: 1 = executed, -1 = executable but not executed, -2 = dead code
 $merged = [];
@@ -47,7 +52,7 @@ foreach ($merged as $file => $lines) {
         continue;
 
     // pcov reports the implicit return past the last line, which lcov tools reject
-    $lineCount = count(file($file));
+    $lineCount = count(file($file) ?: []);
     $lines = array_filter($lines, fn($line) => $line <= $lineCount, ARRAY_FILTER_USE_KEY);
 
     ksort($lines);
