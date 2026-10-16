@@ -71,7 +71,7 @@
 		"src/server"
 	],
 	"engines": {
-		"node": "^20.19.0 || ^22.12.0 || >=23"
+		"node": "^22.12.0 || >=24"
 	},
 	"dependencies": {
 		"form-data": "^4.0.6"

@@ -40,7 +40,7 @@ Firestorm 2.0 is a ground-up modernization of both the TypeScript/JavaScript cli
 
 | Runtime / Platform | v1.15.1           | v2.0.0                                                             |
 | :----------------- | :---------------- | :----------------------------------------------------------------- |
-| **Node.js**        | `>= 16.x`         | `>= 18.x` (native `fetch` support)                                 |
+| **Node.js**        | `>= 16.x`         | `^22.12` or `>= 24` (maintained releases, native `fetch`)          |
 | **TypeScript**     | `>= 4.x`          | `>= 5.0`                                                           |
 | **Module Systems** | CJS / Bundled ESM | Native ESM (`dist/esm`) & CJS (`dist/cjs`) + `.d.ts` declarations  |
 | **PHP (Server)**   | PHP 7.4+ / 8.0+   | **PHP 8.2+** (PHP 8.5 recommended; polyfills included for 8.3–8.5) |

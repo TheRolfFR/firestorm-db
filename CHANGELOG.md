@@ -27,6 +27,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- **Node.js Support**: Dropped end-of-life Node.js versions. The `engines` field now requires `^22.12.0 || >=24` (Node 20 reached end-of-life in April 2026, and odd-numbered releases are never long-term supported), and the CI matrix no longer tests Node 20.
 - **Async Method for Server Version**: Replaced the `instance.serverVersion` Promise getter with an explicit async method `instance.getServerVersion()` for better developer ergonomics and TypeScript consistency.
 - **Object-Only Resource Constructors**: `instance.collection()`, `instance.document()`, and class constructors now require a configuration object (`{ name: string, transform?: Function }`) rather than positional arguments.
 - **PHP Requirements**: Modernized server requirements to PHP 8.2+ with strict typing and support for named constructor arguments in `JSONDatabase`.

@@ -13,11 +13,8 @@ jobs:
     strategy:
       matrix:
         php: ["8.2", "8.3", "8.4", "8.5"]
-        node: ["^20.19.0", "^22.12.0", "24", "26"]
+        node: ["^22.12.0", "24", "26"]
         composer: [false, true]
-        include:
-          - node: "^20.19.0"
-            pnpm: 10
 
     steps:
       - name: Check out repository code
@@ -25,7 +22,7 @@ jobs:
 
       - uses: pnpm/action-setup@v6
         with:
-          version: ${{ matrix.pnpm || 11 }}
+          version: 11
 
       - name: Use Node.js ${{ matrix.node }}
         uses: actions/setup-node@v7
