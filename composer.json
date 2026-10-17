@@ -1,0 +1,17 @@
+{
+	"name": "therolffr/firestorm-db",
+	"description": "Self hosted Firestore-like database with API endpoints based on micro bulk operations",
+	"type": "library",
+	"license": "MIT",
+	"authors": [
+		{
+			"name": "TheRolf"
+		}
+	],
+	"require": {
+		"php": ">=8.2.0",
+		"symfony/polyfill-php83": "^1.41",
+		"symfony/polyfill-php84": "^1.38",
+		"symfony/polyfill-php85": "^1.41"
+	}
+}

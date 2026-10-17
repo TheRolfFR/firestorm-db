@@ -1,0 +1,12 @@
+# Disable directory listing
+Options -Indexes -FollowSymLinks
+
+# Block direct access to database files, logs, and config markers
+<FilesMatch "\.(json|log|ini)$">
+	Require all denied
+</FilesMatch>
+
+# Block direct access to internal server library files
+<FilesMatch "^(config|tokens|utils|error|log)\.php$">
+	Require all denied
+</FilesMatch>
