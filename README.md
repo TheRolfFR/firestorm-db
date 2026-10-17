@@ -298,16 +298,16 @@ await settingsDoc.editField({
 
 Firestorm includes a file management API under `instance.files`:
 
-| Method                            | Description                                                | Returns                 |
-| --------------------------------- | ---------------------------------------------------------- | ----------------------- |
-| `get<T>(path, options?)`          | Retrieve file content by path                              | `Promise<T>`            |
-| `upload(form, options?)`          | Upload a file via `FormData` (`path`, `file`, `overwrite`) | `Promise<Confirmation>` |
-| `delete(path, options?)`          | Delete a file from the server                              | `Promise<Confirmation>` |
-| `copy(options)`                   | Copy a file directly on the server (`FileCopyOptions`)     | `Promise<Confirmation>` |
-| `move(options)`                   | Move/rename a file on the server (`FileMoveOptions`)       | `Promise<Confirmation>` |
-| `exists(path)`                    | Check if a file exists on the server                       | `Promise<boolean>`      |
-| `append(path, content, options?)` | Append text to a file (`FileAppendOptions`)                | `Promise<Confirmation>` |
-| `write(path, content, options?)`  | Write text to a file (`FileWriteOptions`)                  | `Promise<Confirmation>` |
+| Method                                | Description                                                | Returns                 |
+| ------------------------------------- | ---------------------------------------------------------- | ----------------------- |
+| `get<T>(path, options?)`              | Retrieve file content by path                              | `Promise<T>`            |
+| `upload(form, options?)`              | Upload a file via `FormData` (`path`, `file`, `overwrite`) | `Promise<Confirmation>` |
+| `delete(path, options?)`              | Delete a file from the server                              | `Promise<Confirmation>` |
+| `copy(options)`                       | Copy a file directly on the server (`FileCopyOptions`)     | `Promise<Confirmation>` |
+| `move(options)`                       | Move/rename a file on the server (`FileMoveOptions`)       | `Promise<Confirmation>` |
+| `exists(path)`                        | Check if a file exists on the server                       | `Promise<boolean>`      |
+| `append(path, content, options?)`     | Append text to a file (`FileAppendOptions`)                | `Promise<Confirmation>` |
+| `uploadText(path, content, options?)` | Upload text to a file (`FileUploadTextOptions`)            | `Promise<Confirmation>` |
 
 ### File Examples
 
@@ -439,7 +439,7 @@ import type {
 	FileManager,
 	FileMoveOptions,
 	FileRequestOptions,
-	FileWriteOptions,
+	FileUploadTextOptions,
 	// Resources & Instances
 	Firestorm,
 	FirestormCreationOption,

@@ -22,7 +22,7 @@ import type {
 	FileCopyOptions,
 	FileMoveOptions,
 	FileRequestOptions,
-	FileWriteOptions,
+	FileUploadTextOptions,
 	FirestormCreationOption,
 	IdEncoding,
 	Path,
@@ -110,7 +110,7 @@ describe("Type Tests: src/client/index.ts", () => {
 		type _TFileCopy = Expect<Equal<FileCopyOptions["oldPath"], string>>;
 		type _TFileMove = Expect<Equal<FileMoveOptions["newPath"], string>>;
 		type _TFileAppend = Expect<Equal<FileAppendOptions["create"], boolean | undefined>>;
-		type _TFileWrite = Expect<Equal<FileWriteOptions["overwrite"], boolean | undefined>>;
+		type _TFileUploadText = Expect<Equal<FileUploadTextOptions["overwrite"], boolean | undefined>>;
 		type _TFileRequest = Expect<
 			Equal<FileRequestOptions["headers"], Record<string, string> | undefined>
 		>;

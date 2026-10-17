@@ -79,7 +79,7 @@ export function runFilesSuite(target: TestTarget) {
 			}
 
 			try {
-				await noToken.files.write("file.txt", "content");
+				await noToken.files.uploadText("file.txt", "content");
 				expect.fail("Should have thrown error for put");
 			} catch (err) {
 				expect((err as Error).message).to.include("Token for Firestorm instance");
@@ -243,8 +243,8 @@ export function runFilesSuite(target: TestTarget) {
 			await env.instance.files.delete("/move-dest.txt");
 		});
 
-		it("writes and overwrites file content directly with write()", async () => {
-			const putRes = await env.instance.files.write("/put-test.txt", "initial put content", {
+		it("writes and overwrites file content directly with uploadText()()", async () => {
+			const putRes = await env.instance.files.uploadText("/put-test.txt", "initial put content", {
 				overwrite: true,
 			});
 			expect(putRes.response).to.include("Written file successfully");
@@ -254,7 +254,7 @@ export function runFilesSuite(target: TestTarget) {
 
 			let threw = false;
 			try {
-				await env.instance.files.write("/put-test.txt", "new content without overwrite", {
+				await env.instance.files.uploadText("/put-test.txt", "new content without overwrite", {
 					overwrite: false,
 				});
 			} catch (err) {
@@ -263,7 +263,7 @@ export function runFilesSuite(target: TestTarget) {
 			}
 			expect(threw).to.be.true;
 
-			await env.instance.files.write("/put-test.txt", "overwritten put content", {
+			await env.instance.files.uploadText("/put-test.txt", "overwritten put content", {
 				overwrite: true,
 			});
 

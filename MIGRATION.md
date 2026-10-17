@@ -236,16 +236,16 @@ await configDoc.editField({
 
 File methods under `instance.files` keep their v1 names where possible (`upload`, `append`, `delete`), take positional arguments, and accept an optional trailing options object.
 
-| Action                | v1.15.1                               | v2.0.0                                                  |
-| :-------------------- | :------------------------------------ | :------------------------------------------------------ |
-| **Download / Get**    | `files.get(path)`                     | `instance.files.get<T>(path)`                           |
-| **Upload**            | `files.upload(path, file, overwrite)` | `instance.files.upload(formData)`                       |
-| **Write Text**        | _(N/A)_                               | `instance.files.write(path, content, { overwrite })`    |
-| **Append Text**       | `files.append(path, content, create)` | `instance.files.append(path, content, { create })`      |
-| **Delete**            | `files.delete(path)`                  | `instance.files.delete(path)`                           |
-| **Server-Side Copy**  | _(N/A)_                               | `instance.files.copy({ oldPath, newPath, overwrite? })` |
-| **Server-Side Move**  | _(N/A)_                               | `instance.files.move({ oldPath, newPath, overwrite? })` |
-| **File Exists Check** | _(N/A)_                               | `instance.files.exists(path)`                           |
+| Action                | v1.15.1                               | v2.0.0                                                    |
+| :-------------------- | :------------------------------------ | :-------------------------------------------------------- |
+| **Download / Get**    | `files.get(path)`                     | `instance.files.get<T>(path)`                             |
+| **Upload**            | `files.upload(path, file, overwrite)` | `instance.files.upload(formData)`                         |
+| **Upload Text**       | _(N/A)_                               | `instance.files.uploadText(path, content, { overwrite })` |
+| **Append Text**       | `files.append(path, content, create)` | `instance.files.append(path, content, { create })`        |
+| **Delete**            | `files.delete(path)`                  | `instance.files.delete(path)`                             |
+| **Server-Side Copy**  | _(N/A)_                               | `instance.files.copy({ oldPath, newPath, overwrite? })`   |
+| **Server-Side Move**  | _(N/A)_                               | `instance.files.move({ oldPath, newPath, overwrite? })`   |
+| **File Exists Check** | _(N/A)_                               | `instance.files.exists(path)`                             |
 
 #### v2.0.0 Files Example:
 
@@ -260,7 +260,7 @@ form.append("overwrite", "true");
 await instance.files.upload(form);
 
 // 2. Direct Write
-await instance.files.write("/logs/app.log", "System started.", { overwrite: true });
+await instance.files.uploadText("/logs/app.log", "System started.", { overwrite: true });
 
 // 3. Append
 await instance.files.append("/logs/app.log", "\nEvent: User login", { create: true });
@@ -387,7 +387,7 @@ $STORAGE_LOCATION = dirname($_SERVER['SCRIPT_FILENAME']) . '/uploads/';
 | **Get File**                  | `instance.files.get("file.txt")`              | `instance.files.get("file.txt")`                           |
 | **Upload File**               | `instance.files.upload("f.txt", blob, true)`  | `instance.files.upload(formData)`                          |
 | **Append Text**               | `instance.files.append("f.txt", "str", true)` | `instance.files.append("f.txt", "str", { create: true })`  |
-| **Write Text**                | _(N/A)_                                       | `instance.files.write("f.txt", "str")`                     |
+| **Upload Text**               | _(N/A)_                                       | `instance.files.uploadText("f.txt", "str")`                |
 | **Delete File**               | `instance.files.delete("file.txt")`           | `instance.files.delete("file.txt")`                        |
 | **File Exists / Move / Copy** | _(N/A)_                                       | `instance.files.exists()`, `.move()`, `.copy()`            |
 | **Error Handling**            | `catch (err: AxiosError)`                     | `catch (err: FirestormError)`                              |

@@ -24,8 +24,8 @@ export interface FileAppendOptions {
 	create?: boolean;
 }
 
-/** Options for file write */
-export interface FileWriteOptions {
+/** Options for text file upload */
+export interface FileUploadTextOptions {
 	/** Replace the file if it already exists */
 	overwrite?: boolean;
 }
@@ -290,14 +290,14 @@ export class FileManager {
 	 * Write (create or replace) the content of a file
 	 * @template ReturnType - Return confirmation type
 	 * @param path - Path of the file
-	 * @param content - Text to write
-	 * @param options - Write and request settings
+	 * @param content - Text to upload
+	 * @param options - Upload and request settings
 	 * @returns Mutation confirmation
 	 */
-	public write<ReturnType = Confirmation>(
+	public uploadText<ReturnType = Confirmation>(
 		path: string,
 		content: string,
-		options: FileWriteOptions & FileRequestOptions = {},
+		options: FileUploadTextOptions & FileRequestOptions = {},
 	): Promise<ReturnType> {
 		const token = this.instance.token;
 		if (!token) {

@@ -78,14 +78,17 @@ describe("Type Tests: src/client/files.ts", () => {
 		files.append("/log.txt", "data", { create: true });
 	});
 
-	it("write() returns Promise<Confirmation>", () => {
+	it("uploadText() returns Promise<Confirmation>", () => {
 		type _TWrite = Expect<
-			Equal<ReturnType<typeof files.write<Confirmation>>, Promise<Confirmation>>
+			Equal<ReturnType<typeof files.uploadText<Confirmation>>, Promise<Confirmation>>
 		>;
 		type _TCustom = Expect<
-			Equal<ReturnType<typeof files.write<{ written: boolean }>>, Promise<{ written: boolean }>>
+			Equal<
+				ReturnType<typeof files.uploadText<{ written: boolean }>>,
+				Promise<{ written: boolean }>
+			>
 		>;
 
-		files.write("/log.txt", "data", { overwrite: true });
+		files.uploadText("/log.txt", "data", { overwrite: true });
 	});
 });
