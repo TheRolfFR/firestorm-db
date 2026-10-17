@@ -71,48 +71,66 @@ jobs:
           php-version: "8.2"
           coverage: pcov
 
-      # the apt lcov 2.0 prints bogus per-file rates in `lcov --list`, so overlay lcov 2.6 (without docs, which need sphinx, and without the optional XS extension)
-      - name: Setup LCOV
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y lcov
-          git clone --depth 1 --branch v2.6 https://github.com/linux-test-project/lcov.git /tmp/lcov
-          sudo make -C /tmp/lcov install LCOV_NO_DOC=1 LCOV_NO_XS=1
-          hash -r
-          lcov --version
-
       - name: Install dependencies
         run: pnpm install
 
       - name: Run coverage check (client with c8, server with pcov)
         run: pnpm coverage
 
-      - name: Build the coverage table of every file
-        id: coverage-table
+      - name: Upload coverage reports
+        id: coverage-artifact
         if: always()
-        run: |
-          {
-            echo 'table<<EOF_COVERAGE_TABLE'
-            echo '<details><summary>📚 Coverage of every file (client built files and server)</summary>'
-            echo
-            sh scripts/lcov-table.sh coverage/lcov.info coverage/php/lcov.info
-            echo
-            echo '</details>'
-            echo
-            echo 'EOF_COVERAGE_TABLE'
-          } >> "$GITHUB_OUTPUT"
-
-      - name: Report coverage
-        if: always()
-        uses: zgosalvez/github-actions-report-lcov@v7.2.0
+        uses: actions/upload-artifact@v7
         with:
-          coverage-files: coverage/**/lcov.info
-          artifact-name: code-coverage-report
-          working-directory: .
-          minimum-coverage: 0
-          # c8 reports hit lines without branch data, which lcov 2.x flags as inconsistent once branch coverage is on
-          genhtml-ignore-errors: inconsistent,corrupt,empty
-          update-comment: true
-          additional-message: ${{ steps.coverage-table.outputs.table }}
-          # forks only get a read-only token, so only comment on same-repo PRs
-          github-token: ${{ github.event.pull_request.head.repo.full_name == github.repository && secrets.GITHUB_TOKEN || '' }}
+          name: code-coverage-report
+          path: |
+            coverage/html
+            coverage/cobertura-coverage.xml
+            coverage/php/cobertura-coverage.xml
+          if-no-files-found: ignore
+
+      - name: Report client coverage
+        id: coverage-client
+        if: always()
+        uses: clearlyip/code-coverage-report-action@v7
+        with:
+          filename: coverage/cobertura-coverage.xml
+          markdown_filename: code-coverage-client
+          artifact_name: coverage-client-%name%
+          badge: true
+
+      - name: Report server coverage
+        id: coverage-server
+        if: always()
+        uses: clearlyip/code-coverage-report-action@v7
+        with:
+          filename: coverage/php/cobertura-coverage.xml
+          markdown_filename: code-coverage-server
+          artifact_name: coverage-server-%name%
+          badge: true
+
+      # forks only get a read-only token, so only comment on same-repo PRs
+      - name: Comment client coverage
+        if: always() && github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository && steps.coverage-client.outputs.file != ''
+        uses: marocchino/sticky-pull-request-comment@v3
+        with:
+          header: coverage-client
+          recreate: true
+          path: ${{ steps.coverage-client.outputs.file }}
+
+      - name: Comment server coverage
+        if: always() && github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository && steps.coverage-server.outputs.file != ''
+        uses: marocchino/sticky-pull-request-comment@v3
+        with:
+          header: coverage-server
+          recreate: true
+          path: ${{ steps.coverage-server.outputs.file }}
+
+      - name: Comment coverage artifact
+        if: always() && github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository && steps.coverage-artifact.outputs.artifact-url != ''
+        uses: marocchino/sticky-pull-request-comment@v3
+        with:
+          header: coverage-artifact
+          recreate: true
+          message: |
+            📦 [Download the full HTML coverage report (client and server)](${{ steps.coverage-artifact.outputs.artifact-url }}) — unzip it and open `html/index.html`.
