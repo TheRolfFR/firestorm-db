@@ -43,7 +43,6 @@ describe("Browser Environment Usage & 1:1 Web APIs Matrix Suite", function () {
 		Collection: FirestormESM.Collection,
 		Document: FirestormESM.Document,
 		FileManager: FirestormESM.FileManager,
-		ResourceManager: FirestormESM.ResourceManager,
 		ID_FIELD: FirestormESM.ID_FIELD,
 	};
 

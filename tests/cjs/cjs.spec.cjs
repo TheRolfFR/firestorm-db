@@ -14,7 +14,6 @@ const target = {
 	Collection: FirestormCJS.Collection,
 	Document: FirestormCJS.Document,
 	FileManager: FirestormCJS.FileManager,
-	ResourceManager: FirestormCJS.ResourceManager,
 	ID_FIELD: FirestormCJS.ID_FIELD,
 };
 
@@ -26,7 +25,6 @@ describe("CommonJS (CJS) Matrix & Module Interop Suite", () => {
 			expect(FirestormCJS.Collection).to.be.a("function");
 			expect(FirestormCJS.Document).to.be.a("function");
 			expect(FirestormCJS.FileManager).to.be.a("function");
-			expect(FirestormCJS.ResourceManager).to.be.a("function");
 			expect(FirestormCJS.FirestormError).to.be.a("function");
 			expect(typeof FirestormCJS.ID_FIELD).to.equal("symbol");
 			expect(FirestormCJS.ID_FIELD).to.equal(Symbol.for("firestorm.id"));

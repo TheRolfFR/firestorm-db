@@ -32,7 +32,7 @@ export function runFilesSuite(target: TestTarget) {
 		it("throws error if instance address is not configured", async () => {
 			const unconfigured = target.createFirestorm({});
 			try {
-				await unconfigured.files.get({ path: "test.txt" });
+				await unconfigured.files.get("test.txt");
 				expect.fail("Should have thrown error");
 			} catch (err) {
 				expect((err as Error).message).to.include("was not configured");
@@ -44,14 +44,14 @@ export function runFilesSuite(target: TestTarget) {
 			const formData = createFormData(target);
 
 			try {
-				await noToken.files.post({ body: formData });
+				await noToken.files.upload(formData);
 				expect.fail("Should have thrown error for upload");
 			} catch (err) {
 				expect((err as Error).message).to.include("Token for Firestorm instance");
 			}
 
 			try {
-				await noToken.files.delete({ path: "file.txt" });
+				await noToken.files.delete("file.txt");
 				expect.fail("Should have thrown error for delete");
 			} catch (err) {
 				expect((err as Error).message).to.include("Token for Firestorm instance");
@@ -72,14 +72,14 @@ export function runFilesSuite(target: TestTarget) {
 			}
 
 			try {
-				await noToken.files.patch({ path: "file.txt", body: "content" });
+				await noToken.files.append("file.txt", "content");
 				expect.fail("Should have thrown error for append");
 			} catch (err) {
 				expect((err as Error).message).to.include("Token for Firestorm instance");
 			}
 
 			try {
-				await noToken.files.put({ path: "file.txt", body: "content" });
+				await noToken.files.write("file.txt", "content");
 				expect.fail("Should have thrown error for put");
 			} catch (err) {
 				expect((err as Error).message).to.include("Token for Firestorm instance");
@@ -88,7 +88,7 @@ export function runFilesSuite(target: TestTarget) {
 
 		it("returns 404 for unknown file", async () => {
 			try {
-				await env.instance.files.get({ path: "/path/to/unknown_file.txt" });
+				await env.instance.files.get("/path/to/unknown_file.txt");
 				expect.fail("Should have thrown error");
 			} catch (err) {
 				expect((err as ErrorWithResponse).response?.status).to.equal(404);
@@ -104,13 +104,13 @@ export function runFilesSuite(target: TestTarget) {
 			formData.append("overwrite", "true");
 			formData.append("file", payload, "lyrics_matrix.txt");
 
-			const res = await env.instance.files.post({ body: formData });
+			const res = await env.instance.files.upload(formData);
 			expect(res).to.deep.equal({ response: "Written file successfully to /lyrics_matrix.txt" });
 
-			const retrieved = await env.instance.files.get<string>({ path: "/lyrics_matrix.txt" });
+			const retrieved = await env.instance.files.get<string>("/lyrics_matrix.txt");
 			expect(retrieved).to.equal(fileContent);
 
-			await env.instance.files.delete({ path: "/lyrics_matrix.txt" });
+			await env.instance.files.delete("/lyrics_matrix.txt");
 		});
 
 		it("rejects uploading php files (code injection prevention)", async () => {
@@ -121,7 +121,7 @@ export function runFilesSuite(target: TestTarget) {
 
 			let threw = false;
 			try {
-				await env.instance.files.post({ body: formData });
+				await env.instance.files.upload(formData);
 			} catch {
 				threw = true;
 			}
@@ -134,7 +134,7 @@ export function runFilesSuite(target: TestTarget) {
 			formData1.append("path", "/dup_test.txt");
 			formData1.append("overwrite", "true");
 			formData1.append("file", payload1, "dup_test.txt");
-			await env.instance.files.post({ body: formData1 });
+			await env.instance.files.upload(formData1);
 
 			const formData2 = createFormData(target);
 			const payload2 = createFilePayload(target, "duplicate content", "dup_test.txt");
@@ -143,18 +143,18 @@ export function runFilesSuite(target: TestTarget) {
 
 			let threw = false;
 			try {
-				await env.instance.files.post({ body: formData2 });
+				await env.instance.files.upload(formData2);
 			} catch (err) {
 				threw = true;
 				expect((err as ErrorWithResponse).response?.status).to.equal(403);
 			}
 			expect(threw).to.be.true;
 
-			await env.instance.files.delete({ path: "/dup_test.txt" });
+			await env.instance.files.delete("/dup_test.txt");
 		});
 
 		it("checks if file exists", async () => {
-			const nonExistent = await env.instance.files.exists({ path: "/nonexistent-file.txt" });
+			const nonExistent = await env.instance.files.exists("/nonexistent-file.txt");
 			expect(nonExistent).to.be.false;
 
 			const formData = createFormData(target);
@@ -162,53 +162,39 @@ export function runFilesSuite(target: TestTarget) {
 			formData.append("path", "/test-exists.txt");
 			formData.append("overwrite", "true");
 			formData.append("file", payload, "test-exists.txt");
-			await env.instance.files.post({ body: formData });
+			await env.instance.files.upload(formData);
 
-			const existent = await env.instance.files.exists({ path: "/test-exists.txt" });
+			const existent = await env.instance.files.exists("/test-exists.txt");
 			expect(existent).to.be.true;
 
-			await env.instance.files.delete({ path: "/test-exists.txt" });
+			await env.instance.files.delete("/test-exists.txt");
 		});
 
 		it("appends content to a file", async () => {
 			let threw = false;
 			try {
-				await env.instance.files.patch({
-					path: "/append-test.txt",
-					body: "content",
-					options: { create: false },
-				});
+				await env.instance.files.append("/append-test.txt", "content", { create: false });
 			} catch (err) {
 				threw = true;
 				expect((err as ErrorWithResponse).response?.status).to.equal(404);
 			}
 			expect(threw).to.be.true;
 
-			const appendRes1 = await env.instance.files.patch({
-				path: "/append-test.txt",
-				body: "Hello",
-				options: { create: true },
+			const appendRes1 = await env.instance.files.append("/append-test.txt", "Hello", {
+				create: true,
 			});
 			expect(appendRes1.response).to.include("Successfully appended");
 
-			await env.instance.files.patch({
-				path: "/append-test.txt",
-				body: " World",
-				options: { create: false },
-			});
+			await env.instance.files.append("/append-test.txt", " World", { create: false });
 
-			const content = await env.instance.files.get<string>({ path: "/append-test.txt" });
+			const content = await env.instance.files.get<string>("/append-test.txt");
 			expect(content).to.equal("Hello World");
 
-			await env.instance.files.delete({ path: "/append-test.txt" });
+			await env.instance.files.delete("/append-test.txt");
 		});
 
 		it("copies file directly", async () => {
-			await env.instance.files.patch({
-				path: "/copy-src.txt",
-				body: "copy test content",
-				options: { create: true },
-			});
+			await env.instance.files.append("/copy-src.txt", "copy test content", { create: true });
 
 			const copyRes = await env.instance.files.copy({
 				oldPath: "/copy-src.txt",
@@ -216,7 +202,7 @@ export function runFilesSuite(target: TestTarget) {
 			});
 			expect(copyRes.response).to.include("Successfully copied");
 
-			const destContent = await env.instance.files.get<string>({ path: "/copy-dest.txt" });
+			const destContent = await env.instance.files.get<string>("/copy-dest.txt");
 			expect(destContent).to.equal("copy test content");
 
 			let threw = false;
@@ -232,16 +218,12 @@ export function runFilesSuite(target: TestTarget) {
 			}
 			expect(threw).to.be.true;
 
-			await env.instance.files.delete({ path: "/copy-src.txt" });
-			await env.instance.files.delete({ path: "/copy-dest.txt" });
+			await env.instance.files.delete("/copy-src.txt");
+			await env.instance.files.delete("/copy-dest.txt");
 		});
 
 		it("moves file directly", async () => {
-			await env.instance.files.patch({
-				path: "/move-src.txt",
-				body: "move test content",
-				options: { create: true },
-			});
+			await env.instance.files.append("/move-src.txt", "move test content", { create: true });
 
 			const moveRes = await env.instance.files.move({
 				oldPath: "/move-src.txt",
@@ -249,35 +231,31 @@ export function runFilesSuite(target: TestTarget) {
 			});
 			expect(moveRes.response).to.include("Successfully moved");
 
-			const srcExists = await env.instance.files.exists({ path: "/move-src.txt" });
+			const srcExists = await env.instance.files.exists("/move-src.txt");
 			expect(srcExists).to.be.false;
 
-			const destExists = await env.instance.files.exists({ path: "/move-dest.txt" });
+			const destExists = await env.instance.files.exists("/move-dest.txt");
 			expect(destExists).to.be.true;
 
-			const destContent = await env.instance.files.get<string>({ path: "/move-dest.txt" });
+			const destContent = await env.instance.files.get<string>("/move-dest.txt");
 			expect(destContent).to.equal("move test content");
 
-			await env.instance.files.delete({ path: "/move-dest.txt" });
+			await env.instance.files.delete("/move-dest.txt");
 		});
 
-		it("writes and overwrites file content directly with put()", async () => {
-			const putRes = await env.instance.files.put({
-				path: "/put-test.txt",
-				body: "initial put content",
-				options: { overwrite: true },
+		it("writes and overwrites file content directly with write()", async () => {
+			const putRes = await env.instance.files.write("/put-test.txt", "initial put content", {
+				overwrite: true,
 			});
 			expect(putRes.response).to.include("Written file successfully");
 
-			const retrieved = await env.instance.files.get<string>({ path: "/put-test.txt" });
+			const retrieved = await env.instance.files.get<string>("/put-test.txt");
 			expect(retrieved).to.equal("initial put content");
 
 			let threw = false;
 			try {
-				await env.instance.files.put({
-					path: "/put-test.txt",
-					body: "new content without overwrite",
-					options: { overwrite: false },
+				await env.instance.files.write("/put-test.txt", "new content without overwrite", {
+					overwrite: false,
 				});
 			} catch (err) {
 				threw = true;
@@ -285,16 +263,14 @@ export function runFilesSuite(target: TestTarget) {
 			}
 			expect(threw).to.be.true;
 
-			await env.instance.files.put({
-				path: "/put-test.txt",
-				body: "overwritten put content",
-				options: { overwrite: true },
+			await env.instance.files.write("/put-test.txt", "overwritten put content", {
+				overwrite: true,
 			});
 
-			const retrievedAfter = await env.instance.files.get<string>({ path: "/put-test.txt" });
+			const retrievedAfter = await env.instance.files.get<string>("/put-test.txt");
 			expect(retrievedAfter).to.equal("overwritten put content");
 
-			await env.instance.files.delete({ path: "/put-test.txt" });
+			await env.instance.files.delete("/put-test.txt");
 		});
 
 		it("deletes file successfully", async () => {
@@ -304,24 +280,24 @@ export function runFilesSuite(target: TestTarget) {
 			formData.append("overwrite", "true");
 			formData.append("file", payload, "to-delete.txt");
 
-			await env.instance.files.post({ body: formData });
-			const deleteRes = await env.instance.files.delete({ path: "/to-delete.txt" });
+			await env.instance.files.upload(formData);
+			const deleteRes = await env.instance.files.delete("/to-delete.txt");
 			expect(deleteRes).to.exist;
 
-			const exists = await env.instance.files.exists({ path: "/to-delete.txt" });
+			const exists = await env.instance.files.exists("/to-delete.txt");
 			expect(exists).to.be.false;
 		});
 
 		it("rejects path traversal attempts", async () => {
 			try {
-				await env.instance.files.get({ path: "../../secret.txt" });
+				await env.instance.files.get("../../secret.txt");
 				expect.fail("Should have rejected path traversal");
 			} catch (err) {
 				expect((err as ErrorWithResponse).response?.status).to.equal(403);
 			}
 
 			try {
-				await env.instance.files.exists({ path: "../uploads_private/secret.txt" });
+				await env.instance.files.exists("../uploads_private/secret.txt");
 				expect.fail("Should have rejected path traversal");
 			} catch (err) {
 				expect((err as ErrorWithResponse).response?.status).to.equal(403);

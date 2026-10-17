@@ -2,7 +2,6 @@ import { FirestormError, requestJson } from "../utils.ts";
 
 import type FormDataPkg from "form-data";
 import type { Firestorm } from "../index.ts";
-import type { HttpBodyRequest, HttpGetRequest, HttpHandler } from "../types/http.ts";
 import type { Confirmation } from "../types/utils.ts";
 
 /** Options for file copy */
@@ -19,23 +18,26 @@ export interface FileMoveOptions {
 	overwrite?: boolean;
 }
 
-/** Options for file existence check */
-export interface FileExistsOptions {
-	path: string;
-}
-
-/** Options specific to file patch (append) */
-export interface FilePatchCustomOptions {
+/** Options for file append */
+export interface FileAppendOptions {
+	/** Create the file if it does not exist yet */
 	create?: boolean;
 }
 
-/** Options specific to file put (write) */
-export interface FilePutCustomOptions {
+/** Options for file write */
+export interface FileWriteOptions {
+	/** Replace the file if it already exists */
 	overwrite?: boolean;
 }
 
+/** Optional request settings shared by file methods */
+export interface FileRequestOptions {
+	/** Additional request headers */
+	headers?: Record<string, string>;
+}
+
 /** Firestorm file manager */
-export class FileManager implements HttpHandler {
+export class FileManager {
 	/**
 	 * Create a new Firestorm file manager based on a root instance
 	 * @param instance - Root Firestorm instance
@@ -55,19 +57,18 @@ export class FileManager implements HttpHandler {
 	}
 
 	/**
-	 * Get a file by its path or request configuration
+	 * Get a file by its path
 	 * @template ReturnType - Type of file content
-	 * @template Params - Request parameters type
-	 * @template Options - Custom options type
-	 * @param request - Request configuration
+	 * @param path - Path of the file
+	 * @param options - Request settings
 	 * @returns File contents
 	 */
-	public async get<ReturnType = unknown, Params = unknown, Options = Record<string, unknown>>(
-		request: HttpGetRequest<Params, Options>,
+	public async get<ReturnType = unknown>(
+		path: string,
+		options: FileRequestOptions = {},
 	): Promise<ReturnType> {
-		const path = request.path || "";
 		const url = `${this.fileAddress}?path=${encodeURIComponent(path)}`;
-		const response = await fetch(url, { method: "GET", headers: request.headers });
+		const response = await fetch(url, { method: "GET", headers: options.headers });
 
 		if (!response.ok) {
 			const text = await response.text();
@@ -117,25 +118,23 @@ export class FileManager implements HttpHandler {
 	}
 
 	/**
-	 * Post (upload) a file
+	 * Upload a file
 	 * @template ReturnType - Return confirmation type
-	 * @template Body - Request body type
-	 * @template Options - Custom options type
-	 * @param request - Request configuration containing FormData body
+	 * @param form - FormData holding the `path`, `file` and optional `overwrite` fields
+	 * @param options - Request settings
 	 * @returns Mutation confirmation
 	 */
-	public post<ReturnType = Confirmation, Body = unknown, Options = Record<string, unknown>>(
-		request: HttpBodyRequest<Body, Options>,
+	public upload<ReturnType = Confirmation>(
+		form: FormData | FormDataPkg,
+		options: FileRequestOptions = {},
 	): Promise<ReturnType> {
 		const token = this.instance.token;
 		if (!token) {
 			throw new Error(`Token for Firestorm instance "${this.instance.name}" was not configured`);
 		}
 
-		const form = request.body as FormData | FormDataPkg;
-
 		if (!form || typeof form.append !== "function") {
-			throw new TypeError("post requires FormData");
+			throw new TypeError("upload requires FormData");
 		}
 
 		form.append("token", token);
@@ -148,13 +147,13 @@ export class FileManager implements HttpHandler {
 		if (typeof formAny.getHeaders === "function" && typeof formAny.getBuffer === "function") {
 			init = {
 				method: "POST",
-				headers: { ...formAny.getHeaders(), ...(request.headers || {}) },
+				headers: { ...formAny.getHeaders(), ...(options.headers || {}) },
 				body: formAny.getBuffer() as BodyInit,
 			};
 		} else {
 			init = {
 				method: "POST",
-				headers: request.headers,
+				headers: options.headers,
 				body: form as BodyInit,
 			};
 		}
@@ -163,17 +162,16 @@ export class FileManager implements HttpHandler {
 	}
 
 	/**
-	 * Delete a file by its request configuration
+	 * Delete a file by its path
 	 * @template ReturnType - Return confirmation type
-	 * @template Body - Request body type
-	 * @template Options - Custom options type
-	 * @param request - Delete request configuration
+	 * @param path - Path of the file
+	 * @param options - Request settings
 	 * @returns Mutation confirmation
 	 */
-	public delete<ReturnType = Confirmation, Body = unknown, Options = Record<string, unknown>>(
-		request: HttpBodyRequest<Body, Options>,
+	public delete<ReturnType = Confirmation>(
+		path: string,
+		options: FileRequestOptions = {},
 	): Promise<ReturnType> {
-		const path = request.path || "";
 		const token = this.instance.token;
 		if (!token) {
 			throw new Error(`Token for Firestorm instance "${this.instance.name}" was not configured`);
@@ -182,7 +180,7 @@ export class FileManager implements HttpHandler {
 			method: "DELETE",
 			headers: {
 				"Content-Type": "application/json",
-				...(request.headers || {}),
+				...(options.headers || {}),
 			},
 			body: JSON.stringify({
 				path,
@@ -243,11 +241,10 @@ export class FileManager implements HttpHandler {
 
 	/**
 	 * Checks if a path exists
-	 * @param options - Existence check options
+	 * @param path - Path to check
 	 * @returns True if path exists, false otherwise
 	 */
-	public async exists(options: FileExistsOptions): Promise<boolean> {
-		const path = options.path;
+	public async exists(path: string): Promise<boolean> {
 		const url = `${this.fileAddress}?path=${encodeURIComponent(path)}&action=exists`;
 		const res = await requestJson<{ exists: boolean }>(url, {
 			method: "GET",
@@ -256,72 +253,68 @@ export class FileManager implements HttpHandler {
 	}
 
 	/**
-	 * Patch (append) content to a file without having to get/upload/concatenate to it first
+	 * Append content to a file without having to get/upload/concatenate to it first
 	 * @template ReturnType - Return confirmation type
-	 * @template Body - Request body type
-	 * @template Options - Custom options type
-	 * @param request - Patch request configuration
+	 * @param path - Path of the file
+	 * @param content - Text to append
+	 * @param options - Append and request settings
 	 * @returns Mutation confirmation
 	 */
-	public patch<ReturnType = Confirmation, Body = unknown, Options = FilePatchCustomOptions>(
-		request: HttpBodyRequest<Body, Options>,
+	public append<ReturnType = Confirmation>(
+		path: string,
+		content: string,
+		options: FileAppendOptions & FileRequestOptions = {},
 	): Promise<ReturnType> {
 		const token = this.instance.token;
 		if (!token) {
 			throw new Error(`Token for Firestorm instance "${this.instance.name}" was not configured`);
 		}
-		const path = request.path || "";
-		const content = String(request.body ?? "");
-		const customOpts = request.options as FilePatchCustomOptions | undefined;
-		const create = customOpts?.create;
 
 		return requestJson<ReturnType>(this.fileAddress, {
 			method: "PATCH",
 			headers: {
 				"Content-Type": "application/json",
-				...(request.headers || {}),
+				...(options.headers || {}),
 			},
 			body: JSON.stringify({
 				action: "append",
 				token,
 				path,
 				content,
-				create,
+				create: options.create,
 			}),
 		});
 	}
 
 	/**
-	 * Put (write/replace) content of a file
+	 * Write (create or replace) the content of a file
 	 * @template ReturnType - Return confirmation type
-	 * @template Body - Request body type
-	 * @template Options - Custom options type
-	 * @param request - Put request configuration
+	 * @param path - Path of the file
+	 * @param content - Text to write
+	 * @param options - Write and request settings
 	 * @returns Mutation confirmation
 	 */
-	public put<ReturnType = Confirmation, Body = unknown, Options = FilePutCustomOptions>(
-		request: HttpBodyRequest<Body, Options>,
+	public write<ReturnType = Confirmation>(
+		path: string,
+		content: string,
+		options: FileWriteOptions & FileRequestOptions = {},
 	): Promise<ReturnType> {
 		const token = this.instance.token;
 		if (!token) {
 			throw new Error(`Token for Firestorm instance "${this.instance.name}" was not configured`);
 		}
-		const path = request.path || "";
-		const content = String(request.body ?? "");
-		const customOpts = request.options as FilePutCustomOptions | undefined;
-		const overwrite = customOpts?.overwrite;
 
 		return requestJson<ReturnType>(this.fileAddress, {
 			method: "PUT",
 			headers: {
 				"Content-Type": "application/json",
-				...(request.headers || {}),
+				...(options.headers || {}),
 			},
 			body: JSON.stringify({
 				token,
 				path,
 				content,
-				overwrite,
+				overwrite: options.overwrite,
 			}),
 		});
 	}

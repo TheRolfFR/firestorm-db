@@ -298,39 +298,35 @@ await settingsDoc.editField({
 
 Firestorm includes a file management API under `instance.files`:
 
-| Method          | Parameters                                               | Description                               | Returns                 |
-| --------------- | -------------------------------------------------------- | ----------------------------------------- | ----------------------- |
-| `get<T>(req)`   | `request: HttpGetRequest`                                | Retrieve file content by path             | `Promise<T>`            |
-| `post(req)`     | `request: HttpBodyRequest`                               | Upload/post a file via `body: FormData`   | `Promise<Confirmation>` |
-| `delete(req)`   | `request: HttpBodyRequest`                               | Delete a file from the server             | `Promise<Confirmation>` |
-| `copy(options)` | `options: FileCopyOptions`                               | Copy a file directly on the server        | `Promise<Confirmation>` |
-| `move(options)` | `options: FileMoveOptions`                               | Move/rename a file directly on the server | `Promise<Confirmation>` |
-| `exists(req)`   | `options: FileExistsOptions`                             | Check if a file exists on the server      | `Promise<boolean>`      |
-| `patch(req)`    | `request: HttpBodyRequest<Body, FilePatchCustomOptions>` | Append/patch text to a file on the server | `Promise<Confirmation>` |
-| `put(req)`      | `request: HttpBodyRequest<Body, FilePutCustomOptions>`   | Write/put text to a file on the server    | `Promise<Confirmation>` |
+| Method                            | Description                                                | Returns                 |
+| --------------------------------- | ---------------------------------------------------------- | ----------------------- |
+| `get<T>(path, options?)`          | Retrieve file content by path                              | `Promise<T>`            |
+| `upload(form, options?)`          | Upload a file via `FormData` (`path`, `file`, `overwrite`) | `Promise<Confirmation>` |
+| `delete(path, options?)`          | Delete a file from the server                              | `Promise<Confirmation>` |
+| `copy(options)`                   | Copy a file directly on the server (`FileCopyOptions`)     | `Promise<Confirmation>` |
+| `move(options)`                   | Move/rename a file on the server (`FileMoveOptions`)       | `Promise<Confirmation>` |
+| `exists(path)`                    | Check if a file exists on the server                       | `Promise<boolean>`      |
+| `append(path, content, options?)` | Append text to a file (`FileAppendOptions`)                | `Promise<Confirmation>` |
+| `write(path, content, options?)`  | Write text to a file (`FileWriteOptions`)                  | `Promise<Confirmation>` |
 
 ### File Examples
 
 ```ts
 import FormData from "form-data"; // in Node.js (or browser native FormData)
 
-// Upload / Post
+// Upload
 const form = new FormData();
 form.append("path", "/quote.txt");
 form.append("file", "Great Scott!", "quote.txt");
 form.append("overwrite", "true");
-await instance.files.post({ body: form });
+await instance.files.upload(form);
 
 // Get content
-const text = await instance.files.get<string>({ path: "/quote.txt" });
+const text = await instance.files.get<string>("/quote.txt");
 console.log(text); // "Great Scott!"
 
-// Patch / Append text
-await instance.files.patch({
-	path: "/quote.txt",
-	body: "\n- Doc Brown",
-	options: { create: true },
-});
+// Append text
+await instance.files.append("/quote.txt", "\n- Doc Brown", { create: true });
 
 // Copy & Move
 await instance.files.copy({ oldPath: "/quote.txt", newPath: "/quote_backup.txt", overwrite: true });
@@ -341,8 +337,8 @@ await instance.files.move({
 });
 
 // Check existence & Delete
-const exists = await instance.files.exists({ path: "/quote_archive.txt" }); // true
-await instance.files.delete({ path: "/quote_archive.txt" });
+const exists = await instance.files.exists("/quote_archive.txt"); // true
+await instance.files.delete("/quote_archive.txt");
 ```
 
 ---
@@ -437,13 +433,13 @@ import type {
 	DocumentEditFieldOption,
 	DocumentOptions,
 	EditFieldOption,
+	FileAppendOptions,
 	// File Manager & Options
 	FileCopyOptions,
-	FileExistsOptions,
 	FileManager,
 	FileMoveOptions,
-	FilePatchCustomOptions,
-	FilePutCustomOptions,
+	FileRequestOptions,
+	FileWriteOptions,
 	// Resources & Instances
 	Firestorm,
 	FirestormCreationOption,
@@ -454,7 +450,6 @@ import type {
 	Path,
 	PathValue,
 	ResourceLike,
-	ResourceManager,
 	ResponseDetails,
 	// Query & Options
 	SearchOption,

@@ -18,7 +18,6 @@ export { Firestorm } from "./instance.ts";
 export { Collection } from "./resources/collection.ts";
 export { Document } from "./resources/document.ts";
 export { FileManager } from "./managers/files.ts";
-export { ResourceManager } from "./managers/resource.ts";
 export { FirestormError } from "./utils.ts";
 
 export type * from "./types/editFieldOption.ts";

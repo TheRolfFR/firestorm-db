@@ -18,23 +18,26 @@ describe("Type Tests: src/client/files.ts", () => {
 		type CustomJson = { id: number; data: string };
 		type _TJson = Expect<Equal<ReturnType<typeof files.get<CustomJson>>, Promise<CustomJson>>>;
 
-		files.get({ path: "/test.txt" });
+		files.get("/test.txt");
+		files.get("/test.txt", { headers: { Accept: "text/plain" } });
 	});
 
-	it("post() accepts object with FormData or FormDataPkg body and returns Promise<Confirmation>", () => {
-		type _TPkg = Expect<Equal<ReturnType<typeof files.post<Confirmation>>, Promise<Confirmation>>>;
+	it("upload() accepts FormData or FormDataPkg and returns Promise<Confirmation>", () => {
+		type _TPkg = Expect<
+			Equal<ReturnType<typeof files.upload<Confirmation>>, Promise<Confirmation>>
+		>;
 
-		function _postTests() {
+		function _uploadTests() {
 			const pkgForm = new FormDataPkg();
-			files.post({ body: pkgForm });
+			files.upload(pkgForm);
 
 			if (typeof FormData !== "undefined") {
 				const stdForm = new FormData();
-				files.post({ body: stdForm });
+				files.upload(stdForm);
 			}
 
-			// @ts-expect-error - post requires valid HttpBodyRequest
-			files.post(123);
+			// @ts-expect-error - upload requires FormData
+			files.upload(123);
 		}
 	});
 
@@ -43,7 +46,7 @@ describe("Type Tests: src/client/files.ts", () => {
 			Equal<ReturnType<typeof files.delete<Confirmation>>, Promise<Confirmation>>
 		>;
 
-		files.delete({ path: "/old.txt" });
+		files.delete("/old.txt");
 	});
 
 	it("copy() returns Promise<Confirmation>", () => {
@@ -61,24 +64,28 @@ describe("Type Tests: src/client/files.ts", () => {
 	it("exists() returns Promise<boolean>", () => {
 		type _TExists = Expect<Equal<ReturnType<typeof files.exists>, Promise<boolean>>>;
 
-		files.exists({ path: "/old.txt" });
+		files.exists("/old.txt");
 	});
 
-	it("patch() returns Promise<Confirmation>", () => {
-		type _TApp = Expect<Equal<ReturnType<typeof files.patch<Confirmation>>, Promise<Confirmation>>>;
+	it("append() returns Promise<Confirmation>", () => {
+		type _TApp = Expect<
+			Equal<ReturnType<typeof files.append<Confirmation>>, Promise<Confirmation>>
+		>;
 		type _TCustom = Expect<
-			Equal<ReturnType<typeof files.patch<{ success: boolean }>>, Promise<{ success: boolean }>>
+			Equal<ReturnType<typeof files.append<{ success: boolean }>>, Promise<{ success: boolean }>>
 		>;
 
-		files.patch({ path: "/log.txt", body: "data", options: { create: true } });
+		files.append("/log.txt", "data", { create: true });
 	});
 
-	it("put() returns Promise<Confirmation>", () => {
-		type _TPut = Expect<Equal<ReturnType<typeof files.put<Confirmation>>, Promise<Confirmation>>>;
+	it("write() returns Promise<Confirmation>", () => {
+		type _TWrite = Expect<
+			Equal<ReturnType<typeof files.write<Confirmation>>, Promise<Confirmation>>
+		>;
 		type _TCustom = Expect<
-			Equal<ReturnType<typeof files.put<{ written: boolean }>>, Promise<{ written: boolean }>>
+			Equal<ReturnType<typeof files.write<{ written: boolean }>>, Promise<{ written: boolean }>>
 		>;
 
-		files.put({ path: "/log.txt", body: "data", options: { overwrite: true } });
+		files.write("/log.txt", "data", { overwrite: true });
 	});
 });

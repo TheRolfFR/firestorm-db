@@ -63,7 +63,6 @@ export interface TestTarget {
 	Collection: typeof import("../../dist/esm/index.js").Collection;
 	Document: typeof import("../../dist/esm/index.js").Document;
 	FileManager: typeof import("../../dist/esm/index.js").FileManager;
-	ResourceManager: typeof import("../../dist/esm/index.js").ResourceManager;
 	ID_FIELD: typeof import("../../dist/esm/index.js").ID_FIELD;
 	isBrowser?: boolean;
 }

@@ -1,8 +1,35 @@
 import { FirestormError, requestJson } from "../utils.ts";
 
 import type { Firestorm } from "../instance.ts";
-import type { HttpBodyRequest, HttpGetRequest, HttpHandler } from "../types/http.ts";
 import type { Confirmation } from "../types/utils.ts";
+
+/**
+ * Read request sent to the resource endpoint.
+ */
+export interface ResourceGetRequest<Params = unknown, Options = ResourceGetOptions> {
+	/** Firestorm command */
+	path?: string;
+	/** Request headers */
+	headers?: Record<string, string>;
+	/** Command parameters */
+	params?: Params;
+	/** Custom or additional options */
+	options?: Options;
+}
+
+/**
+ * Write request sent to the resource endpoint.
+ */
+export interface ResourceBodyRequest<Body = unknown, Options = ResourceMutationOptions> {
+	/** Firestorm command */
+	path?: string;
+	/** Request headers */
+	headers?: Record<string, string>;
+	/** Request payload body */
+	body?: Body;
+	/** Custom or additional options */
+	options?: Options;
+}
 
 /**
  * Options specific to ResourceManager GET requests.
@@ -23,9 +50,10 @@ export interface ResourceMutationOptions {
 }
 
 /**
- * Manages resource-level HTTP requests and encapsulates endpoint communication.
+ * Internal helper that sends collection and document requests to the Firestorm endpoints.
+ * @internal
  */
-export class ResourceManager implements HttpHandler {
+export class ResourceManager {
 	/**
 	 * @param instance - Root Firestorm instance.
 	 * @param name - Name of the resource stored in Firestorm.
@@ -77,7 +105,7 @@ export class ResourceManager implements HttpHandler {
 	 * @returns Extracted response.
 	 */
 	public async get<ReturnType = unknown, Params = unknown, Options = ResourceGetOptions>(
-		request: HttpGetRequest<Params, Options>,
+		request: ResourceGetRequest<Params, Options>,
 	): Promise<ReturnType> {
 		const obj = {
 			collection: this.resourceName,
@@ -112,7 +140,7 @@ export class ResourceManager implements HttpHandler {
 	 * @returns Extracted response.
 	 */
 	public post<ReturnType = Confirmation, Body = unknown, Options = ResourceMutationOptions>(
-		request: HttpBodyRequest<Body, Options>,
+		request: ResourceBodyRequest<Body, Options>,
 	): Promise<ReturnType> {
 		return this.sendMutation<ReturnType, Body, Options>("POST", request);
 	}
@@ -126,7 +154,7 @@ export class ResourceManager implements HttpHandler {
 	 * @returns Extracted response.
 	 */
 	public delete<ReturnType = Confirmation, Body = unknown, Options = ResourceMutationOptions>(
-		request: HttpBodyRequest<Body, Options>,
+		request: ResourceBodyRequest<Body, Options>,
 	): Promise<ReturnType> {
 		return this.sendMutation<ReturnType, Body, Options>("DELETE", request);
 	}
@@ -140,7 +168,7 @@ export class ResourceManager implements HttpHandler {
 	 * @returns Extracted response.
 	 */
 	public put<ReturnType = Confirmation, Body = unknown, Options = ResourceMutationOptions>(
-		request: HttpBodyRequest<Body, Options>,
+		request: ResourceBodyRequest<Body, Options>,
 	): Promise<ReturnType> {
 		return this.sendMutation<ReturnType, Body, Options>("PUT", request);
 	}
@@ -154,7 +182,7 @@ export class ResourceManager implements HttpHandler {
 	 * @returns Extracted response.
 	 */
 	public patch<ReturnType = Confirmation, Body = unknown, Options = ResourceMutationOptions>(
-		request: HttpBodyRequest<Body, Options>,
+		request: ResourceBodyRequest<Body, Options>,
 	): Promise<ReturnType> {
 		return this.sendMutation<ReturnType, Body, Options>("PATCH", request);
 	}
@@ -164,7 +192,7 @@ export class ResourceManager implements HttpHandler {
 	 */
 	private sendMutation<ReturnType, Body, Options>(
 		method: "POST" | "PUT" | "PATCH" | "DELETE",
-		request: HttpBodyRequest<Body, Options>,
+		request: ResourceBodyRequest<Body, Options>,
 	): Promise<ReturnType> {
 		const customOpts = (request.options || {}) as ResourceMutationOptions;
 		const data: Record<string, unknown> = {

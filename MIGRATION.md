@@ -234,47 +234,39 @@ await configDoc.editField({
 
 ### 5. Standardized Files API
 
-File methods under `instance.files` have been overhauled to align with standard HTTP verbs and use single configuration objects.
+File methods under `instance.files` keep their v1 names where possible (`upload`, `append`, `delete`), take positional arguments, and accept an optional trailing options object.
 
-| Action                  | v1.15.1                               | v2.0.0                                                            |
-| :---------------------- | :------------------------------------ | :---------------------------------------------------------------- |
-| **Download / Get**      | `files.get(path)`                     | `instance.files.get<T>({ path })`                                 |
-| **Upload / Post**       | `files.upload(path, file, overwrite)` | `instance.files.post({ body: formData })`                         |
-| **Write / Put Text**    | _(N/A)_                               | `instance.files.put({ path, body, options })`                     |
-| **Append / Patch Text** | `files.append(path, content, create)` | `instance.files.patch({ path, body, options: { create: true } })` |
-| **Delete**              | `files.delete(path)`                  | `instance.files.delete({ path })`                                 |
-| **Server-Side Copy**    | _(N/A)_                               | `instance.files.copy({ oldPath, newPath, overwrite? })`           |
-| **Server-Side Move**    | _(N/A)_                               | `instance.files.move({ oldPath, newPath, overwrite? })`           |
-| **File Exists Check**   | _(N/A)_                               | `instance.files.exists({ path })`                                 |
+| Action                | v1.15.1                               | v2.0.0                                                  |
+| :-------------------- | :------------------------------------ | :------------------------------------------------------ |
+| **Download / Get**    | `files.get(path)`                     | `instance.files.get<T>(path)`                           |
+| **Upload**            | `files.upload(path, file, overwrite)` | `instance.files.upload(formData)`                       |
+| **Write Text**        | _(N/A)_                               | `instance.files.write(path, content, { overwrite })`    |
+| **Append Text**       | `files.append(path, content, create)` | `instance.files.append(path, content, { create })`      |
+| **Delete**            | `files.delete(path)`                  | `instance.files.delete(path)`                           |
+| **Server-Side Copy**  | _(N/A)_                               | `instance.files.copy({ oldPath, newPath, overwrite? })` |
+| **Server-Side Move**  | _(N/A)_                               | `instance.files.move({ oldPath, newPath, overwrite? })` |
+| **File Exists Check** | _(N/A)_                               | `instance.files.exists(path)`                           |
 
 #### v2.0.0 Files Example:
 
 ```ts
 import FormData from "form-data"; // Node.js (or browser native FormData)
 
-// 1. Upload via post()
+// 1. Upload
 const form = new FormData();
 form.append("path", "/reports/2026.pdf");
 form.append("file", fileBuffer, "2026.pdf");
 form.append("overwrite", "true");
-await instance.files.post({ body: form });
+await instance.files.upload(form);
 
-// 2. Direct Write / Put
-await instance.files.put({
-	path: "/logs/app.log",
-	body: "System started.",
-	options: { overwrite: true },
-});
+// 2. Direct Write
+await instance.files.write("/logs/app.log", "System started.", { overwrite: true });
 
-// 3. Patch / Append
-await instance.files.patch({
-	path: "/logs/app.log",
-	body: "\nEvent: User login",
-	options: { create: true },
-});
+// 3. Append
+await instance.files.append("/logs/app.log", "\nEvent: User login", { create: true });
 
 // 4. Server-side Operations
-if (await instance.files.exists({ path: "/logs/app.log" })) {
+if (await instance.files.exists("/logs/app.log")) {
 	await instance.files.copy({
 		oldPath: "/logs/app.log",
 		newPath: "/logs/app_backup.log",
@@ -384,19 +376,19 @@ $STORAGE_LOCATION = dirname($_SERVER['SCRIPT_FILENAME']) . '/uploads/';
 
 ## Side-by-Side Migration Cheat Sheet
 
-| Feature / Operation           | Firestorm 1.15.1                              | Firestorm 2.0.0                                                                   |
-| :---------------------------- | :-------------------------------------------- | :-------------------------------------------------------------------------------- |
-| **Package Import**            | `import firestorm from "firestorm-db"`        | `import { createFirestorm, ID_FIELD } from "firestorm-db"`                        |
-| **Instance Init**             | `firestorm.create({ address, token })`        | `createFirestorm({ address, token })`                                             |
-| **Define Collection**         | `instance.collection("users", addMethods)`    | `instance.collection({ name: "users", transform })`                               |
-| **Define Document**           | _(Use Collection)_                            | `instance.document({ name: "settings" })`                                         |
-| **Access Document Key**       | `item.id` or `item[instance.ID_FIELD]`        | `item[ID_FIELD]` (Symbol)                                                         |
-| **Item Type Helper**          | `WithID<User>`                                | `CollectionItem<User>`                                                            |
-| **Get File**                  | `instance.files.get("file.txt")`              | `instance.files.get({ path: "file.txt" })`                                        |
-| **Upload File**               | `instance.files.upload("f.txt", blob, true)`  | `instance.files.post({ body: formData })`                                         |
-| **Append Text**               | `instance.files.append("f.txt", "str", true)` | `instance.files.patch({ path: "f.txt", body: "str", options: { create: true } })` |
-| **Put / Write Text**          | _(N/A)_                                       | `instance.files.put({ path: "f.txt", body: "str" })`                              |
-| **Delete File**               | `instance.files.delete("file.txt")`           | `instance.files.delete({ path: "file.txt" })`                                     |
-| **File Exists / Move / Copy** | _(N/A)_                                       | `instance.files.exists()`, `.move()`, `.copy()`                                   |
-| **Error Handling**            | `catch (err: AxiosError)`                     | `catch (err: FirestormError)`                                                     |
-| **PHP Version**               | PHP 7.4+                                      | **PHP 8.2+** (PHP 8.5 recommended)                                                |
+| Feature / Operation           | Firestorm 1.15.1                              | Firestorm 2.0.0                                            |
+| :---------------------------- | :-------------------------------------------- | :--------------------------------------------------------- |
+| **Package Import**            | `import firestorm from "firestorm-db"`        | `import { createFirestorm, ID_FIELD } from "firestorm-db"` |
+| **Instance Init**             | `firestorm.create({ address, token })`        | `createFirestorm({ address, token })`                      |
+| **Define Collection**         | `instance.collection("users", addMethods)`    | `instance.collection({ name: "users", transform })`        |
+| **Define Document**           | _(Use Collection)_                            | `instance.document({ name: "settings" })`                  |
+| **Access Document Key**       | `item.id` or `item[instance.ID_FIELD]`        | `item[ID_FIELD]` (Symbol)                                  |
+| **Item Type Helper**          | `WithID<User>`                                | `CollectionItem<User>`                                     |
+| **Get File**                  | `instance.files.get("file.txt")`              | `instance.files.get("file.txt")`                           |
+| **Upload File**               | `instance.files.upload("f.txt", blob, true)`  | `instance.files.upload(formData)`                          |
+| **Append Text**               | `instance.files.append("f.txt", "str", true)` | `instance.files.append("f.txt", "str", { create: true })`  |
+| **Write Text**                | _(N/A)_                                       | `instance.files.write("f.txt", "str")`                     |
+| **Delete File**               | `instance.files.delete("file.txt")`           | `instance.files.delete("file.txt")`                        |
+| **File Exists / Move / Copy** | _(N/A)_                                       | `instance.files.exists()`, `.move()`, `.copy()`            |
+| **Error Handling**            | `catch (err: AxiosError)`                     | `catch (err: FirestormError)`                              |
+| **PHP Version**               | PHP 7.4+                                      | **PHP 8.2+** (PHP 8.5 recommended)                         |

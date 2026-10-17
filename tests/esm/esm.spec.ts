@@ -14,7 +14,6 @@ const target: TestTarget = {
 	Collection: FirestormESM.Collection,
 	Document: FirestormESM.Document,
 	FileManager: FirestormESM.FileManager,
-	ResourceManager: FirestormESM.ResourceManager,
 	ID_FIELD: FirestormESM.ID_FIELD,
 };
 

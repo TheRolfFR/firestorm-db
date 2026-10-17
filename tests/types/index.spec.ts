@@ -7,7 +7,6 @@ import {
 	Document,
 	FileManager,
 	ID_FIELD,
-	ResourceManager,
 	VERSION,
 } from "../../dist/esm/index.js";
 import { Firestorm } from "../../dist/esm/instance.js";
@@ -19,11 +18,11 @@ import type {
 	DocumentEditFieldOption,
 	DocumentOptions,
 	EditFieldOption,
+	FileAppendOptions,
 	FileCopyOptions,
-	FileExistsOptions,
 	FileMoveOptions,
-	FilePatchCustomOptions,
-	FilePutCustomOptions,
+	FileRequestOptions,
+	FileWriteOptions,
 	FirestormCreationOption,
 	IdEncoding,
 	Path,
@@ -110,8 +109,10 @@ describe("Type Tests: src/client/index.ts", () => {
 
 		type _TFileCopy = Expect<Equal<FileCopyOptions["oldPath"], string>>;
 		type _TFileMove = Expect<Equal<FileMoveOptions["newPath"], string>>;
-		type _TFileExists = Expect<Equal<FileExistsOptions["path"], string>>;
-		type _TFilePatch = Expect<Equal<FilePatchCustomOptions["create"], boolean | undefined>>;
-		type _TFilePut = Expect<Equal<FilePutCustomOptions["overwrite"], boolean | undefined>>;
+		type _TFileAppend = Expect<Equal<FileAppendOptions["create"], boolean | undefined>>;
+		type _TFileWrite = Expect<Equal<FileWriteOptions["overwrite"], boolean | undefined>>;
+		type _TFileRequest = Expect<
+			Equal<FileRequestOptions["headers"], Record<string, string> | undefined>
+		>;
 	});
 });
