@@ -16,10 +16,15 @@ error_reporting(E_ALL);
  * @return string|false
  */
 function load_version(): string|false {
-    if (file_exists("./version.ini")) {
-        return file_get_contents("./version.ini");
-    }
-    return file_get_contents(__DIR__ . "/version.ini");
+    $file = file_exists("./version.toml") ? "./version.toml" : __DIR__ . "/version.toml";
+    $toml = file_get_contents($file);
+    if ($toml === false)
+        return false;
+
+    // PHP has no native TOML parser, the file only holds a basic string `version = "x.y.z"`
+    if (preg_match('/^version\s*=\s*"([^"\r\n]+)"\s*$/m', $toml, $matches) !== 1)
+        return false;
+    return $matches[1];
 }
 
 $method = $_SERVER['REQUEST_METHOD'] ?? '';

@@ -334,7 +334,7 @@ src/server/
 ├── config.php
 ├── files.php
 ├── tokens.php
-└── version.ini
+└── version.toml
 ```
 
 > **Note**: If your deployment script synchronizes the `php/` directory to your web server root, update the target path to `src/server/`.
