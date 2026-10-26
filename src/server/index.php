@@ -4,4 +4,4 @@ require_once './utils.php';
 
 cors();
 
-require('./get.php');
+require('./read/index.php');

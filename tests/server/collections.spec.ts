@@ -16,7 +16,7 @@ const expectErrors = (call: typeof read, base: Record<string, unknown>, cases: C
 	}
 };
 
-describe("Server (raw HTTP): read endpoint get.php", () => {
+describe("Server (raw HTTP): read endpoint read/", () => {
 	before(async function () {
 		this.timeout(10000);
 		await ensureServerRunning();
@@ -35,7 +35,7 @@ describe("Server (raw HTTP): read endpoint get.php", () => {
 
 	describe("request validation", () => {
 		it("answers CORS preflight requests", async () => {
-			const res = await raw("get.php", {
+			const res = await raw("read/", {
 				method: "OPTIONS",
 				headers: {
 					Origin: "http://example.com",
@@ -50,30 +50,30 @@ describe("Server (raw HTTP): read endpoint get.php", () => {
 		});
 
 		it("answers a bare OPTIONS request", async () => {
-			const res = await raw("get.php", { method: "OPTIONS" });
+			const res = await raw("read/", { method: "OPTIONS" });
 			expect(res.status).to.equal(200);
 			expect(res.headers.get("access-control-allow-origin")).to.equal(null);
 		});
 
 		it("rejects methods other than GET and POST", async () => {
-			const res = await raw("get.php", { method: "PUT", body: "{}" });
+			const res = await raw("read/", { method: "PUT", body: "{}" });
 			expect(res.status).to.equal(400);
 			expect(res.json.error).to.include("Incorrect request type");
 		});
 
 		it("rejects an empty body", async () => {
-			const res = await raw("get.php", { method: "POST" });
+			const res = await raw("read/", { method: "POST" });
 			expect(res.status).to.equal(400);
 			expect(res.json.error).to.include("No JSON body");
 		});
 
 		it("rejects an invalid JSON body", async () => {
-			const res = await raw("get.php", { method: "POST", body: "{not json" });
+			const res = await raw("read/", { method: "POST", body: "{not json" });
 			expect(res.status).to.equal(400);
 		});
 
 		it("rejects a JSON scalar body", async () => {
-			const res = await raw("get.php", { method: "POST", body: "5" });
+			const res = await raw("read/", { method: "POST", body: "5" });
 			expect(res.status).to.equal(400);
 			expect(res.json.error).to.include("No JSON body");
 		});
@@ -416,7 +416,7 @@ describe("Server (raw HTTP): read endpoint get.php", () => {
 	});
 });
 
-describe("Server (raw HTTP): write endpoint post.php", () => {
+describe("Server (raw HTTP): write endpoint write/", () => {
 	const base = { collection: "scratch" };
 
 	before(async function () {
@@ -434,39 +434,39 @@ describe("Server (raw HTTP): write endpoint post.php", () => {
 
 	describe("request validation", () => {
 		it("rejects GET requests", async () => {
-			const res = await raw("post.php");
+			const res = await raw("write/");
 			expect(res.status).to.equal(400);
 			expect(res.json.error).to.include("Incorrect request type");
 		});
 
 		it("rejects an empty body", async () => {
-			const res = await raw("post.php", { method: "POST" });
+			const res = await raw("write/", { method: "POST" });
 			expect(res.status).to.equal(400);
 		});
 
 		it("rejects invalid JSON", async () => {
-			const res = await raw("post.php", { method: "POST", body: "{nope" });
+			const res = await raw("write/", { method: "POST", body: "{nope" });
 			expect(res.status).to.equal(400);
 		});
 
 		it("rejects a JSON scalar", async () => {
-			const res = await raw("post.php", { method: "POST", body: '"text"' });
+			const res = await raw("write/", { method: "POST", body: '"text"' });
 			expect(res.status).to.equal(400);
 		});
 
 		it("rejects a missing token", async () => {
-			const res = await sendJson("post.php", { ...base, command: "writeRaw", value: {} });
+			const res = await sendJson("write/", { ...base, command: "writeRaw", value: {} });
 			expect(res.status).to.equal(400);
 			expect(res.json.error).to.include("No token provided");
 		});
 
 		it("rejects a non string token", async () => {
-			const res = await sendJson("post.php", { token: 5, ...base, command: "writeRaw", value: {} });
+			const res = await sendJson("write/", { token: 5, ...base, command: "writeRaw", value: {} });
 			expect(res.status).to.equal(400);
 		});
 
 		it("rejects an invalid token", async () => {
-			const res = await sendJson("post.php", {
+			const res = await sendJson("write/", {
 				token: "wrong",
 				...base,
 				command: "writeRaw",

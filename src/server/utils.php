@@ -160,6 +160,23 @@ function stringifier(mixed $obj, int $depth = 1): string|false {
     return '{' . implode(',', $formed) . '}';
 }
 
+/**
+ * Moves into the server root so `config.php`, `tokens.php` and the database folders resolve
+ * the same way whether a request hits the root `index.php` or an endpoint inside `read/` or `write/`.
+ */
+function enter_server_root(): void {
+    // SCRIPT_FILENAME keeps the deployed path, __DIR__ would follow symlinks
+    $script = $_SERVER['SCRIPT_FILENAME'] ?? '';
+    if ($script === '')
+        return;
+
+    $dir = dirname($script);
+    if (in_array(basename($dir), ['read', 'write'], true))
+        $dir = dirname($dir);
+
+    chdir($dir);
+}
+
 /** Configures cross-origin headers and completes browser preflight requests before endpoint routing begins. */
 function cors(): void {
     // Allow from any origin
