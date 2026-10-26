@@ -1,8 +1,8 @@
 <?php
 
 // import useful functions
-require_once __DIR__ . '/classes/HTTPException.php';
-require_once __DIR__ . '/utils.php';
+require_once __DIR__ . '/../classes/HTTPException.php';
+require_once __DIR__ . '/../utils.php';
 
 /**
  * Supported write endpoint commands.
@@ -18,6 +18,9 @@ enum WriteCommand: string {
     case EditField = 'editField';
     case EditFieldBulk = 'editFieldBulk';
 }
+
+// config.php, tokens.php and the database folders live in the server root
+enter_server_root();
 
 cors();
 

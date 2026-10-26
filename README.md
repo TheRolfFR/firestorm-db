@@ -553,8 +553,8 @@ memory_limit = 256M
 
 The client communicates with the server via three specialized entrypoints:
 
-- **Read operations** $\rightarrow$ `POST /get.php` (JSON payload)
-- **Write operations** $\rightarrow$ `POST /post.php` (JSON payload)
+- **Read operations** $\rightarrow$ `POST /read/` (JSON payload)
+- **Write operations** $\rightarrow$ `POST /write/` (JSON payload)
 - **File operations** $\rightarrow$ `/files.php` (`GET`, `POST`, `PUT`, `PATCH`, `DELETE`)
 
 If you do not use file management features, you can safely remove `files.php` and the `files_api/` directory.
@@ -569,7 +569,7 @@ pnpm php:tests     # starts a local PHP server and runs every test suite
 pnpm coverage      # client (c8) and server (pcov) coverage, with minimum thresholds
 ```
 
-The test suites live in `tests/`: `esm`, `cjs`, `browser` and `types` run the shared client matrix (`tests/matrix`) against the PHP server, while `tests/server` sends raw HTTP requests to `get.php`, `post.php`, `files.php` and `version.php` to cover the server error paths. Those raw tests also use `tests/php/probe.php`, a test-only endpoint that reaches misconfiguration, corrupted-file and upload-error cases. It is never part of the deployed server (`src/server`), so do not copy it to production.
+The test suites live in `tests/`: `esm`, `cjs`, `browser` and `types` run the shared client matrix (`tests/matrix`) against the PHP server, while `tests/server` sends raw HTTP requests to `read/`, `write/`, `files.php` and `version.php` to cover the server error paths. Those raw tests also use `tests/php/probe.php`, a test-only endpoint that reaches misconfiguration, corrupted-file and upload-error cases. It is never part of the deployed server (`src/server`), so do not copy it to production.
 
 `pnpm coverage` enforces minimum coverage (c8 for the client, 95% of lines for the server) and writes Cobertura reports to `coverage/cobertura-coverage.xml` (client) and `coverage/php/cobertura-coverage.xml` (server). One browsable HTML report for both, merged with [nyc](https://github.com/istanbuljs/nyc) from Istanbul JSON, is built in `coverage/html/index.html`.
 

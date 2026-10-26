@@ -324,10 +324,15 @@ src/server/
 │   ├── move_file.php
 │   ├── upload_file.php
 │   └── write_file.php
+├── read/
+│   ├── index.php
+│   ├── random.php
+│   └── search.php
+├── write/
+│   ├── edit_field.php
+│   └── index.php
 ├── config.php
 ├── files.php
-├── get.php
-├── post.php
 ├── tokens.php
 └── version.ini
 ```

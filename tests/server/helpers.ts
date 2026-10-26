@@ -30,12 +30,12 @@ export const sendJson = (endpoint: string, body: unknown, method = "POST") =>
 		headers: { "Content-Type": "application/json" },
 	});
 
-/** POST to get.php (read commands) */
-export const read = (body: Record<string, unknown>) => sendJson("get.php", body);
+/** POST to read/ (read commands) */
+export const read = (body: Record<string, unknown>) => sendJson("read/", body);
 
-/** POST to post.php (write commands), authenticated by default */
+/** POST to write/ (write commands), authenticated by default */
 export const write = (body: Record<string, unknown>) =>
-	sendJson("post.php", { token: TOKEN, ...body });
+	sendJson("write/", { token: TOKEN, ...body });
 
 /** Calls the test-only probe endpoint (tests/php/probe.php) */
 export const probe = (params: Record<string, string>) =>

@@ -73,7 +73,7 @@ export class ResourceManager {
 	}
 
 	/**
-	 * Read API endpoint address (get.php)
+	 * Read API endpoint address (read/)
 	 * @ignore
 	 */
 	private get readAddress(): string {
@@ -81,11 +81,11 @@ export class ResourceManager {
 		if (!addr) {
 			throw new Error(`Address for Firestorm instance "${this.instance.name}" was not configured`);
 		}
-		return `${addr}get.php`;
+		return `${addr}read/`;
 	}
 
 	/**
-	 * Write API endpoint address (post.php)
+	 * Write API endpoint address (write/)
 	 * @ignore
 	 */
 	private get writeAddress(): string {
@@ -93,7 +93,7 @@ export class ResourceManager {
 		if (!addr) {
 			throw new Error(`Address for Firestorm instance "${this.instance.name}" was not configured`);
 		}
-		return `${addr}post.php`;
+		return `${addr}write/`;
 	}
 
 	/**

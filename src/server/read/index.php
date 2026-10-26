@@ -1,6 +1,6 @@
 <?php
 
-require_once __DIR__ . '/utils.php';
+require_once __DIR__ . '/../utils.php';
 
 /**
  * Supported read endpoint commands.
@@ -16,6 +16,9 @@ enum ReadCommand: string {
     case Values = 'values';
 }
 
+// config.php, tokens.php and the database folders live in the server root
+enter_server_root();
+
 cors();
 
 // hide error display from client responses
@@ -24,7 +27,7 @@ ini_set('display_startup_errors', '0');
 error_reporting(E_ALL);
 
 // import useful functions
-require_once __DIR__ . '/log.php';
+require_once __DIR__ . '/../log.php';
 
 $method = $_SERVER['REQUEST_METHOD'] ?? '';
 if ($method !== 'GET' && $method !== 'POST') {
