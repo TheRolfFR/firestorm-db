@@ -465,11 +465,11 @@ import type {
 
 # Server
 
-Firestorm's backend consists of lightweight PHP endpoints optimized for **PHP 8.5** with built-in backward-compatibility polyfills supporting **PHP 8.2+**.
+Firestorm's backend consists of lightweight PHP endpoints optimized for **PHP 8.4+** (PHP 8.5 supported).
 
 ## Server Setup
 
-Deploy the server files from [`src/server/`](./src/server/) to your PHP hosting directory. The server includes zero-dependency polyfills (`src/server/polyfills/`) for standard library functions introduced in PHP 8.3–8.5 (`json_validate`, `array_any`, `array_all`, `array_find`, `mb_trim`, `array_first`, `array_last`), backed by typed Enums (`SearchCriteria`, `EditOperation`, `ReadCommand`, `WriteCommand`), Constructor Property Promotion, and modern `\Random\Randomizer` engines. If using Composer, a `composer.json` is also provided.
+Deploy the server files from [`src/server/`](./src/server/) to your PHP hosting directory. The server relies on native PHP 8.4 standard library functions (`json_validate`, `array_any`, `array_all`, `array_find`, `mb_trim`), backed by typed Enums (`SearchCriteria`, `EditOperation`, `ReadCommand`, `WriteCommand`), Constructor Property Promotion, and modern `\Random\Randomizer` engines. A `composer.json` declaring the PHP requirement is also provided.
 
 The two files to configure are:
 
@@ -571,6 +571,6 @@ pnpm coverage      # client (c8) and server (pcov) coverage, with minimum thresh
 
 The test suites live in `tests/`: `esm`, `cjs`, `browser` and `types` run the shared client matrix (`tests/matrix`) against the PHP server, while `tests/server` sends raw HTTP requests to `get.php`, `post.php`, `files.php` and `version.php` to cover the server error paths. Those raw tests also use `tests/php/probe.php`, a test-only endpoint that reaches misconfiguration, corrupted-file and upload-error cases. It is never part of the deployed server (`src/server`), so do not copy it to production.
 
-`pnpm coverage` enforces minimum coverage (c8 for the client, 95% of lines for the server, PHP polyfills excluded since they only run on older PHP versions) and writes Cobertura reports to `coverage/cobertura-coverage.xml` (client) and `coverage/php/cobertura-coverage.xml` (server). One browsable HTML report for both, merged with [nyc](https://github.com/istanbuljs/nyc) from Istanbul JSON, is built in `coverage/html/index.html`.
+`pnpm coverage` enforces minimum coverage (c8 for the client, 95% of lines for the server) and writes Cobertura reports to `coverage/cobertura-coverage.xml` (client) and `coverage/php/cobertura-coverage.xml` (server). One browsable HTML report for both, merged with [nyc](https://github.com/istanbuljs/nyc) from Istanbul JSON, is built in `coverage/html/index.html`.
 
 PHP server coverage needs the [pcov](https://github.com/krakjoe/pcov) extension. If it isn't installed, run `pnpm coverage:setup` once: it builds pcov into a git-ignored `.pcov/` folder (requires `phpize`, `curl` and a C toolchain) and `pnpm coverage` picks it up automatically. A system-wide `pecl install pcov` works as well.

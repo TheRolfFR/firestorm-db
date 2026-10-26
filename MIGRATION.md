@@ -16,7 +16,7 @@ This guide outlines the breaking changes, architectural upgrades, and step-by-st
    - [5. Standardized Files API](#5-standardized-files-api)
    - [6. Structured Error Handling with `FirestormError`](#6-structured-error-handling-with-firestormerror)
 4. [Server-Side Migration (PHP)](#server-side-migration-php)
-   - [1. PHP Version Requirement (PHP 8.2+)](#1-php-version-requirement-php-82)
+   - [1. PHP Version Requirement (PHP 8.4+)](#1-php-version-requirement-php-84)
    - [2. Directory Reorganization & Modular Routing](#2-directory-reorganization--modular-routing)
    - [3. `JSONDatabase` Configuration & `secureKeys`](#3-jsondatabase-configuration--securekeys)
 5. [Side-by-Side Migration Cheat Sheet](#side-by-side-migration-cheat-sheet)
@@ -32,18 +32,18 @@ Firestorm 2.0 is a ground-up modernization of both the TypeScript/JavaScript cli
 - **`Raw` $\rightarrow$ `Transformed` Pipeline**: Strong separation between types written to disk (`Raw`) and types returned from read queries (`Transformed`), with built-in support for OOP model instantiation, sensitive field stripping, and `.transform()` chaining.
 - **Dedicated `Document` Class**: First-class support for single key-value configuration documents with deep dot-path mutation (`instance.document(...)`).
 - **HTTP-Standard File Manager**: File operations revamped around standard HTTP verbs (`get()`, `post()`, `put()`, `patch()`, `delete()`) and direct server-side file management (`copy()`, `move()`, `exists()`).
-- **PHP 8.5 Standards & Polyfills**: Backend updated for PHP 8.5 with a dedicated zero-dependency polyfill layer supporting PHP 8.2+, backed Enums, constructor property promotion, and cryptographically secure random IDs.
+- **PHP 8.4+ Standards**: Backend updated for PHP 8.4+ (PHP 8.5 supported) using native standard library functions, backed Enums, constructor property promotion, and cryptographically secure random IDs.
 
 ---
 
 ## System & Environment Requirements
 
-| Runtime / Platform | v1.15.1           | v2.0.0                                                             |
-| :----------------- | :---------------- | :----------------------------------------------------------------- |
-| **Node.js**        | `>= 16.x`         | `^22.12` or `>= 24` (maintained releases, native `fetch`)          |
-| **TypeScript**     | `>= 4.x`          | `>= 5.0`                                                           |
-| **Module Systems** | CJS / Bundled ESM | Native ESM (`dist/esm`) & CJS (`dist/cjs`) + `.d.ts` declarations  |
-| **PHP (Server)**   | PHP 7.4+ / 8.0+   | **PHP 8.2+** (PHP 8.5 recommended; polyfills included for 8.3–8.5) |
+| Runtime / Platform | v1.15.1           | v2.0.0                                                            |
+| :----------------- | :---------------- | :---------------------------------------------------------------- |
+| **Node.js**        | `>= 16.x`         | `^22.12` or `>= 24` (maintained releases, native `fetch`)         |
+| **TypeScript**     | `>= 4.x`          | `>= 5.0`                                                          |
+| **Module Systems** | CJS / Bundled ESM | Native ESM (`dist/esm`) & CJS (`dist/cjs`) + `.d.ts` declarations |
+| **PHP (Server)**   | PHP 7.4+ / 8.0+   | **PHP 8.4+** (PHP 8.5 supported)                                  |
 
 ---
 
@@ -299,10 +299,10 @@ try {
 
 ## Server-Side Migration (PHP)
 
-### 1. PHP Version Requirement (PHP 8.2+)
+### 1. PHP Version Requirement (PHP 8.4+)
 
-- **Minimum Supported Version**: **PHP 8.2**.
-- **Target Engine**: **PHP 8.5** (built-in polyfills in `src/server/polyfills/` backport features like `json_validate`, `array_any`, `array_all`, `mb_trim`, etc.).
+- **Minimum Supported Version**: **PHP 8.4**.
+- **Native functions**: the server uses `json_validate`, `array_any`, `array_all`, `mb_trim`, etc. directly, no polyfills are shipped.
 - Ensure `extension=json` and `extension=mbstring` are enabled in `php.ini`.
 
 ### 2. Directory Reorganization & Modular Routing
@@ -324,8 +324,6 @@ src/server/
 │   ├── move_file.php
 │   ├── upload_file.php
 │   └── write_file.php
-├── polyfills/
-│   └── polyfills.php
 ├── config.php
 ├── files.php
 ├── get.php
@@ -387,4 +385,4 @@ $STORAGE_LOCATION = dirname($_SERVER['SCRIPT_FILENAME']) . '/uploads/';
 | **Delete File**               | `instance.files.delete("file.txt")`           | `instance.files.delete("file.txt")`                        |
 | **File Exists / Move / Copy** | _(N/A)_                                       | `instance.files.exists()`, `.move()`, `.copy()`            |
 | **Error Handling**            | `catch (err: AxiosError)`                     | `catch (err: FirestormError)`                              |
-| **PHP Version**               | PHP 7.4+                                      | **PHP 8.2+** (PHP 8.5 recommended)                         |
+| **PHP Version**               | PHP 7.4+                                      | **PHP 8.4+**                                               |

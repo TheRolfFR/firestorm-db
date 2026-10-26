@@ -1,7 +1,5 @@
 <?php
 
-require_once __DIR__ . '/polyfills/polyfills.php';
-
 /** Appends timestamped operational messages to the configured log destination. */
 class Log {
     public const LOG_PATH_ENV = "FIRESTORM_LOG_PATH";

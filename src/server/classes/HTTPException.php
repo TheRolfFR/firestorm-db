@@ -1,7 +1,5 @@
 <?php
 
-require_once __DIR__ . '/../polyfills/polyfills.php';
-
 /** Represents an expected client-visible failure that endpoint handlers convert into an HTTP response. */
 class HTTPException extends Exception {
     /** Captures an HTTP status and safe response message for request validation failures. */

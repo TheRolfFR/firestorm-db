@@ -22,7 +22,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **File Manager & Operations**: File operations under `instance.files` (`get()`, `upload()`, `append()`, `uploadText()`, `delete()`) alongside direct server-side operations (`copy()`, `move()`, `exists()`).
 - **Cryptographically Secure Keys**: Added `$secureKeys` configuration to `JSONDatabase` for generating cryptographically secure random unique IDs.
 - **Structured Error Handling**: Added `FirestormError` class carrying complete `ResponseDetails` (HTTP status code, headers, and parsed payload) with automatic wrapping of HTML/string server errors.
-- **PHP 8.5 Modernization & Backport Polyfills**: Fully modernized server codebase to PHP 8.5 standards with a dedicated backward-compatibility polyfill layer (`src/server/polyfills/polyfills.php` and root `composer.json` supporting `symfony/polyfill-php83`, `symfony/polyfill-php84`, and `symfony/polyfill-php85`). Introduces backed Enums (`SearchCriteria`, `EditOperation`, `ReadCommand`, `WriteCommand`), Constructor Property Promotion, `readonly` properties, `#[\Override]`, First-Class Callables (`$fn(...)`), strict `match` expressions, modern `\Random\Randomizer` engines, and high-performance native `array_is_list()`, `array_any()`, `array_all()`, and `json_validate()`.
+- **PHP 8.4+ Modernization**: Fully modernized server codebase to PHP 8.4+ standards using native standard library functions (no polyfills shipped). Introduces backed Enums (`SearchCriteria`, `EditOperation`, `ReadCommand`, `WriteCommand`), Constructor Property Promotion, `readonly` properties, `#[\Override]`, First-Class Callables (`$fn(...)`), strict `match` expressions, modern `\Random\Randomizer` engines, and high-performance native `array_is_list()`, `array_any()`, `array_all()`, and `json_validate()`.
 - **Refined Search & Filter Criteria**: Dedicated `ComparisonCriteria`, `BooleanCriteria`, `NumberCriteria`, `StringCriteria`, and `ArrayCriteria` types.
 
 ### Changed
@@ -31,7 +31,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Bulk Getters & Version Accessors**: Renamed `Collection.searchKeys()` and `Document.getKeys()` to `getBulk()` (consistent with `setBulk`/`addBulk`/`removeBulk`), and `instance.clientVersion` to `instance.getClientVersion()` (consistent with `getServerVersion()`). The wire-level `searchKeys` server command is unchanged.
 - **Async Method for Server Version**: Replaced the `instance.serverVersion` Promise getter with an explicit async method `instance.getServerVersion()` for better developer ergonomics and TypeScript consistency.
 - **Object-Only Resource Constructors**: `instance.collection()`, `instance.document()`, and class constructors now require a configuration object (`{ name: string, transform?: Function }`) rather than positional arguments.
-- **PHP Requirements**: Modernized server requirements to PHP 8.2+ with strict typing and support for named constructor arguments in `JSONDatabase`.
+- **PHP Requirements**: Modernized server requirements to PHP 8.4+ with strict typing and support for named constructor arguments in `JSONDatabase`.
 - **File Locking Diagnostics**: Refactored `FileAccess` file locking to provide descriptive error context including file paths on lock or descriptor failure.
 - **Centralized Extension Validation**: Replaced manual extension loops across backend file endpoints with centralized `check_file_extension()` validator.
 

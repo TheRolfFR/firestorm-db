@@ -48,10 +48,6 @@ foreach ($merged as $file => $lines) {
     if (!str_starts_with($file, $srcRoot . '/'))
         continue;
 
-    // polyfills only run on PHP versions older than the ones they backport, so their coverage depends on the runtime
-    if (str_starts_with($file, $srcRoot . '/polyfills/'))
-        continue;
-
     // pcov reports the implicit return past the last line, which coverage tools reject
     $lineCount = count(file($file) ?: []);
     $lines = array_filter($lines, fn($line) => $line <= $lineCount, ARRAY_FILTER_USE_KEY);
