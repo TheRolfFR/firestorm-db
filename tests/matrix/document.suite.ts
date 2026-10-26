@@ -33,7 +33,7 @@ export function runDocumentSuite(target: TestTarget) {
 			});
 		});
 
-		describe("Read Operations (get, getKeys, readRaw, sha1)", () => {
+		describe("Read Operations (get, getBulk, readRaw, sha1)", () => {
 			it("get retrieves single field value by key", async () => {
 				const theme = await env.testDoc.get("theme");
 				expect(theme).to.equal("dark");
@@ -52,18 +52,18 @@ export function runDocumentSuite(target: TestTarget) {
 				expect(version).to.equal(0);
 			});
 
-			it("getKeys retrieves multiple field values in specified order", async () => {
-				const values = await env.testDoc.getKeys(["version", "theme"]);
+			it("getBulk retrieves multiple field values in specified order", async () => {
+				const values = await env.testDoc.getBulk(["version", "theme"]);
 				expect(values).to.be.an("array");
 				expect(values[0]).to.equal(1);
 				expect(values[1]).to.equal("dark");
 			});
 
-			it("getKeys throws TypeError if keys parameter is not an array", async () => {
+			it("getBulk throws TypeError if keys parameter is not an array", async () => {
 				let threw = false;
 				try {
 					// @ts-expect-error - keys argument must be an array
-					await env.testDoc.getKeys("theme");
+					await env.testDoc.getBulk("theme");
 				} catch (err) {
 					threw = true;
 					expect(err).to.be.an.instanceOf(TypeError);

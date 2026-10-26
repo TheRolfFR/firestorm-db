@@ -46,8 +46,8 @@ export function runSetupSuite(target: TestTarget) {
 
 		it("exposes clientVersion", () => {
 			const instance = target.createFirestorm({ address: ADDRESS, token: TOKEN });
-			expect(instance.clientVersion).to.be.a("string");
-			expect(instance.clientVersion).to.match(/\d+\.\d+\.\d+/);
+			expect(instance.getClientVersion()).to.be.a("string");
+			expect(instance.getClientVersion()).to.match(/\d+\.\d+\.\d+/);
 		});
 
 		it("gets the server version field correctly", async () => {

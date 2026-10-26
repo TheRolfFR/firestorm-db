@@ -1,7 +1,20 @@
 <?php
 
 require_once __DIR__ . '/utils.php';
-require_once __DIR__ . '/enums/ApiCommand.php';
+
+/**
+ * Supported read endpoint commands.
+ */
+enum ReadCommand: string {
+    case ReadRaw = 'readRaw';
+    case Get = 'get';
+    case Search = 'search';
+    case GetBulk = 'getBulk';
+    case Select = 'select';
+    case Random = 'random';
+    case Sha1 = 'sha1';
+    case Values = 'values';
+}
 
 cors();
 
@@ -91,13 +104,13 @@ try {
             $result = $db->search($search, $random, $limit);
 
             http_response_stringified($result);
-        case ReadCommand::SearchKeys:
+        case ReadCommand::GetBulk:
             $search = check_key_json('search', $inputJSON);
 
             if (!$search)
                 http_error(400, 'No search provided');
 
-            $result = $db->searchKeys($search);
+            $result = $db->getBulk($search);
 
             http_response_stringified($result);
         case ReadCommand::Select:

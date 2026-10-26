@@ -251,16 +251,16 @@ describe("Server (raw HTTP): read endpoint get.php", () => {
 		]);
 
 		it("searches keys", async () => {
-			const res = await read({ ...base, command: "searchKeys", search: ["a", "zzz", "c"] });
+			const res = await read({ ...base, command: "getBulk", search: ["a", "zzz", "c"] });
 			expect(res.json).to.have.keys("a", "c");
 		});
 
 		expectErrors(read, base, [
-			["searchKeys requires a search", { command: "searchKeys" }, 400, "No search provided"],
+			["getBulk requires a search", { command: "getBulk" }, 400, "No search provided"],
 		]);
 
-		it("searchKeys answers an empty object for a non array search", async () => {
-			const res = await read({ ...base, command: "searchKeys", search: "a" });
+		it("getBulk answers an empty object for a non array search", async () => {
+			const res = await read({ ...base, command: "getBulk", search: "a" });
 			expect(res.json).to.deep.equal({});
 		});
 

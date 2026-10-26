@@ -104,7 +104,7 @@ export class Firestorm {
 	/**
 	 * Get the client package version
 	 */
-	public get clientVersion(): string {
+	public getClientVersion(): string {
 		return VERSION;
 	}
 
@@ -133,7 +133,7 @@ export class Firestorm {
 	public async isCompatibleAddress(): Promise<boolean> {
 		const serverVersion = await this.getServerVersion();
 		const [serverMajor, serverMinor] = serverVersion.split(".");
-		const [clientMajor, clientMinor] = this.clientVersion.split(".");
+		const [clientMajor, clientMinor] = this.getClientVersion().split(".");
 
 		if (!serverMajor || !serverMinor || !clientMajor || !clientMinor) {
 			return false;

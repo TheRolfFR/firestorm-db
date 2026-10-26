@@ -37,7 +37,7 @@ export function runCollectionSuite(target: TestTarget) {
 			});
 		});
 
-		describe("Read Operations (get, searchKeys, search, readRaw, select, values, random, sha1)", () => {
+		describe("Read Operations (get, getBulk, search, readRaw, select, values, random, sha1)", () => {
 			it("get retrieves single item with injected ID_FIELD", async () => {
 				const item = await env.base.get("0");
 				expect(item[target.ID_FIELD]).to.equal("0");
@@ -45,18 +45,18 @@ export function runCollectionSuite(target: TestTarget) {
 				expect(item.age).to.equal(23);
 			});
 
-			it("searchKeys retrieves multiple items", async () => {
-				const items = await env.base.searchKeys(["0", "1"]);
+			it("getBulk retrieves multiple items", async () => {
+				const items = await env.base.getBulk(["0", "1"]);
 				expect(items).to.be.an("array").with.lengthOf(2);
 				expect(items[0]?.[target.ID_FIELD]).to.equal("0");
 				expect(items[1]?.[target.ID_FIELD]).to.equal("1");
 			});
 
-			it("searchKeys throws TypeError if keys parameter is not an array", async () => {
+			it("getBulk throws TypeError if keys parameter is not an array", async () => {
 				let threw = false;
 				try {
 					// @ts-expect-error - testing non-array keys argument
-					await env.base.searchKeys("0");
+					await env.base.getBulk("0");
 				} catch (err) {
 					threw = true;
 					expect(err).to.be.an.instanceOf(TypeError);

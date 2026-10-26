@@ -423,7 +423,7 @@ class JSONDatabase {
      * @param mixed $searchedKeys Array of string|int keys to look up.
      * @return array<int|string, mixed> Map of found keys and their corresponding elements.
      */
-    public function searchKeys(mixed $searchedKeys): array {
+    public function getBulk(mixed $searchedKeys): array {
         $obj = $this->read();
 
         $res = [];

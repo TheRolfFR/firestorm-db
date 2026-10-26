@@ -175,7 +175,7 @@ console.log(item.bye()); // "Bye John Doe!"
 | `sha1()`                       | _none_                                                                         | Get the [SHA-1](https://www.php.net/manual/en/function.sha1.php) hash of the collection file to verify content without downloading JSON. |
 | `readRaw(original?)`           | `original?: boolean`                                                           | Read the entire collection. Set `original: true` to disable ID injection (if doing so, consider using a `Document` instead).             |
 | `get(key)`                     | `key: string \| number`                                                        | Get an element by its ID/key.                                                                                                            |
-| `searchKeys(keys)`             | `keys: (string \| number)[]`                                                   | Get multiple elements by their keys.                                                                                                     |
+| `getBulk(keys)`                | `keys: (string \| number)[]`                                                   | Get multiple elements by their keys.                                                                                                     |
 | `search(filter, options?)`     | `filter: SearchOption[]`, `options?: boolean \| number \| SearchResultOptions` | Search through the collection with filtering criteria, limit, and optional randomization (`random: true \| seed`).                       |
 | `select(option)`               | `option: SelectOption`                                                         | Retrieve only selected fields from the collection, with optional `search` filters.                                                       |
 | `values(option)`               | `option: ValueOption`                                                          | Get all distinct non-null values for a given field across the collection, with optional `flatten`.                                       |
@@ -279,7 +279,7 @@ const fullSettings = await settingsDoc.readRaw();
 const theme = await settingsDoc.get("theme"); // "light"
 
 // 3. Get multiple fields
-const [themeVal, sizeVal] = await settingsDoc.getKeys(["theme", "maxUploadSize"]);
+const [themeVal, sizeVal] = await settingsDoc.getBulk(["theme", "maxUploadSize"]);
 
 // 4. Update top-level or deep nested field (dot notation)
 await settingsDoc.set("nested.maintenance", true);
@@ -403,7 +403,7 @@ const customerOrders = await customer.getOrders();
 
 ```ts
 // NPM package client version
-instance.clientVersion;
+instance.getClientVersion();
 
 // Server version string from version.ini
 await instance.getServerVersion();
