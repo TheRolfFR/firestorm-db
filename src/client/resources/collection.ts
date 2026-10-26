@@ -393,27 +393,31 @@ export class Collection<
 	/**
 	 * Delete an entry by its key
 	 * @param key - The key of the entry to remove
-	 * @returns Mutation confirmation
+	 * @returns The removed element, or null if the key did not exist
 	 */
-	public remove(key: IdEncoding): Promise<Confirmation> {
-		return this.manager.delete<Confirmation>({
+	public async remove(key: IdEncoding): Promise<Transformed | null> {
+		const res = await this.manager.delete<{ removed: Raw | null }>({
 			path: "remove",
 			body: String(key),
 			options: { multiple: false },
 		});
+		return res.removed === null ? null : this.applyTransformation(this.withId(res.removed, key));
 	}
 
 	/**
 	 * Delete multiple entries by their keys
 	 * @param keys - The keys of the entries to remove
-	 * @returns Mutation confirmation
+	 * @returns The removed elements, keys that did not exist are skipped
 	 */
-	public removeBulk(keys: IdEncoding[]): Promise<Confirmation> {
-		return this.manager.delete<Confirmation>({
+	public async removeBulk(keys: IdEncoding[]): Promise<Transformed[]> {
+		const res = await this.manager.delete<{ removed: Record<string, Raw> }>({
 			path: "removeBulk",
 			body: keys.map(String),
 			options: { multiple: true },
 		});
+		return Object.entries(res.removed).map(([id, item]) =>
+			this.applyTransformation(this.withId(item, id)),
+		);
 	}
 
 	/**

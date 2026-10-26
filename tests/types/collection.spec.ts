@@ -232,8 +232,12 @@ describe("Type Tests: src/client/collection.ts", () => {
 		type _TAddBulk = Expect<Equal<ReturnType<typeof users.addBulk>, Promise<string[]>>>;
 		type _TSet = Expect<Equal<ReturnType<typeof users.set>, Promise<Confirmation>>>;
 		type _TSetBulk = Expect<Equal<ReturnType<typeof users.setBulk>, Promise<Confirmation>>>;
-		type _TRem = Expect<Equal<ReturnType<typeof users.remove>, Promise<Confirmation>>>;
-		type _TRemBulk = Expect<Equal<ReturnType<typeof users.removeBulk>, Promise<Confirmation>>>;
+		type _TRem = Expect<
+			Equal<ReturnType<typeof users.remove>, Promise<CollectionItem<User> | null>>
+		>;
+		type _TRemBulk = Expect<
+			Equal<ReturnType<typeof users.removeBulk>, Promise<CollectionItem<User>[]>>
+		>;
 
 		function _crudValidations() {
 			// @ts-expect-error - add requires full User object

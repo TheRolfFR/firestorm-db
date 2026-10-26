@@ -585,11 +585,16 @@ describe("Server (raw HTTP): write endpoint write/", () => {
 			expect((await write({ ...base, command: "set", key: 7, value: { z: 1 } })).status).to.equal(
 				200,
 			);
-			expect((await write({ ...base, command: "remove", value: "s" })).status).to.equal(200);
-			expect(
-				(await write({ ...base, command: "removeBulk", values: ["7", 7, "missing"] })).status,
-			).to.equal(200);
-			expect((await write({ ...base, command: "removeBulk", values: [] })).status).to.equal(200);
+			const removed = await write({ ...base, command: "remove", value: "s" });
+			expect(removed.status).to.equal(200);
+			expect(removed.json).to.deep.equal({ removed: { z: 1 } });
+			const missing = await write({ ...base, command: "remove", value: "missing" });
+			expect(missing.json).to.deep.equal({ removed: null });
+			const bulk = await write({ ...base, command: "removeBulk", values: ["7", 7, "missing"] });
+			expect(bulk.status).to.equal(200);
+			expect(bulk.json).to.deep.equal({ removed: { 7: { z: 1 } } });
+			const empty = await write({ ...base, command: "removeBulk", values: [] });
+			expect(empty.json).to.deep.equal({ removed: {} });
 			expect((await read({ ...base, command: "readRaw" })).json).to.have.keys("a");
 		});
 

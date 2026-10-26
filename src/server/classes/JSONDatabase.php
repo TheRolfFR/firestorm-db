@@ -341,25 +341,30 @@ class JSONDatabase {
      * Removes an element from the collection by key.
      *
      * @param string|int $key Key of the element to remove.
+     * @return mixed The removed element, or null if the key did not exist.
      * @throws HTTPException On invalid key type.
      */
-    public function remove(string|int $key): void {
+    public function remove(string|int $key): mixed {
         $key_var_type = gettype($key);
         if (!is_keyable($key))
             throw new HTTPException("Incorrect key type, got $key_var_type, expected string or integer", 400);
 
         $obj = $this->read(true);
+        $removed = $obj->json[$key] ?? null;
         unset($obj->json[$key]);
         $this->write($obj);
+
+        return $removed;
     }
 
     /**
      * Removes multiple elements from the collection by their keys.
      *
      * @param mixed $keys Array of string|int keys to remove.
+     * @return array<int|string, mixed> The removed elements indexed by key, missing keys are skipped.
      * @throws HTTPException On invalid keys array format.
      */
-    public function removeBulk(mixed $keys): void {
+    public function removeBulk(mixed $keys): array {
         if ($keys !== [] && $keys === null)
             throw new HTTPException('null-like keys not accepted', 400);
 
@@ -376,11 +381,18 @@ class JSONDatabase {
 
         $obj = $this->read(true);
 
-        // idempotent: unset() on missing keys is a silent no-op per key, no exception thrown
-        foreach ($keys as $key_decoded)
+        // idempotent: missing keys are skipped, no exception thrown
+        $removed = [];
+        foreach ($keys as $key_decoded) {
+            if (!array_key_exists($key_decoded, $obj->json))
+                continue;
+            $removed[$key_decoded] = $obj->json[$key_decoded];
             unset($obj->json[$key_decoded]);
+        }
 
         $this->write($obj);
+
+        return $removed;
     }
 
     /**

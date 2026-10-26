@@ -363,7 +363,9 @@ export function runCollectionSuite(target: TestTarget) {
 			});
 
 			it("remove deletes an entry by key", async () => {
-				await env.base.remove("0");
+				const before = await env.base.get("0");
+				const removed = await env.base.remove("0");
+				expect(removed).to.deep.equal(before);
 				try {
 					await env.base.get("0");
 					expect.fail("Should have failed to find deleted key");
@@ -373,7 +375,8 @@ export function runCollectionSuite(target: TestTarget) {
 			});
 
 			it("removeBulk deletes multiple entries by keys", async () => {
-				await env.base.removeBulk(["0", "1"]);
+				const removed = await env.base.removeBulk(["0", "1", "missing"]);
+				expect(removed.map((item) => item[target.ID_FIELD]).sort()).to.deep.equal(["0", "1"]);
 				const remaining = await env.base.readRaw();
 				expect(remaining).to.not.have.property("0");
 				expect(remaining).to.not.have.property("1");
