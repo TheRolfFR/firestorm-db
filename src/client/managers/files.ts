@@ -99,7 +99,7 @@ export class FileManager {
 
 		const contentType = response.headers.get("content-type") || "";
 		if (contentType.includes("application/json")) {
-			return (await response.json()) as ReturnType;
+			return response.json() as Promise<ReturnType>;
 		}
 		if (
 			contentType.startsWith("text/") ||
@@ -107,7 +107,7 @@ export class FileManager {
 			contentType.includes("xml") ||
 			contentType.includes("javascript")
 		) {
-			return (await response.text()) as ReturnType;
+			return response.text() as Promise<ReturnType>;
 		}
 
 		const arrayBuf = await response.arrayBuffer();
@@ -119,15 +119,14 @@ export class FileManager {
 
 	/**
 	 * Upload a file
-	 * @template ReturnType - Return confirmation type
 	 * @param form - FormData holding the `path`, `file` and optional `overwrite` fields
 	 * @param options - Request settings
 	 * @returns Mutation confirmation
 	 */
-	public upload<ReturnType = Confirmation>(
+	public upload(
 		form: FormData | FormDataPkg,
 		options: FileRequestOptions = {},
-	): Promise<ReturnType> {
+	): Promise<Confirmation> {
 		const token = this.instance.token;
 		if (!token) {
 			throw new Error(`Token for Firestorm instance "${this.instance.name}" was not configured`);
@@ -158,25 +157,21 @@ export class FileManager {
 			};
 		}
 
-		return requestJson<ReturnType>(this.fileAddress, init);
+		return requestJson<Confirmation>(this.fileAddress, init);
 	}
 
 	/**
 	 * Delete a file by its path
-	 * @template ReturnType - Return confirmation type
 	 * @param path - Path of the file
 	 * @param options - Request settings
 	 * @returns Mutation confirmation
 	 */
-	public delete<ReturnType = Confirmation>(
-		path: string,
-		options: FileRequestOptions = {},
-	): Promise<ReturnType> {
+	public delete(path: string, options: FileRequestOptions = {}): Promise<Confirmation> {
 		const token = this.instance.token;
 		if (!token) {
 			throw new Error(`Token for Firestorm instance "${this.instance.name}" was not configured`);
 		}
-		return requestJson<ReturnType>(this.fileAddress, {
+		return requestJson<Confirmation>(this.fileAddress, {
 			method: "DELETE",
 			headers: {
 				"Content-Type": "application/json",
@@ -191,17 +186,16 @@ export class FileManager {
 
 	/**
 	 * Copy a file directly without having to get/upload it first
-	 * @template ReturnType - Return confirmation type
 	 * @param options - Copy options
 	 * @returns Mutation confirmation
 	 */
-	public copy<ReturnType = Confirmation>(options: FileCopyOptions): Promise<ReturnType> {
+	public copy(options: FileCopyOptions): Promise<Confirmation> {
 		const token = this.instance.token;
 		if (!token) {
 			throw new Error(`Token for Firestorm instance "${this.instance.name}" was not configured`);
 		}
 
-		return requestJson<ReturnType>(this.fileAddress, {
+		return requestJson<Confirmation>(this.fileAddress, {
 			method: "POST",
 			headers: {
 				"Content-Type": "application/json",
@@ -216,17 +210,16 @@ export class FileManager {
 
 	/**
 	 * Move a file directly without having to get, upload, and delete it first
-	 * @template ReturnType - Return confirmation type
 	 * @param options - Move options
 	 * @returns Mutation confirmation
 	 */
-	public move<ReturnType = Confirmation>(options: FileMoveOptions): Promise<ReturnType> {
+	public move(options: FileMoveOptions): Promise<Confirmation> {
 		const token = this.instance.token;
 		if (!token) {
 			throw new Error(`Token for Firestorm instance "${this.instance.name}" was not configured`);
 		}
 
-		return requestJson<ReturnType>(this.fileAddress, {
+		return requestJson<Confirmation>(this.fileAddress, {
 			method: "POST",
 			headers: {
 				"Content-Type": "application/json",
@@ -254,23 +247,22 @@ export class FileManager {
 
 	/**
 	 * Append content to a file without having to get/upload/concatenate to it first
-	 * @template ReturnType - Return confirmation type
 	 * @param path - Path of the file
 	 * @param content - Text to append
 	 * @param options - Append and request settings
 	 * @returns Mutation confirmation
 	 */
-	public append<ReturnType = Confirmation>(
+	public append(
 		path: string,
 		content: string,
 		options: FileAppendOptions & FileRequestOptions = {},
-	): Promise<ReturnType> {
+	): Promise<Confirmation> {
 		const token = this.instance.token;
 		if (!token) {
 			throw new Error(`Token for Firestorm instance "${this.instance.name}" was not configured`);
 		}
 
-		return requestJson<ReturnType>(this.fileAddress, {
+		return requestJson<Confirmation>(this.fileAddress, {
 			method: "PATCH",
 			headers: {
 				"Content-Type": "application/json",
@@ -288,23 +280,22 @@ export class FileManager {
 
 	/**
 	 * Write (create or replace) the content of a file
-	 * @template ReturnType - Return confirmation type
 	 * @param path - Path of the file
 	 * @param content - Text to upload
 	 * @param options - Upload and request settings
 	 * @returns Mutation confirmation
 	 */
-	public uploadText<ReturnType = Confirmation>(
+	public uploadText(
 		path: string,
 		content: string,
 		options: FileUploadTextOptions & FileRequestOptions = {},
-	): Promise<ReturnType> {
+	): Promise<Confirmation> {
 		const token = this.instance.token;
 		if (!token) {
 			throw new Error(`Token for Firestorm instance "${this.instance.name}" was not configured`);
 		}
 
-		return requestJson<ReturnType>(this.fileAddress, {
+		return requestJson<Confirmation>(this.fileAddress, {
 			method: "PUT",
 			headers: {
 				"Content-Type": "application/json",

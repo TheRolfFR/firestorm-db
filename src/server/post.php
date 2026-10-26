@@ -3,7 +3,21 @@
 // import useful functions
 require_once __DIR__ . '/classes/HTTPException.php';
 require_once __DIR__ . '/utils.php';
-require_once __DIR__ . '/enums/ApiCommand.php';
+
+/**
+ * Supported write endpoint commands.
+ */
+enum WriteCommand: string {
+    case WriteRaw = 'writeRaw';
+    case Add = 'add';
+    case AddBulk = 'addBulk';
+    case Remove = 'remove';
+    case RemoveBulk = 'removeBulk';
+    case Set = 'set';
+    case SetBulk = 'setBulk';
+    case EditField = 'editField';
+    case EditFieldBulk = 'editFieldBulk';
+}
 
 cors();
 

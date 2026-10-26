@@ -128,19 +128,19 @@ describe("Type Tests: src/client/collection.ts", () => {
 		>;
 	});
 
-	it("get() and searchKeys() return types", () => {
+	it("get() and getBulk() return types", () => {
 		type _TGet = Expect<Equal<ReturnType<typeof users.get>, Promise<CollectionItem<User>>>>;
 
 		type _TSearchKeys = Expect<
-			Equal<ReturnType<typeof users.searchKeys>, Promise<CollectionItem<User>[]>>
+			Equal<ReturnType<typeof users.getBulk>, Promise<CollectionItem<User>[]>>
 		>;
 
 		function _negativeTests() {
 			// @ts-expect-error - get requires an IdEncoding argument
 			users.get();
 
-			// @ts-expect-error - searchKeys requires an array of IdEncoding
-			users.searchKeys("123");
+			// @ts-expect-error - getBulk requires an array of IdEncoding
+			users.getBulk("123");
 		}
 	});
 

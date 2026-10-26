@@ -217,7 +217,7 @@ const fullConfig = await configDoc.readRaw();
 
 // Get specific keys (type-safe)
 const theme = await configDoc.get("theme"); // "light" | "dark"
-const [themeVal, limitVal] = await configDoc.getKeys(["theme", "features.maxUploadLimit"]);
+const [themeVal, limitVal] = await configDoc.getBulk(["theme", "features.maxUploadLimit"]);
 
 // Deep mutate with dot notation
 await configDoc.set("features.betaTester", true);
@@ -315,10 +315,6 @@ src/server/
 │   ├── FileAccess.php
 │   ├── HTTPException.php
 │   └── JSONDatabase.php
-├── enums/
-│   ├── ApiCommand.php
-│   ├── EditOperation.php
-│   └── SearchCriteria.php
 ├── files_api/
 │   ├── append_file.php
 │   ├── copy_file.php

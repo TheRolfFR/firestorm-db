@@ -28,7 +28,8 @@ export class Document<
 	Transformed = Raw,
 > implements ResourceLike {
 	protected readonly manager: ResourceManager;
-	private readonly transformFn: (el: Raw, document: Document<Raw, Transformed>) => Transformed;
+	/** Apply the configured transformation to the raw document */
+	private readonly applyTransformation: (el: Raw) => Transformed;
 
 	/**
 	 * @param instance - Root Firestorm instance
@@ -47,7 +48,10 @@ export class Document<
 			throw new TypeError("Document transform must be a function");
 		}
 
-		this.transformFn = options.transform ?? ((el) => el as unknown as Transformed);
+		const transform = options.transform;
+		this.applyTransformation = transform
+			? (el) => transform(el, this)
+			: (el) => el as unknown as Transformed;
 	}
 
 	/**
@@ -85,15 +89,8 @@ export class Document<
 	): Document<Raw, NextTransformed> {
 		return new Document<Raw, NextTransformed>(this.instance, {
 			name: this.name,
-			transform: (raw) => transformFn(this.applyTransform(raw), this),
+			transform: (raw) => transformFn(this.applyTransformation(raw), this),
 		});
-	}
-
-	/**
-	 * Apply transformation to raw document
-	 */
-	private applyTransform(el: Raw): Transformed {
-		return this.transformFn(el, this);
 	}
 
 	/**
@@ -114,7 +111,7 @@ export class Document<
 	 * @param keys - Array of keys to retrieve.
 	 * @returns An ordered array matching the passed keys.
 	 */
-	public async getKeys<Keys extends (keyof Raw)[]>(
+	public async getBulk<Keys extends (keyof Raw)[]>(
 		keys: Keys,
 	): Promise<{ [Index in keyof Keys]: Raw[Keys[Index]] }> {
 		if (!Array.isArray(keys)) throw new TypeError("Keys must be an array");
@@ -138,7 +135,7 @@ export class Document<
 			path: "readRaw",
 			options: { objectLike: false },
 		});
-		return this.applyTransform(res);
+		return this.applyTransformation(res);
 	}
 
 	/**

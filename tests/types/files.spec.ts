@@ -23,9 +23,7 @@ describe("Type Tests: src/client/files.ts", () => {
 	});
 
 	it("upload() accepts FormData or FormDataPkg and returns Promise<Confirmation>", () => {
-		type _TPkg = Expect<
-			Equal<ReturnType<typeof files.upload<Confirmation>>, Promise<Confirmation>>
-		>;
+		type _TPkg = Expect<Equal<ReturnType<typeof files.upload>, Promise<Confirmation>>>;
 
 		function _uploadTests() {
 			const pkgForm = new FormDataPkg();
@@ -42,21 +40,19 @@ describe("Type Tests: src/client/files.ts", () => {
 	});
 
 	it("delete() returns Promise<Confirmation>", () => {
-		type _TDel = Expect<
-			Equal<ReturnType<typeof files.delete<Confirmation>>, Promise<Confirmation>>
-		>;
+		type _TDel = Expect<Equal<ReturnType<typeof files.delete>, Promise<Confirmation>>>;
 
 		files.delete("/old.txt");
 	});
 
 	it("copy() returns Promise<Confirmation>", () => {
-		type _TCopy = Expect<Equal<ReturnType<typeof files.copy<Confirmation>>, Promise<Confirmation>>>;
+		type _TCopy = Expect<Equal<ReturnType<typeof files.copy>, Promise<Confirmation>>>;
 
 		files.copy({ oldPath: "/old.txt", newPath: "/new.txt", overwrite: true });
 	});
 
 	it("move() returns Promise<Confirmation>", () => {
-		type _TMove = Expect<Equal<ReturnType<typeof files.move<Confirmation>>, Promise<Confirmation>>>;
+		type _TMove = Expect<Equal<ReturnType<typeof files.move>, Promise<Confirmation>>>;
 
 		files.move({ oldPath: "/old.txt", newPath: "/new.txt", overwrite: true });
 	});
@@ -68,26 +64,13 @@ describe("Type Tests: src/client/files.ts", () => {
 	});
 
 	it("append() returns Promise<Confirmation>", () => {
-		type _TApp = Expect<
-			Equal<ReturnType<typeof files.append<Confirmation>>, Promise<Confirmation>>
-		>;
-		type _TCustom = Expect<
-			Equal<ReturnType<typeof files.append<{ success: boolean }>>, Promise<{ success: boolean }>>
-		>;
+		type _TApp = Expect<Equal<ReturnType<typeof files.append>, Promise<Confirmation>>>;
 
 		files.append("/log.txt", "data", { create: true });
 	});
 
 	it("uploadText() returns Promise<Confirmation>", () => {
-		type _TWrite = Expect<
-			Equal<ReturnType<typeof files.uploadText<Confirmation>>, Promise<Confirmation>>
-		>;
-		type _TCustom = Expect<
-			Equal<
-				ReturnType<typeof files.uploadText<{ written: boolean }>>,
-				Promise<{ written: boolean }>
-			>
-		>;
+		type _TWrite = Expect<Equal<ReturnType<typeof files.uploadText>, Promise<Confirmation>>>;
 
 		files.uploadText("/log.txt", "data", { overwrite: true });
 	});

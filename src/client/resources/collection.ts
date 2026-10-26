@@ -32,10 +32,8 @@ export class Collection<
 	Transformed = CollectionItem<Raw>,
 > implements ResourceLike {
 	protected readonly manager: ResourceManager;
-	private readonly transformFn: (
-		el: CollectionItem<Raw>,
-		collection: Collection<Raw, Transformed>,
-	) => Transformed;
+	/** Apply the configured transformation to an item with injected ID */
+	private readonly applyTransformation: (el: CollectionItem<Raw>) => Transformed;
 
 	/**
 	 * @param instance - Root Firestorm instance.
@@ -54,7 +52,10 @@ export class Collection<
 			throw new TypeError("Collection transform must be a function");
 		}
 
-		this.transformFn = options.transform ?? ((el) => el as unknown as Transformed);
+		const transform = options.transform;
+		this.applyTransformation = transform
+			? (el) => transform(el, this)
+			: (el) => el as unknown as Transformed;
 	}
 
 	/**
@@ -108,13 +109,6 @@ export class Collection<
 	}
 
 	/**
-	 * Apply configured transformation to item with injected ID
-	 */
-	private applyTransformation(el: CollectionItem<Raw>): Transformed {
-		return this.transformFn(el, this);
-	}
-
-	/**
 	 * Get an element from the collection by its key
 	 * @param key - The key of the element to retrieve
 	 * @returns The element with the specified key
@@ -133,7 +127,7 @@ export class Collection<
 	 * @param keys - Array of keys to search
 	 * @returns The found elements
 	 */
-	public async searchKeys(keys: IdEncoding[]): Promise<Transformed[]> {
+	public async getBulk(keys: IdEncoding[]): Promise<Transformed[]> {
 		if (!Array.isArray(keys)) throw new TypeError("Keys must be an array");
 
 		const res = await this.manager.get<Record<string, Raw>>({

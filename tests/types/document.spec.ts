@@ -119,24 +119,24 @@ describe("Type Tests: src/client/document.ts", () => {
 		>;
 	});
 
-	it("get() and getKeys() return types", () => {
+	it("get() and getBulk() return types", () => {
 		type _TTheme = Expect<Equal<ReturnType<typeof doc.get<"theme">>, Promise<string>>>;
 		type _TVersion = Expect<Equal<ReturnType<typeof doc.get<"version">>, Promise<number>>>;
 		type _TAutoSave = Expect<Equal<ReturnType<typeof doc.get<"autoSave">>, Promise<boolean>>>;
 
 		type _TKeysTuple = Expect<
-			Equal<ReturnType<typeof doc.getKeys<["theme", "version"]>>, Promise<[string, number]>>
+			Equal<ReturnType<typeof doc.getBulk<["theme", "version"]>>, Promise<[string, number]>>
 		>;
 		type _TKeysArray = Expect<
-			Equal<ReturnType<typeof doc.getKeys<("theme" | "version")[]>>, Promise<(string | number)[]>>
+			Equal<ReturnType<typeof doc.getBulk<("theme" | "version")[]>>, Promise<(string | number)[]>>
 		>;
 
 		function _negativeTests() {
 			// @ts-expect-error - 'nonExistent' is not a key of Settings
 			doc.get("nonExistent");
 
-			// @ts-expect-error - getKeys requires an array of keys
-			doc.getKeys("theme");
+			// @ts-expect-error - getBulk requires an array of keys
+			doc.getBulk("theme");
 		}
 	});
 

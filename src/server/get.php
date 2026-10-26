@@ -1,7 +1,20 @@
 <?php
 
 require_once __DIR__ . '/utils.php';
-require_once __DIR__ . '/enums/ApiCommand.php';
+
+/**
+ * Supported read endpoint commands.
+ */
+enum ReadCommand: string {
+    case ReadRaw = 'readRaw';
+    case Get = 'get';
+    case Search = 'search';
+    case SearchKeys = 'searchKeys';
+    case Select = 'select';
+    case Random = 'random';
+    case Sha1 = 'sha1';
+    case Values = 'values';
+}
 
 cors();
 
