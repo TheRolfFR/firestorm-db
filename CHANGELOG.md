@@ -5,6 +5,46 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.0.0] - 2026-08-28
+
+> For a complete upgrade and migration guide from 1.x, see [`MIGRATION.md`](./MIGRATION.md).
+
+### Added
+
+- **Raw Server Tests**: `tests/server` suites exercising the PHP endpoints over raw HTTP (plus the test-only `tests/php/probe.php`), with a 95% minimum enforced by `pnpm coverage`.
+- **Migration Guide**: Added comprehensive [`MIGRATION.md`](./MIGRATION.md) detailing migration steps from 1.15.1 to 2.0.0.
+
+- **Collision-Free `ID_FIELD` Unique Symbol**: Transitioned `ID_FIELD` from a `"id"` string constant to a global `unique symbol` (`Symbol.for("firestorm.id")`). Document keys attached by Firestorm are indexed via `item[ID_FIELD]`, guaranteeing zero collisions with document schema fields (even if documents have their own `id` property) and native exclusion from `JSON.stringify` during writes.
+- **Native TypeScript Rewrite**: Complete client library ported to TypeScript with dual ESM and CJS outputs, generated type definitions (`dist/`), and comprehensive type tests.
+- **Raw $\rightarrow$ Transformed Pipeline Architecture**: Transitioned `Collection` (`Collection<Raw, Transformed>`) and `Document` (`Document<Raw, Transformed>`) to a pre-transform (`Raw`) and post-transform (`Transformed`) generic architecture. Write methods accept `Raw` types while read methods return `Transformed` types, enabling OOP class instantiation, field stripping/sanitization, and fluent chaining via `.transform()`.
+- **Document Resource**: Dedicated `Document` class (`instance.document(...)`) for managing standalone key-value or configuration documents with deep dot-path mutation support (`Path<T>`, `PathValue<T, P>`).
+- **Request Encapsulation**: Internal `ResourceManager` helper encapsulating HTTP communication for `Collection` and `Document`, endpoint resolution, token management, and payload serialization.
+- **File Manager & Operations**: File operations under `instance.files` (`get()`, `upload()`, `append()`, `uploadText()`, `delete()`) alongside direct server-side operations (`copy()`, `move()`, `exists()`).
+- **Cryptographically Secure Keys**: Added `$secureKeys` configuration to `JSONDatabase` for generating cryptographically secure random unique IDs.
+- **Structured Error Handling**: Added `FirestormError` class carrying complete `ResponseDetails` (HTTP status code, headers, and parsed payload) with automatic wrapping of HTML/string server errors.
+- **PHP 8.4+ Modernization**: Fully modernized server codebase to PHP 8.4+ standards using native standard library functions (no polyfills shipped). Introduces backed Enums (`SearchCriteria`, `EditOperation`, `ReadCommand`, `WriteCommand`), Constructor Property Promotion, `readonly` properties, `#[\Override]`, First-Class Callables (`$fn(...)`), strict `match` expressions, modern `\Random\Randomizer` engines, and high-performance native `array_is_list()`, `array_any()`, `array_all()`, and `json_validate()`.
+- **Refined Search & Filter Criteria**: Dedicated `ComparisonCriteria`, `BooleanCriteria`, `NumberCriteria`, `StringCriteria`, and `ArrayCriteria` types.
+
+### Changed
+
+- **Node.js Support**: Dropped end-of-life Node.js versions. The `engines` field now requires `^22.12.0 || >=24` (Node 20 reached end-of-life in April 2026, and odd-numbered releases are never long-term supported), and the CI matrix no longer tests Node 20.
+- **Read/Write Endpoints**: The server entry points `get.php` and `post.php` moved to `read/index.php` and `write/index.php`, served at `<address>/read/` and `<address>/write/`. They still resolve `config.php`, `tokens.php` and database folders from the server root.
+- **Removed Elements Returned**: `Collection.remove()` now resolves with the removed element (or `null`), and `Collection.removeBulk()` with the removed elements. The server answers `{ "removed": ... }` instead of a confirmation message.
+- **Server Version File**: The server version marker is now `src/server/version.toml` (`version = "x.y.z"`) instead of `version.ini`, and is blocked from direct web access.
+- **Bulk Getters & Version Accessors**: Renamed `Collection.searchKeys()` and `Document.getKeys()` to `getBulk()` (consistent with `setBulk`/`addBulk`/`removeBulk`), and `instance.clientVersion` to `instance.getClientVersion()` (consistent with `getServerVersion()`). The wire-level `searchKeys` server command is unchanged.
+- **Async Method for Server Version**: Replaced the `instance.serverVersion` Promise getter with an explicit async method `instance.getServerVersion()` for better developer ergonomics and TypeScript consistency.
+- **Object-Only Resource Constructors**: `instance.collection()`, `instance.document()`, and class constructors now require a configuration object (`{ name: string, transform?: Function }`) rather than positional arguments.
+- **PHP Requirements**: Modernized server requirements to PHP 8.4+ with strict typing and support for named constructor arguments in `JSONDatabase`.
+- **File Locking Diagnostics**: Refactored `FileAccess` file locking to provide descriptive error context including file paths on lock or descriptor failure.
+- **Centralized Extension Validation**: Replaced manual extension loops across backend file endpoints with centralized `check_file_extension()` validator.
+
+### Removed
+
+- Removed legacy global singleton state and `firestorm.table()` alias in favor of `instance.collection()`.
+- Removed legacy `addMethods` positional callback in favor of the unified `Raw -> Transformed` architecture with `.transform()`.
+- Removed legacy `instance.files.upload()` and `instance.files.append()` methods in favor of standard HTTP verbs (`post()`, `patch()`, `put()`).
+- Removed `WithID<T>` type helper in favor of `CollectionItem<T>`.
+
 ## [1.15.0] - 2026-07-19
 
 ### Added
