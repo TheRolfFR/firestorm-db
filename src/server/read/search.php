@@ -1,7 +1,6 @@
 <?php
 
 require_once __DIR__ . '/../classes/HTTPException.php';
-require_once __DIR__ . '/../polyfills/polyfills.php';
 
 /**
  * Evaluates one supported comparison against a stored field while applying case rules where relevant.

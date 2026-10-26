@@ -1,7 +1,5 @@
 <?php
 
-require_once __DIR__ . '/polyfills/polyfills.php';
-
 /**
  * Applies the application's “provided” rule, treating null, empty strings, zero-like values, and empty arrays as absent.
  *

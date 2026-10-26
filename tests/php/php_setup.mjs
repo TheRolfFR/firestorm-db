@@ -75,12 +75,6 @@ async function setup_php() {
 		}),
 	);
 
-	if (existsSync(join(process.cwd(), "vendor"))) {
-		const vendorTo = join(tmpFolder, "vendor");
-		await symlink(join(process.cwd(), "vendor"), vendorTo, "dir");
-		consola.success(" Linked vendor/ directory");
-	}
-
 	const phpCommand = `sh tests/php/php_server_start.sh ${tmpFolder} ${PORT}`;
 	consola.info(` Starting php server with command:\n${phpCommand}\n`);
 
