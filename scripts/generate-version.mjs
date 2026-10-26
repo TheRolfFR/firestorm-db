@@ -12,9 +12,9 @@ writeFileSync(
 	`// Auto-generated during build from package.json\nexport const VERSION = "${version}";\n`,
 );
 
-// 2. Generate server version ini
-writeFileSync("src/server/version.ini", `${version}\n`);
+// 2. Generate server version TOML
+writeFileSync("src/server/version.toml", `version = "${version}"\n`);
 
 console.log(
-	`[firestorm] Synchronized version ${version} to src/client/version.ts and src/server/version.ini`,
+	`[firestorm] Synchronized version ${version} to src/client/version.ts and src/server/version.toml`,
 );

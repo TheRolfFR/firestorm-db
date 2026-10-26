@@ -2,7 +2,7 @@
 Options -Indexes -FollowSymLinks
 
 # Block direct access to database files, logs, and config markers
-<FilesMatch "\.(json|log|ini)$">
+<FilesMatch "\.(json|log|ini|toml)$">
 	Require all denied
 </FilesMatch>
 

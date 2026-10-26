@@ -405,7 +405,7 @@ const customerOrders = await customer.getOrders();
 // NPM package client version
 instance.getClientVersion();
 
-// Server version string from version.ini
+// Server version string from version.toml
 await instance.getServerVersion();
 
 // Check if client and server versions match
