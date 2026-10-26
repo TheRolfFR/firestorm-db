@@ -190,8 +190,8 @@ console.log(item.bye()); // "Bye John Doe!"
 | `addBulk(values)`        | `values: Raw[]`                               | Append multiple values to the collection. Returns array of generated IDs.                      |
 | `set(key, value)`        | `key: string \| number`, `value: Raw`         | Set a value in the collection by its key.                                                      |
 | `setBulk(keys, values)`  | `keys: (string \| number)[]`, `values: Raw[]` | Set multiple values in the collection by their keys.                                           |
-| `remove(key)`            | `key: string \| number`                       | Remove an element by its key.                                                                  |
-| `removeBulk(keys)`       | `keys: (string \| number)[]`                  | Remove multiple elements by their keys.                                                        |
+| `remove(key)`            | `key: string \| number`                       | Remove an element by its key. Resolves with the removed element (or `null`).                   |
+| `removeBulk(keys)`       | `keys: (string \| number)[]`                  | Remove multiple elements by their keys. Resolves with the removed elements.                    |
 | `editField(option)`      | `option: EditFieldOption`                     | Apply atomic operations on a specific field of an element.                                     |
 | `editFieldBulk(options)` | `options: EditFieldOption[]`                  | Apply atomic operations on multiple element fields.                                            |
 

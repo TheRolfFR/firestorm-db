@@ -111,11 +111,11 @@ try {
             $id_array = $db->addBulk($value);
             http_message($id_array, 'ids', 200);
         case WriteCommand::Remove:
-            $db->remove($value);
-            http_success("Successful {$command->value} command");
+            $removed = $db->remove($value);
+            http_response_stringified(['removed' => $removed], 2);
         case WriteCommand::RemoveBulk:
-            $db->removeBulk($value);
-            http_success("Successful {$command->value} command");
+            $removed = $db->removeBulk($value);
+            http_response_stringified(['removed' => $removed], 3);
         case WriteCommand::Set:
             if (!array_key_exists('key', $inputJSON))
                 http_error(400, 'No key provided');

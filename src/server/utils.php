@@ -320,10 +320,11 @@ function check_file_extension(string $path, array $authorized_extensions): void 
  * Serializes successful read results and turns JSON encoding failures into a consistent server error response.
  *
  * @param mixed $data Data to serialize and send.
+ * @param int $depth Nesting depth where associative arrays should be formatted as JSON objects.
  * @return never
  */
-function http_response_stringified(mixed $data): never {
-    $stringified = stringifier($data);
+function http_response_stringified(mixed $data, int $depth = 1): never {
+    $stringified = stringifier($data, $depth);
     if ($stringified === false)
         http_error(500, 'Failed to stringify response data');
 
