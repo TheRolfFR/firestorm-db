@@ -2,24 +2,24 @@ name: Tests
 
 on:
   push:
-    branches: [ main ]
+    branches: [main]
   pull_request:
-    branches: [ main ]
+    branches: [main]
 
 jobs:
   js-wrapper-test:
-    name: Tests with PHP ${{ matrix.php }} & Node.js ${{ matrix.node }}
+    name: Tests (PHP ${{ matrix.php }}, Node ${{ matrix.node }})
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        php: ["7.4", "8.2"]
-        node: ["22", "24", "26"]
+        php: ["8.4", "8.5"]
+        node: ["^22.12.0", "24", "26"]
 
     steps:
       - name: Check out repository code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
-      - uses: pnpm/action-setup@v4
+      - uses: pnpm/action-setup@v6
         with:
           version: 11
 
@@ -27,15 +27,105 @@ jobs:
         uses: actions/setup-node@v7
         with:
           node-version: ${{ matrix.node }}
-          cache: 'pnpm'
+          cache: "pnpm"
 
       - name: Install PHP
         uses: shivammathur/setup-php@v2
         with:
           php-version: ${{ matrix.php }}
 
-      - name: Install developer dependencies
+      - name: Install dependencies
         run: pnpm install
 
-      - name: Test da code
+      - name: Run tests
         run: pnpm php:tests
+
+  coverage:
+    name: Coverage Check
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+    steps:
+      - name: Check out repository code
+        uses: actions/checkout@v7
+
+      - uses: pnpm/action-setup@v6
+        with:
+          version: 11
+
+      - name: Use Node.js 22
+        uses: actions/setup-node@v7
+        with:
+          node-version: "22"
+          cache: "pnpm"
+
+      - name: Install PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: "8.4"
+          coverage: pcov
+
+      - name: Install dependencies
+        run: pnpm install
+
+      - name: Run coverage check (client with c8, server with pcov)
+        run: pnpm coverage
+
+      - name: Upload coverage reports
+        id: coverage-artifact
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: code-coverage-report
+          path: |
+            coverage/html
+            coverage/cobertura-coverage.xml
+            coverage/php/cobertura-coverage.xml
+          if-no-files-found: ignore
+
+      - name: Report client coverage
+        id: coverage-client
+        if: always()
+        uses: clearlyip/code-coverage-report-action@v7
+        with:
+          filename: coverage/cobertura-coverage.xml
+          markdown_filename: code-coverage-client
+          artifact_name: coverage-client-%name%
+          badge: true
+
+      - name: Report server coverage
+        id: coverage-server
+        if: always()
+        uses: clearlyip/code-coverage-report-action@v7
+        with:
+          filename: coverage/php/cobertura-coverage.xml
+          markdown_filename: code-coverage-server
+          artifact_name: coverage-server-%name%
+          badge: true
+
+      # forks only get a read-only token, so only comment on same-repo PRs
+      - name: Comment client coverage
+        if: always() && github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository && steps.coverage-client.outputs.file != ''
+        uses: marocchino/sticky-pull-request-comment@v3
+        with:
+          header: coverage-client
+          recreate: true
+          path: ${{ steps.coverage-client.outputs.file }}
+
+      - name: Comment server coverage
+        if: always() && github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository && steps.coverage-server.outputs.file != ''
+        uses: marocchino/sticky-pull-request-comment@v3
+        with:
+          header: coverage-server
+          recreate: true
+          path: ${{ steps.coverage-server.outputs.file }}
+
+      - name: Comment coverage artifact
+        if: always() && github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository && steps.coverage-artifact.outputs.artifact-url != ''
+        uses: marocchino/sticky-pull-request-comment@v3
+        with:
+          header: coverage-artifact
+          recreate: true
+          message: |
+            📦 [Download the full HTML coverage report (client and server)](${{ steps.coverage-artifact.outputs.artifact-url }}) — unzip it and open `html/index.html`.

@@ -30,7 +30,6 @@ lib-cov
 
 # Coverage directory used by tools like istanbul
 coverage
-*.lcov
 
 # nyc test coverage
 .nyc_output
@@ -132,3 +131,6 @@ docs/
 
 # tests
 tests/downloaded.txt
+
+# local pcov build (scripts/install-pcov.sh)
+.pcov/

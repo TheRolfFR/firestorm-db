@@ -1,18 +1,21 @@
-name: Documentation
+name: Documentation Build
 
 on:
   pull_request:
-    branches: [ main ]
+    branches: [main]
+
+  workflow_call:
 
 jobs:
   build_doc:
     name: Build Documentation
     runs-on: ubuntu-latest
+
     steps:
       - name: Check out repository code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
-      - uses: pnpm/action-setup@v4
+      - uses: pnpm/action-setup@v6
         with:
           version: 11
 
@@ -20,10 +23,16 @@ jobs:
         uses: actions/setup-node@v7
         with:
           node-version: "22"
-          cache: 'pnpm'
+          cache: pnpm
 
-      - name: Install only developer dependencies
-        run: pnpm install -D
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
 
-      - name: Build the goddamn documentation
-        run: pnpm run doc:gen
+      - name: Build documentation
+        run: pnpm doc:gen
+
+      - name: Upload documentation
+        uses: actions/upload-artifact@v7
+        with:
+          name: documentation
+          path: ./docs

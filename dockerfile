@@ -1,4 +1,4 @@
-FROM php:8.2-apache
+FROM php:8.4-apache
 
 # hide Apache version and details
 RUN echo '\n\
@@ -14,4 +14,4 @@ RUN a2enmod rewrite
 COPY docker/vhost.conf /etc/apache2/sites-available/000-default.conf
 
 # Copy source code
-COPY php/ /var/www/html
+COPY src/server/ /var/www/html
